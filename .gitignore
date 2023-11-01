@@ -1,0 +1,16 @@
+# Specific notebooks and other files to ignore
+/general_notebooks/old/trichomas_Detection_itay744.ipynb
+/general_notebooks/detecting_stigmas.ipynb
+/output/model_final.pth
+/old/tfd_detection/tfd_experiment_notebook.ipynb
+/src/classification/checkpoints/alexnet_trichome_classifier.pkl
+/src/segmentation/notebooks/sam_experiment_notebook.ipynb
+/src/segmentation/notebooks/filtering_SAM_predictions_methods.ipynb
+/src/segmentation/checkpoints/sam_vit_h_4b8939.pth
+/src/data_preparation/notebooks/sharpness_comparison.ipynb
+/src/data_preparation/notebooks/filter_with_sharpness.ipynb
+/src/data_preparation/notebooks/sharpness_comparison_experiment1.ipynb
+/src/preprocessing/images_preprocess_notebook.ipynb
+/src/annotation_handling/fast_labeling_workflow/output/model_final.pth
+/src/pipelines/notebooks/end_to_end_pipeline_parts_experiment.ipynb
+
