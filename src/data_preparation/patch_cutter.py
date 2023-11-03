@@ -1,8 +1,5 @@
 import os
 import cv2
-import numpy as np
-
-from src.data_preparation import sharpness_assessment
 
 def cut_images(image, patch_height=500, patch_width=500):
     patches = []
