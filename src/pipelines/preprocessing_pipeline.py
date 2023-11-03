@@ -1,5 +1,5 @@
 from src.data_preparation.image_loader import read_images_and_names
-from src.data_preparation import sharpness_assessment
+from src.data_preparation.sharpness_assessment import calculate_sharpness
 from src.data_preparation.patch_cutter import cut_images, save_patches
 
 import numpy as np
@@ -38,7 +38,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
 
         # Calculate the sharpness and monochromatic values for each patch
         sharpness_values = [
-            sharpness_assessment.calculate_sharpness(patch) for patch in patches
+            calculate_sharpness(patch) for patch in patches
         ]
         if verbose:
             print(f"Calculated sharpness values for patches of {image_name}")
