@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Gradient-based sharpness
-#TODO - check if there is a gradiet calcualtion with cv2 - using kernel.
+#TODO - check if there is a gradient calculation with cv2 - using kernel.
 def calculate_image_sharpness(image):
     array = np.asarray(image, dtype=np.int32)
     gradients = np.gradient(array)
