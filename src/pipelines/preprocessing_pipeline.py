@@ -66,7 +66,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
 if __name__ == "__main__":
     raw_images_path = "/sise/home/etaylor/images/raw_images"
     processed_images_path = "/sise/home/etaylor/images/processed_images/cannabis_patches"
-    working_dir = "week9_15_06_2023/3x_regular"
+    working_dir = "week6_22_05_2023/3x_regular"
     source_images_path = f"{raw_images_path}/{working_dir}"
     saving_images_path = f"{processed_images_path}/{working_dir}"
     verbose = True
