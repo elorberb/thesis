@@ -1,6 +1,7 @@
 import os
 import cv2
 
+
 def cut_images(image, patch_height=500, patch_width=500):
     patches = []
     patches_with_coords = []
@@ -8,7 +9,7 @@ def cut_images(image, patch_height=500, patch_width=500):
 
     for i in range(0, height - patch_height + 1, patch_height):
         for j in range(0, width - patch_width + 1, patch_width):
-            patch = image[i:i + patch_height, j:j + patch_width]
+            patch = image[i : i + patch_height, j : j + patch_width]
             # Check if the patch size is as expected
             if patch.shape[0] != patch_height or patch.shape[1] != patch_width:
                 continue

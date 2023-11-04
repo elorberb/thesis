@@ -37,9 +37,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
             print(f"Extracted {len(patches)} patches from {image_name}")
 
         # Calculate the sharpness and monochromatic values for each patch
-        sharpness_values = [
-            calculate_sharpness(patch) for patch in patches
-        ]
+        sharpness_values = [calculate_sharpness(patch) for patch in patches]
         if verbose:
             print(f"Calculated sharpness values for patches of {image_name}")
 
@@ -65,7 +63,9 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
 
 if __name__ == "__main__":
     raw_images_path = "/sise/home/etaylor/images/raw_images"
-    processed_images_path = "/sise/home/etaylor/images/processed_images/cannabis_patches"
+    processed_images_path = (
+        "/sise/home/etaylor/images/processed_images/cannabis_patches"
+    )
     working_dir = "week9_15_06_2023/3x_regular"
     source_images_path = f"{raw_images_path}/{working_dir}"
     saving_images_path = f"{processed_images_path}/{working_dir}"

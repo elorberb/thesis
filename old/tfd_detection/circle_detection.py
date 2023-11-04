@@ -10,8 +10,16 @@ def detect_circles(img, minRadius, maxRadius, param1=118, param2=8, save_path=No
     :return:
     """
     cimg = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 5,
-                               param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
+    circles = cv2.HoughCircles(
+        img,
+        cv2.HOUGH_GRADIENT,
+        1,
+        5,
+        param1=param1,
+        param2=param2,
+        minRadius=minRadius,
+        maxRadius=maxRadius,
+    )
 
     circles = np.uint16(np.around(circles))
     for i in circles[0, :]:

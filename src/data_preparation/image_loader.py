@@ -1,20 +1,21 @@
 import os
 import cv2
 
-def extract_file_name(file_path):
-  """
-  Extracts the file name from a file path.
-  """
-  # Split the file path into a list of strings
-  parts = file_path.split("/")
-  # Get the last element in the list (the file name)
-  file_name = parts[-1]
-  # Split the file name into a list of strings
-  parts = file_name.split(".")
-  # Get the first element in the list (the file name without the extension)
-  file_name = parts[0]
 
-  return file_name
+def extract_file_name(file_path):
+    """
+    Extracts the file name from a file path.
+    """
+    # Split the file path into a list of strings
+    parts = file_path.split("/")
+    # Get the last element in the list (the file name)
+    file_name = parts[-1]
+    # Split the file name into a list of strings
+    parts = file_name.split(".")
+    # Get the first element in the list (the file name without the extension)
+    file_name = parts[0]
+
+    return file_name
 
 
 def read_images_and_names(dir_path, func=None, verbose=False):
