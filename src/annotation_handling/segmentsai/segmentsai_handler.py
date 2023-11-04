@@ -1,6 +1,6 @@
 from segments import SegmentsClient, SegmentsClient, SegmentsDataset
 from segments.utils import load_image_from_url, load_label_bitmap_from_url, bitmap2file
-from src.annotation_handling.fast_labeling_workflow.fast_labeling_utils import visualize
+from extra_deps.fast_labeling_workflow.fast_labeling_utils import visualize
 
 import cv2
 import numpy as np
