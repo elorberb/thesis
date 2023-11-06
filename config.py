@@ -48,7 +48,7 @@ def get_processed_trichome_image_path(week, zoom_type):
     return PROCESSED_TRICHOME_PATCHES_DIR / WEEKS_DIR[week] / ZOOM_TYPES_DIR[zoom_type]
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # Example usage:
     # raw_image_path = get_raw_image_path('week9', '1xr')
     # print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")

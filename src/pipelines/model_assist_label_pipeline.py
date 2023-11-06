@@ -1,5 +1,5 @@
 from extra_deps.fast_labeling_workflow.fast_labeling_utils import train_model
-from src.annotation_handling.segmentsai.segmentsai_handler import (
+from src.annotation_handling.segmentsai_handler_old import (
     setup_connection_segmentsai,
     visualize_dataset,
     create_dataset,

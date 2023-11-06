@@ -6,6 +6,8 @@ import cv2
 import numpy as np
 import os
 
+# ---- THIS SEGMENTSAI HANDLER IS DEPRECATED - USED TO WORK WITH SAM MODEL ----
+
 
 def setup_connection_segmentsai():
     api_key = "ac55a85628facd6c2c7b2a2bd517aabac941b58e"
