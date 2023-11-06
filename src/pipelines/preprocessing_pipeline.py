@@ -1,6 +1,7 @@
 from src.data_preparation.image_loader import read_images_and_names
 from src.data_preparation.sharpness_assessment import calculate_sharpness
 from src.data_preparation.patch_cutter import cut_images, save_patches
+import config
 
 import numpy as np
 
@@ -62,13 +63,11 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
 
 
 if __name__ == "__main__":
-    raw_images_path = "/sise/home/etaylor/images/raw_images"
-    processed_images_path = (
-        "/sise/home/etaylor/images/processed_images/cannabis_patches"
-    )
-    working_dir = "week9_15_06_2023/3x_regular"
-    source_images_path = f"{raw_images_path}/{working_dir}"
-    saving_images_path = f"{processed_images_path}/{working_dir}"
+
+    week = 'week9'
+    zoom_type = '3xr'
+    source_images_path = config.get_raw_image_path(week, zoom_type)
+    saving_images_path = config.get_processed_cannabis_image_path(week, zoom_type)
     verbose = True
     preprocessing_pipeline(
         images_path=source_images_path, saving_dir=saving_images_path, verbose=verbose
