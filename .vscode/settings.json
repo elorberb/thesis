@@ -1,6 +1,9 @@
 {
     "terminal.integrated.cwd": "/home/etaylor/pycharmProjects/thesis",
     "cSpell.words": [
+        "Detectron",
+        "dotenv",
+        "SEGMENTSAI",
         "trichomes"
     ]
 }

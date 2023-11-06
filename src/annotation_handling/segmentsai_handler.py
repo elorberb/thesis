@@ -5,10 +5,13 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class SegmentsAIHandler:
     def __init__(self, api_key):
-        api_key = "ac55a85628facd6c2c7b2a2bd517aabac941b58e"
+        api_key = os.getenv("SEGMENTS_API_KEY")
         self.client = SegmentsClient(api_key)
         
         

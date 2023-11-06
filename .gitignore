@@ -14,3 +14,6 @@
 /src/annotation_handling/fast_labeling_workflow/output/model_final.pth
 /src/pipelines/notebooks/end_to_end_pipeline_parts_experiment.ipynb
 
+# Env variables
+.env
+

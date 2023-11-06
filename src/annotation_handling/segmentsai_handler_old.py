@@ -6,11 +6,14 @@ import cv2
 import numpy as np
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # ---- THIS SEGMENTSAI HANDLER IS DEPRECATED - USED TO WORK WITH SAM MODEL ----
 
 
 def setup_connection_segmentsai():
-    api_key = "ac55a85628facd6c2c7b2a2bd517aabac941b58e"
+    api_key = os.getenv("SEGMENTS_API_KEY")
     client = SegmentsClient(api_key)
     return client
 
