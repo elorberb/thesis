@@ -1,4 +1,4 @@
-from segments import SegmentsClient, SegmentsClient, SegmentsDataset
+from segments import SegmentsClient, SegmentsDataset
 from segments.utils import bitmap2file
 
 import numpy as np

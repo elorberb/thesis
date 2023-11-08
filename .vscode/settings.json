@@ -5,5 +5,9 @@
         "dotenv",
         "SEGMENTSAI",
         "trichomes"
-    ]
+    ], 
+    "python.envFile": "${workspaceFolder}/.env",
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${env:PYTHONPATH}:/home/etaylor/pycharmProjects/thesis/extra_deps/detectron2:/home/etaylor/pycharmProjects/thesis/extra_deps/detectron2/detectron2",
+    }
 }

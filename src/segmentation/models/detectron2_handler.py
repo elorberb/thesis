@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+
 from detectron2 import model_zoo
 from detectron2.engine import DefaultTrainer, DefaultPredictor
 from detectron2.config import get_cfg
@@ -7,9 +11,6 @@ from detectron2.data.datasets import register_coco_instances, load_coco_json
 from segments.utils import export_dataset
 import os
 import numpy as np
-
-from dotenv import load_dotenv
-load_dotenv()
 
 
 class Detectron2Handler:
@@ -61,7 +62,6 @@ class Detectron2Handler:
         trainer.resume_or_load(resume=False)
         trainer.train()
         
-        
 
     def convert_to_segments_format(self, image, outputs):
         segmentation_bitmap = np.zeros((image.shape[0], image.shape[1]), np.uint32)
@@ -86,18 +86,18 @@ class Detectron2Handler:
         return segmentation_bitmap, annotations
 
 
-# if __name__ == "__main__":
-#     # Usage Example
-#     model_config_path = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
-#     model_weights = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml") 
+if __name__ == "__main__":
+    # Usage Example
+    model_config_path = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
+    model_weights = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml") 
 
-#     detectron_handler = Detectron2Handler(
-#         config_path=model_config_path,
-#         model_weights_url=model_weights,
-#         output_dir="path_to_output_dir"
-#     )
-#     # Assuming dataset_name, coco_json, and image_dir are provided from the SegmentsAI export
-#     detectron_handler.register_dataset(dataset_name, coco_json, image_dir)
-#     detectron_handler.setup_training(dataset_name)
-#     detectron_handler.train()
-#     model = detectron_handler.load_model(score_thresh_test=0.7)
+    detectron_handler = Detectron2Handler(
+        config_path=model_config_path,
+        model_weights_url=model_weights,
+        score_thresh_test=0.7,    
+        )
+    # Assuming dataset_name, coco_json, and image_dir are provided from the SegmentsAI export
+    detectron_handler.register_dataset(dataset_name, coco_json, image_dir)
+    detectron_handler.setup_training(dataset_name)
+    detectron_handler.train()
+    model = detectron_handler.load_model(score_thresh_test=0.7)

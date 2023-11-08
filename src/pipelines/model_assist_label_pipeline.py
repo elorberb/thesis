@@ -12,7 +12,6 @@ from extra_deps.fast_labeling_workflow.fast_labeling_utils import train_model
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
 from segments import SegmentsDataset
 import config
-import time
 
 segmentsai_handler = SegmentsAIHandler()
 
