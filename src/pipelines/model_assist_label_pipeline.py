@@ -83,14 +83,13 @@ def model_assist_label_pipeline(
     description = "upload predictions to dataset."
     segmentsai_handler.client.add_release(test_dataset, release_name, description)
     test_release = segmentsai_handler.client.get_release(test_dataset, "v0.1")
-    # TODO: there is a problem with the release object, it is not being created properly
     # Create a release and upload predictions to the platform
     upload_predictions(test_release, model)
 
 
 
 if __name__ == "__main__":
-    # Example usage of the function with proper variable names
+    # TODO: THIS SCRIPT DOES NOT WORK BECAUSE OF A PROBLEM WITH THE RELEASE OF SEGMENTS.AI - to run this code run it from here: src/annotation_handling/notebooks/model_assisted_labeling.ipynb
     image_name_param = "IMG_2129"
     week_param = 'week9'
     zoom_type_param = '3xr'

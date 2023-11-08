@@ -149,9 +149,9 @@ class SegmentsAIHandler:
     def copy_sample(self, sample, destination_dataset_id, index, verbose):
         # Copy an individual sample and its annotations to another dataset
         if verbose:
-            print(f"Processing sample {index + 1}: {sample['name']}")
+            print(f"Processing sample {index + 1}: {sample.name}")
 
-        label = self.client.get_label(sample['uuid'], labelset="ground-truth")
+        label = self.client.get_label(sample.uuid, labelset="ground-truth")
         if label:
             self.copy_sample_and_label(sample, label, destination_dataset_id, verbose)
 
@@ -159,12 +159,12 @@ class SegmentsAIHandler:
     def copy_sample_and_label(self, sample, label, destination_dataset_id, verbose):
         # Add the sample and its label to the destination dataset
         new_sample = self.client.add_sample(
-            destination_dataset_id, sample['name'], sample['attributes']
+            destination_dataset_id, sample.name, sample.attributes
         )
-        self.client.add_label(new_sample['uuid'], "ground-truth", label['attributes'])
+        self.client.add_label(new_sample.uuid, "ground-truth", label.attributes)
 
         if verbose:
             if new_sample:
-                print(f"  - Copied sample {sample['name']} and its label.")
+                print(f"  - Copied sample {sample.name} and its label.")
             else:
-                print(f"  - Failed to copy sample {sample['name']}.")
+                print(f"  - Failed to copy sample {sample.name}.")
