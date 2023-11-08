@@ -10,7 +10,7 @@ load_dotenv()
 
 
 class SegmentsAIHandler:
-    def __init__(self, api_key):
+    def __init__(self):
         api_key = os.getenv("SEGMENTS_API_KEY")
         self.client = SegmentsClient(api_key)
         
@@ -51,7 +51,7 @@ class SegmentsAIHandler:
         - image_extension: File extension of images to upload (default is .jpg).
         """
         # Retrieve a list of image filenames with the given file extension
-        image_filenames = [filename for filename in os.listdir(images_folder_path) if filename.endswith(image_extension)]
+        image_filenames = [filename for filename in os.listdir(images_folder_path)]
 
         # Upload each image to the Segments.ai dataset
         for filename in image_filenames:

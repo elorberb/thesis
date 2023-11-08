@@ -12,7 +12,6 @@ PROCESSED_CANNABIS_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'cannabis_patches'
 PROCESSED_TRICHOME_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'trichome_patches'
 
 
-
 # Define specific paths for weeks and zoom types
 WEEKS_DIR = {
     'week2': 'week2_27_04_2023',

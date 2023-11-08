@@ -1,24 +1,26 @@
+""" 
+Model Assist Label Pipeline Stages:
+
+    Sets up the Segments.ai API connection.
+    Trains the model on the specified dataset.
+    Creates a new dataset for testing from a specific image patches.
+    Uploads images to the new dataset.
+    Creates a release and uploads predictions as annotations to the dataset.
+"""
+
 from extra_deps.fast_labeling_workflow.fast_labeling_utils import train_model
-from src.annotation_handling.segmentsai_handler_old import (
-    setup_connection_segmentsai,
-    visualize_dataset,
-    create_dataset,
-    upload_images_to_segments,
-    generate_and_upload_predictions,
-)
+from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
 from segments import SegmentsDataset
 import config
+import time
+
+segmentsai_handler = SegmentsAIHandler()
 
 
-def setup_globals():
-    client = setup_connection_segmentsai()
-    TRAIN_DATASET = "etaylor/cannabis_patches_all_images"
-    return client, TRAIN_DATASET
 
-
-def train_segmentation_model(client, TRAIN_DATASET_NAME):
+def train_segmentation_model(train_dataset_name):
     # Initialize a dataset from the release file
-    release = client.get_release(TRAIN_DATASET_NAME, "v0.1")
+    release = segmentsai_handler.client.get_release(train_dataset_name, "v0.2")
     dataset = SegmentsDataset(release)
 
     # Train an instance segmentation model on the dataset
@@ -26,10 +28,10 @@ def train_segmentation_model(client, TRAIN_DATASET_NAME):
     return model
 
 
-def create_new_test_dataset(client, image_name, week, zoom_type):
-    name = f"Cannabis_patches_{week}_{zoom_type}_{image_name}"
+def create_new_test_dataset(image_name, week, zoom_type):
+    dataset_name = f"cannabis_patches_{week}_{zoom_type}_{image_name}"
     description = (
-        f"Cannabis patches week {week} zoom type {zoom_type} of image {image_name}."
+        f"cannabis patches week={week} zoom_type={zoom_type} of image={image_name}."
     )
     task_type = "segmentation-bitmap"
     task_attributes = {
@@ -37,45 +39,59 @@ def create_new_test_dataset(client, image_name, week, zoom_type):
         "categories": [{"name": "trichome", "id": 1}],
     }
 
-    TEST_DATASET = f"etaylor/{name}"
+    TEST_DATASET = f"etaylor/{dataset_name}"
 
     # Create the dataset:
-    test_dataset_instance = create_dataset(client, name, description, task_type, task_attributes)
+    test_dataset_instance = segmentsai_handler.create_new_dataset(dataset_name, description, task_type, task_attributes)
     print(test_dataset_instance)
     
     return TEST_DATASET
 
 
-def create_release_and_upload_predictions(client, dataset_name_test, model):
-    name = "v0.1"
-    description = "upload predictions to dataset."
-    release = client.add_release(dataset_name_test, name, description)
-    print(release)
-
-    generate_and_upload_predictions(
-        client, dataset_name_test, model, visualize_flag=True
-    )
+def upload_predictions(release, model):
+    print(f"release={release}")
+    dataset = SegmentsDataset(release)
 
 
-def model_assist_label_pipeline(visualize: bool = False):
-    client, TRAIN_DATASET_NAME = setup_globals()
-    if visualize:
-        visualize_dataset(client, TRAIN_DATASET_NAME)
+    for sample in dataset:
+        # Generate label predictions
+        image = sample["image"]
+        segmentation_bitmap, annotations = model(image)
+        segmentsai_handler.upload_annotation_for_sample(sample['uuid'], segmentation_bitmap, annotations)
 
-    model = train_segmentation_model(client, TRAIN_DATASET_NAME)
 
-    # Example usage with one image and week, you can loop over multiple if needed
-    image_name = "IMG_2145"
-    week = config.RAW_IMAGE_DIR['week9']
-    zoom_type = config.RAW_IMAGE_DIR['3xr'] # currently only 3xr is supported
-    TEST_DATASET = create_new_test_dataset(client, image_name, week, zoom_type)
+def model_assist_label_pipeline(
+    image_name: str, week_key: str, zoom_type_key: str, visualize: bool = False
+):
     
-    abs_images_path = f"{config.get_processed_cannabis_image_path(week, zoom_type)}/{image_name}"
-    # Upload the Images that are not annotated to the dataset
-    upload_images_to_segments(client, TEST_DATASET, abs_images_path)
+    train_dataset_name = "etaylor/cannabis_patches_all_images"
 
-    create_release_and_upload_predictions(client, TEST_DATASET, model)
+    if visualize:
+        segmentsai_handler.visualize_dataset(train_dataset_name)
+
+    model = train_segmentation_model(train_dataset_name)
+    
+    # Create a new test dataset for the specified image, week, and zoom type
+    test_dataset = create_new_test_dataset(image_name, config.WEEKS_DIR[week_key], config.ZOOM_TYPES_DIR[zoom_type_key])
+    # Get the absolute path to the processed image
+    abs_images_path = f"{config.get_processed_cannabis_image_path(week_key, zoom_type_key)}/{image_name}"
+    
+    # Upload the images that are not annotated to the dataset
+    segmentsai_handler.upload_images(test_dataset, abs_images_path)
+    
+    release_name = "v0.1"
+    description = "upload predictions to dataset."
+    segmentsai_handler.client.add_release(test_dataset, release_name, description)
+    test_release = segmentsai_handler.client.get_release(test_dataset, "v0.1")
+    # TODO: there is a problem with the release object, it is not being created properly
+    # Create a release and upload predictions to the platform
+    upload_predictions(test_release, model)
+
 
 
 if __name__ == "__main__":
-    model_assist_label_pipeline()
+    # Example usage of the function with proper variable names
+    image_name_param = "IMG_2129"
+    week_param = 'week9'
+    zoom_type_param = '3xr'
+    model_assist_label_pipeline(image_name_param, week_param, zoom_type_param, visualize=True)

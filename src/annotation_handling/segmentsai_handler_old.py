@@ -84,7 +84,7 @@ def upload_images_to_segments(
     Upload images from a local directory to Segments.ai dataset.
     """
     # List all image files in the directory with the specified file extension
-    image_files = [f for f in os.listdir(image_directory) if f.endswith(file_extension)]
+    image_files = [f for f in os.listdir(image_directory)]
 
     # Upload the images to Segments.ai
     for image_file in image_files:
@@ -135,6 +135,7 @@ def generate_and_upload_predictions(
     # Initialize a new dataset, this time containing only unlabeled images
     # Initialize a dataset from the release file
     release = client.get_release(dataset_name_test, "v0.1")
+    print(release)
     dataset = SegmentsDataset(release, labelset="ground-truth", filter_by="unlabeled")
 
     for sample in dataset:

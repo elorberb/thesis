@@ -42,18 +42,18 @@ class Detectron2Handler:
 
 
 
+if __name__ == "__main__":
+    # Usage Example
+    model_config_path = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
+    model_weights = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml") 
 
-# Usage Example
-model_config_path = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
-model_weights = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml") 
-
-detectron_handler = DetectronHandler(
-    config_path=model_config_path,
-    model_weights_url=model_weights,
-    output_dir="path_to_output_dir"
-)
-# Assuming dataset_name, coco_json, and image_dir are provided from the SegmentsAI export
-detectron_handler.register_dataset(dataset_name, coco_json, image_dir)
-detectron_handler.setup_training(dataset_name)
-detectron_handler.train()
-model = detectron_handler.load_model(score_thresh_test=0.7)
+    detectron_handler = Detectron2Handler(
+        config_path=model_config_path,
+        model_weights_url=model_weights,
+        output_dir="path_to_output_dir"
+    )
+    # Assuming dataset_name, coco_json, and image_dir are provided from the SegmentsAI export
+    detectron_handler.register_dataset(dataset_name, coco_json, image_dir)
+    detectron_handler.setup_training(dataset_name)
+    detectron_handler.train()
+    model = detectron_handler.load_model(score_thresh_test=0.7)
