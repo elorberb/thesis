@@ -15,6 +15,28 @@ class SegmentsAIHandler:
         self.client = SegmentsClient(api_key)
         
         
+
+    def get_dataset_instance(self, dataset_name, version='v0.1', labelset='ground-truth', filter_by=None):
+        """
+        Obtain a SegmentsDataset instance.
+
+        Parameters:
+        - dataset_name (str): The name of the dataset you want to retrieve.
+        - version (str): The version of the dataset release.
+        - labelset (str): The labelset to use, default is 'ground-truth'.
+        - filter_by (list): A list of filters to apply (e.g., ['LABELED', 'REVIEWED']).
+
+        Returns:
+        - SegmentsDataset: An instance of the SegmentsDataset.
+        """
+        # Get the release file for the specified dataset and version
+        release = self.client.get_release(dataset_name, version)
+
+        # Initialize and return the SegmentsDataset
+        return SegmentsDataset(release)
+
+        
+        
     def create_new_dataset(self, dataset_identifier, dataset_description, task_type, task_attributes):
         """
         Create a new dataset using the Segments AI API.
