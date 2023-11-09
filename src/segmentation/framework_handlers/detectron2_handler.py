@@ -31,10 +31,10 @@ def convert_detectron2_to_segments_format(image, outputs):
     return segmentation_bitmap, annotations
 
 def convert_segments_to_detectron2_format(
-    dataset_name, export_format="coco-instance"
+    dataset_name, release_version, export_format="coco-instance"
 ):
     # GET THE DATASET INSTANCE WITH SEGMENTSAI_HANDLER
-    dataset = segmentsai_handler.get_dataset_instance(dataset_name, version="v0.2")
+    dataset = segmentsai_handler.get_dataset_instance(dataset_name, version=release_version)
     # EXPORT THE DATASET
     export_file, image_dir = export_dataset(dataset, export_format=export_format)
     return dataset, export_file, image_dir
@@ -42,11 +42,11 @@ def convert_segments_to_detectron2_format(
 
 class Detectron2Handler:
     def __init__(
-        self, config_path, model_weights_url, dataset_name, export_format="coco-instance", input_mask_format="bitmask", model_device="cuda"
+        self, config_path, model_weights_url, dataset_name, release_version, export_format="coco-instance", input_mask_format="bitmask", model_device="cuda"
     ):
 
         self.dataset, export_file, image_dir = convert_segments_to_detectron2_format(
-            dataset_name, export_format
+            dataset_name, release_version, export_format
         )
         try:
             register_coco_instances(dataset_name, {}, export_file, image_dir)
@@ -126,8 +126,9 @@ if __name__ == "__main__":
     dataset_name = 'etaylor/cannabis_patches_all_images'  # Dataset name
     export_format = "coco-instance"  # Export format
     model_device = "cuda"  # Model device
+    release_version = "v0.2"  # Dataset version
 
-    handler = Detectron2Handler(model_config_path, model_weights, dataset_name)
+    handler = Detectron2Handler(model_config_path, model_weights, dataset_name, release_version)
 
     handler.setup_training()
     handler.train() 
