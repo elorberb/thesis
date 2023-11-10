@@ -1,5 +1,5 @@
 {
-    "terminal.integrated.cwd": "/home/etaylor/pycharmProjects/thesis",
+    "terminal.integrated.cwd": "/home/etaylor/code_projects/thesis",
     "cSpell.words": [
         "Detectron",
         "dotenv",
@@ -8,6 +8,6 @@
     ], 
     "python.envFile": "${workspaceFolder}/.env",
     "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${env:PYTHONPATH}:/home/etaylor/pycharmProjects/thesis/extra_deps/detectron2:/home/etaylor/pycharmProjects/thesis/extra_deps/detectron2/detectron2",
+        "PYTHONPATH": "${env:PYTHONPATH}:/home/etaylor/code_projects/thesis/extra_deps/detectron2:/home/etaylor/code_projects/thesis/extra_deps/detectron2/detectron2",
     }
 }
