@@ -6,8 +6,5 @@
         "SEGMENTSAI",
         "trichomes"
     ], 
-    "python.envFile": "${workspaceFolder}/.env",
-    "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${env:PYTHONPATH}:/home/etaylor/code_projects/thesis/extra_deps/detectron2:/home/etaylor/code_projects/thesis/extra_deps/detectron2/detectron2",
-    }
+    "python.envFile": "${workspaceFolder}/.env"
 }
