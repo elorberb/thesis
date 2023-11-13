@@ -63,7 +63,22 @@ class SegmentsAIHandler:
         return new_dataset     
     
     
-    def upload_images(self, dataset_identifier, images_folder_path, image_extension=".jpg"):
+    def add_collaborator_to_dataset(self, dataset_id, user, user_role='annotator'):
+        """
+        Add a collaborator to a dataset on Segments.ai.
+
+        Parameters:
+        - dataset_id: Identifier for the dataset (format: 'owner_name/dataset_name')
+        - user: The username of the collaborator to be added
+        - user_role: The role assigned to the collaborator ('viewer', 'annotator', 'reviewer', or 'admin')
+
+        Returns:
+        - Response from the Segments.ai API after attempting to add the collaborator
+        """
+        return self.client.add_dataset_collaborator(dataset_id, user, user_role)
+    
+    
+    def upload_images(self, dataset_identifier, images_folder_path):
         """
         Uploads image files from a specified directory to a Segments.ai dataset.
 
@@ -103,7 +118,6 @@ class SegmentsAIHandler:
             plt.subplot(1, len(images), i + 1)
             plt.imshow(np.array(image))
         plt.show()
-
 
     
     def visualize_dataset(self, dataset_identifier, dataset_release_version="v0.1"):

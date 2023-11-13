@@ -27,16 +27,24 @@ def train_segmentation_model(train_dataset_name):
     return model
 
 
-def create_new_test_dataset(image_name, week, zoom_type):
+def create_new_test_dataset(image_name, week, zoom_type, single_category=True):
     dataset_name = f"cannabis_patches_{week}_{zoom_type}_{image_name}"
     description = (
         f"cannabis patches week={week} zoom_type={zoom_type} of image={image_name}."
     )
     task_type = "segmentation-bitmap"
-    task_attributes = {
-        "format_version": "0.1",
-        "categories": [{"name": "trichome", "id": 1}],
-    }
+    if single_category:
+        task_attributes = {
+            "format_version": "0.1",
+            "categories": [{"name": "trichome", "id": 1}],
+        }
+    else:
+        task_attributes = {
+            "format_version": "0.1",
+            "categories": [{"name": "clear", "id": 1},
+                        {"name": "clear", "id": 2},
+                        {"name": "clear", "id": 3}],
+        }
 
     TEST_DATASET = f"etaylor/{dataset_name}"
 

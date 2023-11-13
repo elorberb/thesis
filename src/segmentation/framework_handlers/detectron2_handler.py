@@ -133,3 +133,7 @@ if __name__ == "__main__":
     handler.setup_training()
     handler.train() 
  
+ #TODO: add load model from checkpoint function
+ #TODO: think of an efficient way to save the models checkpoints
+    # TODO: idea: framework/task/model_name(using the names from the model_zoo)/version(datetime)  
+    # TODO: example: detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/2021-05-05_12:00:00
