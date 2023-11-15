@@ -27,6 +27,4 @@
 # Ignore Python cache directories
 __pycache__/
 
-# Ignore readme images
-/readme_images
 
