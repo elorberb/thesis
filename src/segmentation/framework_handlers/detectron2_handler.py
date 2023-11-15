@@ -2,7 +2,7 @@ from detectron2 import model_zoo
 from detectron2.engine import DefaultTrainer, DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog
-from detectron2.data.datasets import register_coco_instances, load_coco_json
+from detectron2.data.datasets import register_coco_instances
 
 from segments.utils import export_dataset
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
@@ -102,7 +102,6 @@ class Detectron2Handler:
         self.cfg.INPUT.MASK_FORMAT = input_mask_format
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_config_path)
         self.cfg.MODEL.DEVICE = model_device
-        self.predictor = DefaultPredictor(self.cfg)
 
 
     # Current setup for training the model with default values (I should work also on testing different values)
@@ -137,6 +136,7 @@ class Detectron2Handler:
         
         # Saving the model
         self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")
+        self.predictor = DefaultPredictor(self.cfg)
         
         
     # TODO: create a function to eval the model on the test set
@@ -151,6 +151,20 @@ class Detectron2Handler:
         self.cfg.DATASETS.TEST = (dataset_name, )
 
         
+    
+    def load_checkpoint(self, checkpoint_path):
+        """
+        Load a specific model weights checkpoint.
+
+        Parameters:
+        checkpoint_path (str): The file path to the checkpoint.
+        """
+        # Update the model configuration to use the specified checkpoint
+        self.cfg.MODEL.WEIGHTS = checkpoint_path
+
+        # Re-initialize the model predictor with the updated configuration
+        self.predictor = DefaultPredictor(self.cfg)
+
 
 
     def predict_image(self, image):
@@ -163,21 +177,17 @@ class Detectron2Handler:
 
 if __name__ == "__main__":
 
-    config = {
+    model_config = {
     'task_type': 'COCO-InstanceSegmentation',
     'model_type': 'mask_rcnn_R_50_FPN_3x',
     'dataset_name': 'etaylor/cannabis_patches_all_images',
+    'release_version': "v0.2",
     'export_format': "coco-instance",
     'model_device': "cuda",
-    'release_version': "v0.2",
-}
+    }
 
-    handler = Detectron2Handler(**config)
+    handler = Detectron2Handler(**model_config)
 
     handler.setup_training()
     handler.train() 
  
- #TODO: add load model from checkpoint function
- #TODO: think of an efficient way to save the models checkpoints
-    # TODO: idea: framework/task/model_name(using the names from the model_zoo)/version(datetime)  
-    # TODO: example: detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/2021-05-05_12:00:00

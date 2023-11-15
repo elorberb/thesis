@@ -17,6 +17,6 @@
 # Env variables
 .env
 
-# Checkpoints folder
+# Checkpoints and images folders
 /checkpoints
-
+/segments
