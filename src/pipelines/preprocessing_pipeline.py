@@ -6,7 +6,7 @@ import config
 import numpy as np
 
 
-def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = False):
+def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = False, patch_size: int = 500):
     """
     Process images from a specified directory by cutting each image into patches,
     evaluating the sharpness of each patch, filtering out blurry patches, and saving
@@ -33,7 +33,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
             print(f"Processing image: {image_name}")
 
         # Cut the image into patches
-        patches, _ = cut_images(image)
+        patches, _ = cut_images(image, patch_height=patch_size, patch_width=patch_size)
         if verbose:
             print(f"Extracted {len(patches)} patches from {image_name}")
 
@@ -64,11 +64,12 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
 
 if __name__ == "__main__":
 
-    week = 'week9'
+    week = 'week8'
     zoom_type = '3xr'
+    patch_size = 512
     source_images_path = config.get_raw_image_path(week, zoom_type)
     saving_images_path = config.get_processed_cannabis_image_path(week, zoom_type)
     verbose = True
     preprocessing_pipeline(
-        images_path=source_images_path, saving_dir=saving_images_path, verbose=verbose
+        images_path=source_images_path, saving_dir=saving_images_path, verbose=verbose, patch_size=patch_size
     )
