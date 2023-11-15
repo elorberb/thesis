@@ -14,3 +14,16 @@
 /src/annotation_handling/fast_labeling_workflow/output/model_final.pth
 /src/pipelines/notebooks/end_to_end_pipeline_parts_experiment.ipynb
 
+# Env variables
+.env
+
+# Checkpoints and images folders
+/checkpoints
+/segments
+
+# Ignore Python compiled files
+*.pyc
+
+# Ignore Python cache directories
+__pycache__/
+

@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "/sise/home/etaylor/pycharmProjects/thesis/"
+            "cwd": "/sise/home/etaylor/code_projects/thesis/"
         }
     ]
 }

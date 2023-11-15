@@ -15,7 +15,7 @@ def detect_circles(path: str, total: int = None):
     # Load the image
     img = cv2.imread(path)
     # Extract the image name from the file path
-    name = path.split('/')[-1].split('.')[0]
+    name = path.split("/")[-1].split(".")[0]
     # Make a copy of the image
     img_copy = img.copy()
     # Convert the image to grayscale
@@ -37,15 +37,15 @@ def detect_circles(path: str, total: int = None):
         _, _, w, h = cv2.boundingRect(c)
         ((x, y), r) = cv2.minEnclosingCircle(c)
         # If the contour has a small area, assume it is a trichome and draw a red circle around it
-        if area < 20: # note - this param can be learnable
+        if area < 20:  # note - this param can be learnable
             cv2.circle(img_copy, (int(x), int(y)), int(r), (0, 0, 255), -1)
             count += 1
-    str_total = ''
+    str_total = ""
     # If the total number of trichomes is provided, include it in the console output
     if total is not None:
-        str_total = f', We labeled {total}'
+        str_total = f", We labeled {total}"
     # Print the number of detected trichomes to the console
-    print(f'\t\t\t\tName: {name}, Total Trichomes: {count}{str_total}')
+    print(f"\t\t\t\tName: {name}, Total Trichomes: {count}{str_total}")
     # Display the original image, black and white image, and image with red circles around trichomes side by side
     black_white = np.repeat(black_white[:, :, np.newaxis], 3, axis=2)
     horizontal = np.concatenate((img, black_white, img_copy), axis=1)

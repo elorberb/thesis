@@ -1,9 +1,9 @@
 from fastai.vision.all import *
 from fastai.vision import *
 
-    
+
 def load_classification_model(model_path):
-    """ Load your model from the specified path """
+    """Load your model from the specified path"""
     model = load_learner(model_path)
     return model
 

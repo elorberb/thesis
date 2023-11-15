@@ -1,3 +1,11 @@
 {
-    "terminal.integrated.cwd": "/home/etaylor/pycharmProjects/thesis"
+    "terminal.integrated.cwd": "/home/etaylor/code_projects/thesis",
+    "cSpell.words": [
+        "Detectron",
+        "dotenv",
+        "SEGMENTSAI",
+        "trichomes"
+    ], 
+    "python.envFile": "${workspaceFolder}/.env",
+    "jupyter.notebookFileRoot": "${workspaceFolder}",
 }
