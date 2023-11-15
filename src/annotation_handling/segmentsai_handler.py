@@ -16,7 +16,7 @@ class SegmentsAIHandler:
         
         
 
-    def get_dataset_instance(self, dataset_name, version='v0.1', labelset='ground-truth', filter_by=None):
+    def get_dataset_instance(self, dataset_name, version='v0.1', labelset='ground-truth', filter_by=None, output_dir="segments"):
         """
         Obtain a SegmentsDataset instance.
 
@@ -31,9 +31,9 @@ class SegmentsAIHandler:
         """
         # Get the release file for the specified dataset and version
         release = self.client.get_release(dataset_name, version)
-
+        output_dir = os.path.join(output_dir, "segments")
         # Initialize and return the SegmentsDataset
-        return SegmentsDataset(release)
+        return SegmentsDataset(release, segments_dir=output_dir)
 
         
         

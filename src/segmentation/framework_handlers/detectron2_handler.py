@@ -8,8 +8,12 @@ from segments.utils import export_dataset
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
 import os
 import numpy as np
+from datetime import datetime
 
-segmentsai_handler = SegmentsAIHandler()
+
+SEGMENTS_HANDLER = SegmentsAIHandler()
+DETECTRON2_CHECKPOINT_BASE_PATH = "checkpoints/detectron2"
+
 
 
 def convert_detectron2_to_segments_format(image, outputs):
@@ -31,44 +35,77 @@ def convert_detectron2_to_segments_format(image, outputs):
     return segmentation_bitmap, annotations
 
 def convert_segments_to_detectron2_format(
-    dataset_name, release_version, export_format="coco-instance"
+    dataset_name, release_version, export_format="coco-instance", output_dir="."
 ):
-    # GET THE DATASET INSTANCE WITH SEGMENTSAI_HANDLER
-    dataset = segmentsai_handler.get_dataset_instance(dataset_name, version=release_version)
-    # EXPORT THE DATASET
-    export_file, image_dir = export_dataset(dataset, export_format=export_format)
+    # get the dataset instance
+    dataset = SEGMENTS_HANDLER.get_dataset_instance(dataset_name, version=release_version, output_dir=output_dir)
+        
+    # export the dataset
+    export_file, image_dir = export_dataset(dataset, export_format=export_format, export_folder=output_dir)
     return dataset, export_file, image_dir
 
 
 class Detectron2Handler:
-    def __init__(
-        self, config_path, model_weights_url, dataset_name, release_version, export_format="coco-instance", input_mask_format="bitmask", model_device="cuda"
-    ):
+    
+    def __init__(self, **kwargs):
+        """
+        Initializes the Detectron2Handler with the given keyword arguments.
 
+        Keyword Arguments:
+        - config_path (str): Path to the Detectron2 configuration file.
+        - model_weights_url (str): URL or local path to the model weights.
+        - dataset_name (str): Name of the dataset to be used.
+        - release_version (str): Version of the dataset.
+        - export_format (str, optional): Format for exporting the dataset, default is 'coco-instance'.
+        - input_mask_format (str, optional): Format of the input mask, default is 'bitmask'.
+        - model_device (str, optional): Device to run the model on, default is 'cuda'.
+        """
+
+        # Extracting configuration settings from kwargs
+        train_dataset_name = kwargs.get('dataset_name')
+        release_version = kwargs.get('release_version')
+        export_format = kwargs.get('export_format', 'coco-instance')
+        input_mask_format = kwargs.get('input_mask_format', 'bitmask')
+        model_device = kwargs.get('model_device', 'cuda')
+        
+        self.task_type = kwargs.get('task_type')
+        self.model_type = kwargs.get('model_type')
+        model_config_path = f"{self.task_type}/{self.model_type}.yaml"
+        self.cfg = get_cfg()
+                
+        # Setting up the output directory
+        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        output_dir = f"{DETECTRON2_CHECKPOINT_BASE_PATH}/{self.task_type}/{self.model_type}/{timestamp}"
+        self.cfg.OUTPUT_DIR = output_dir
+        os.makedirs(self.cfg.OUTPUT_DIR, exist_ok=True)
+
+        # Rest of the initialization code
         self.dataset, export_file, image_dir = convert_segments_to_detectron2_format(
-            dataset_name, release_version, export_format
+            dataset_name=train_dataset_name, 
+            release_version=release_version, 
+            export_format=export_format, 
+            output_dir=output_dir
         )
         try:
-            register_coco_instances(dataset_name, {}, export_file, image_dir)
+            register_coco_instances(train_dataset_name, {}, export_file, image_dir)
         except Exception as e:
             print(f"Dataset registration failed: {e}")
-        MetadataCatalog.get(dataset_name).set(
+        MetadataCatalog.get(train_dataset_name).set(
             thing_classes=[c.name for c in self.dataset.categories]
         )
-        segments_metadata = MetadataCatalog.get(dataset_name)
+        segments_metadata = MetadataCatalog.get(train_dataset_name)
         print(segments_metadata)
         
-        self.cfg = get_cfg()
-        self.cfg.merge_from_file(config_path)
-        self.cfg.DATASETS.TRAIN = (dataset_name)
+        self.cfg.merge_from_file(model_zoo.get_config_file(model_config_path))
+        self.cfg.DATASETS.TRAIN = train_dataset_name
         self.cfg.DATASETS.TEST = ()
         self.cfg.INPUT.MASK_FORMAT = input_mask_format
-        self.cfg.MODEL.WEIGHTS = model_weights_url
+        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_config_path)
         self.cfg.MODEL.DEVICE = model_device
         self.predictor = DefaultPredictor(self.cfg)
 
 
-
+    # Current setup for training the model with default values (I should work also on testing different values)
     def setup_training(
         self,
         score_thresh_test=0.7,
@@ -93,17 +130,26 @@ class Detectron2Handler:
 
 
     def train(self):
-        os.makedirs(self.cfg.OUTPUT_DIR, exist_ok=True)
+        # Training the model
         trainer = DefaultTrainer(self.cfg)
         trainer.resume_or_load(resume=False)
         trainer.train()
         
+        # Saving the model
         self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")
-        # self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = (
-        # 0.7  # set the testing threshold for this model
-        # )
+        
+        
+    # TODO: create a function to eval the model on the test set
+    def evaluate(self, dataset_name):
+        """
+        Evaluate the model on the specified dataset.
+
+        Parameters:
+        dataset_name (str): The name of the dataset to evaluate on.
+        """
+        # Set the dataset for testing
         self.cfg.DATASETS.TEST = (dataset_name, )
-        self.cfg.TEST.DETECTIONS_PER_IMAGE = 1000
+
         
 
 
@@ -116,19 +162,17 @@ class Detectron2Handler:
 
 
 if __name__ == "__main__":
-    # Usage Example
-    model_config_path = model_zoo.get_config_file(
-        "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
-    )
-    model_weights = model_zoo.get_checkpoint_url(
-        "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
-    )
-    dataset_name = 'etaylor/cannabis_patches_all_images'  # Dataset name
-    export_format = "coco-instance"  # Export format
-    model_device = "cuda"  # Model device
-    release_version = "v0.2"  # Dataset version
 
-    handler = Detectron2Handler(model_config_path, model_weights, dataset_name, release_version)
+    config = {
+    'task_type': 'COCO-InstanceSegmentation',
+    'model_type': 'mask_rcnn_R_50_FPN_3x',
+    'dataset_name': 'etaylor/cannabis_patches_all_images',
+    'export_format': "coco-instance",
+    'model_device': "cuda",
+    'release_version': "v0.2",
+}
+
+    handler = Detectron2Handler(**config)
 
     handler.setup_training()
     handler.train() 

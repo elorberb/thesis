@@ -17,3 +17,6 @@
 # Env variables
 .env
 
+# Checkpoints folder
+/checkpoints
+
