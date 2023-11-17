@@ -36,14 +36,15 @@ def create_new_test_dataset(image_name, week, zoom_type, single_category=True):
     if single_category:
         task_attributes = {
             "format_version": "0.1",
-            "categories": [{"name": "trichome", "id": 1}],
+            "categories": [{"name": "trichome", "id": 1, "color": [65,117,5]}],
         }
     else:
         task_attributes = {
             "format_version": "0.1",
-            "categories": [{"name": "clear", "id": 1},
-                        {"name": "clear", "id": 2},
-                        {"name": "clear", "id": 3}],
+            "categories": [{"name": "trichome", "id": 1, "color": [65,117,5]},
+                        {"name": "clear", "id": 2, "color": [155,155,155]},
+                        {"name": "cloudy", "id": 3, "color": [255,255,255]},
+                        {"name": "amber", "id": 4, "color": [245,166,35]}]
         }
 
     TEST_DATASET = f"etaylor/{dataset_name}"

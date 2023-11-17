@@ -64,7 +64,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, verbose: bool = Fa
 
 if __name__ == "__main__":
 
-    week = 'week8'
+    week = 'week9'
     zoom_type = '3xr'
     patch_size = 512
     source_images_path = config.get_raw_image_path(week, zoom_type)

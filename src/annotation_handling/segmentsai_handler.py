@@ -16,7 +16,7 @@ class SegmentsAIHandler:
         
         
 
-    def get_dataset_instance(self, dataset_name, version='v0.1', labelset='ground-truth', filter_by=None):
+    def get_dataset_instance(self, dataset_name, version='v0.1'):
         """
         Obtain a SegmentsDataset instance.
 
@@ -76,6 +76,34 @@ class SegmentsAIHandler:
         """
         return self.client.add_dataset_collaborator(dataset_id, user, user_role)
     
+    import os
+
+
+    def upload_single_image(self, dataset_identifier, image_path):
+        """
+        Uploads a single image file to a Segments.ai dataset.
+
+        Parameters:
+        - dataset_identifier: The name of the dataset on Segments.ai.
+        - image_path: Full system path to the image file.
+        """
+        # Extract filename from the image path
+        filename = os.path.basename(image_path)
+
+        # Open the image file and upload it as an asset to Segments.ai
+        with open(image_path, "rb") as image_file:
+            uploaded_asset = self.client.upload_asset(image_file, filename)
+
+        # Get the URL of the uploaded asset
+        uploaded_image_url = uploaded_asset.url
+
+        # Define the sample attributes with the uploaded image URL
+        sample_attributes = {"image": {"url": uploaded_image_url}}
+
+        # Add the new sample to the dataset on Segments.ai
+        new_sample = self.client.add_sample(dataset_identifier, filename, sample_attributes)
+        print(f"Uploaded {filename} and added as sample: {new_sample}")
+
     
     def upload_images(self, dataset_identifier, images_folder_path):
         """
@@ -165,28 +193,34 @@ class SegmentsAIHandler:
         )
         
     
-    def copy_dataset_contents(self, source_dataset_id, destination_dataset_id, verbose=False):
+    def copy_dataset_contents(self, source_dataset_id, destination_dataset_id, only_patches=False, verbose=False):
         """
-        Copies all samples and their annotations from one dataset to another.
+        Copies all samples and their annotations from one dataset to another, with an option to copy only patch images.
 
         Parameters:
         - source_dataset_id: Identifier for the source dataset.
         - destination_dataset_id: Identifier for the destination dataset.
+        - only_patches: If True, copy only patch images. If False, copy all images.
         - verbose: Flag to enable verbose logging of the process.
         """
         source_samples = self.client.get_samples(source_dataset_id)
 
         for index, sample in enumerate(source_samples):
-            self.copy_sample(sample, destination_dataset_id, index, verbose)
+            self.copy_sample(sample, destination_dataset_id, index, only_patches, verbose)
 
 
+    def copy_sample(self, sample, destination_dataset_id, index, only_patches, verbose):
+        # Filter out raw images if only copying patches
+        if only_patches and (sample.name.endswith('.JPG') or '_p' not in sample.name):
+            if verbose:
+                print(f"Skipping raw image {sample.name}")
+            return
 
-    def copy_sample(self, sample, destination_dataset_id, index, verbose):
         # Copy an individual sample and its annotations to another dataset
         if verbose:
             print(f"Processing sample {index + 1}: {sample.name}")
 
-        label = self.client.get_label(sample.uuid, labelset="ground-truth")
+        label = self.client.get_label(sample.uuid)
         if label:
             self.copy_sample_and_label(sample, label, destination_dataset_id, verbose)
 
