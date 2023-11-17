@@ -38,7 +38,7 @@ def convert_segments_to_detectron2_format(
     dataset_name, release_version, export_format="coco-instance", output_dir="."
 ):
     # get the dataset instance
-    dataset = SEGMENTS_HANDLER.get_dataset_instance(dataset_name, version=release_version, output_dir=output_dir)
+    dataset = SEGMENTS_HANDLER.get_dataset_instance(dataset_name, version=release_version)
         
     # export the dataset
     export_file, image_dir = export_dataset(dataset, export_format=export_format, export_folder=output_dir)

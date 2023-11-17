@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 # --- IMAGES CONFIGURATION ---
 
@@ -46,8 +47,30 @@ def get_processed_trichome_image_path(week, zoom_type):
     """Return the path for the processed trichome images of a given week and zoom type."""
     return PROCESSED_TRICHOME_PATCHES_DIR / WEEKS_DIR[week] / ZOOM_TYPES_DIR[zoom_type]
 
+def find_image_details(image_number, base_path=RAW_IMAGE_DIR):
+    """
+    Find the week and zoom type for a given image number.
 
-# if __name__ == "__main__":
+    Parameters:
+    image_number (str): The number of the image (e.g., 'IMG_2242').
+    base_path (str): The base path where images are stored.
+
+    Returns:
+    tuple: (week, zoom_type) if found, otherwise (None, None).
+    """
+    for week in os.listdir(base_path):
+        week_path = os.path.join(base_path, week)
+        if os.path.isdir(week_path):
+            for zoom_type in os.listdir(week_path):
+                zoom_path = os.path.join(week_path, zoom_type)
+                if os.path.isdir(zoom_path):
+                    image_path = os.path.join(zoom_path, f"{image_number}.JPG")
+                    if os.path.exists(image_path):
+                        return week, zoom_type
+    return None, None
+
+
+if __name__ == "__main__":
     # Example usage:
     # raw_image_path = get_raw_image_path('week9', '1xr')
     # print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
@@ -57,3 +80,11 @@ def get_processed_trichome_image_path(week, zoom_type):
 
     # processed_trichome_image_path = get_processed_trichome_image_path('week9', '3xr')
     # print(f"Path for processed trichome images for week 2, 1x regular: {processed_trichome_image_path}")
+    
+    # Example usage
+    image_number = "IMG_9969"
+    week, zoom_type = find_image_details(image_number)
+    if week and zoom_type:
+        print(f"Week: {week}, Zoom Type: {zoom_type}")
+    else:
+        print("Image not found.")
