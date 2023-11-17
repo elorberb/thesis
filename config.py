@@ -33,6 +33,9 @@ ZOOM_TYPES_DIR = {
     '3xfs': '3x_focus_stacking',
 }
 
+CANNA_PATCHES_METADATA_FILE = 'metadata/cannabis_patches_metadata.csv'
+CANNABIS_PATCH_SIZE = 512
+
 # Example of using a function to get a specific path
 
 def get_raw_image_path(week, zoom_type):
