@@ -72,16 +72,16 @@ def find_image_details(image_number, base_path=RAW_IMAGE_DIR):
 
 if __name__ == "__main__":
     # Example usage:
-    # raw_image_path = get_raw_image_path('week9', '1xr')
-    # print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
+    raw_image_path = get_raw_image_path('week9', '1xr')
+    print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
 
-    # processed_cannabis_image_path = get_processed_cannabis_image_path('week9', '3xr')
-    # print(f"Path for processed cannabis images for week 2, 1x regular: {processed_cannabis_image_path}")
+    processed_cannabis_image_path = get_processed_cannabis_image_path('week9', '3xr')
+    print(f"Path for processed cannabis images for week 2, 1x regular: {processed_cannabis_image_path}")
 
-    # processed_trichome_image_path = get_processed_trichome_image_path('week9', '3xr')
-    # print(f"Path for processed trichome images for week 2, 1x regular: {processed_trichome_image_path}")
+    processed_trichome_image_path = get_processed_trichome_image_path('week9', '3xr')
+    print(f"Path for processed trichome images for week 2, 1x regular: {processed_trichome_image_path}")
     
-    # Example usage
+    # Example usage for find_image_details
     image_number = "IMG_9969"
     week, zoom_type = find_image_details(image_number)
     if week and zoom_type:
