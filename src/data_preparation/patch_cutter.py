@@ -2,7 +2,7 @@ import os
 import cv2
 import pandas as pd
 
-
+# Deprecated for pad_and_cut_images function
 def cut_images(image, patch_height=512, patch_width=512):
     patches_with_coords = []
     height, width, _ = image.shape
@@ -12,6 +12,24 @@ def cut_images(image, patch_height=512, patch_width=512):
             patch = image[i: i + patch_height, j: j + patch_width]
             if patch.shape[0] == patch_height and patch.shape[1] == patch_width:
                 patches_with_coords.append((patch, (i, j)))  # Append (patch, (i, j))
+
+    return patches_with_coords
+
+
+def pad_and_cut_images(image, patch_height=512, patch_width=512):
+    # Calculate the required padding
+    pad_height = (patch_height - image.shape[0] % patch_height) % patch_height
+    pad_width = (patch_width - image.shape[1] % patch_width) % patch_width
+
+    # Pad the image
+    padded_image = cv2.copyMakeBorder(image, 0, pad_height, 0, pad_width, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+
+    # Then cut the padded image into patches
+    patches_with_coords = []
+    for i in range(0, padded_image.shape[0], patch_height):
+        for j in range(0, padded_image.shape[1], patch_width):
+            patch = padded_image[i: i + patch_height, j: j + patch_width]
+            patches_with_coords.append((patch, (i, j)))
 
     return patches_with_coords
 

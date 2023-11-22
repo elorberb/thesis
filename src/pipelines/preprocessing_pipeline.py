@@ -1,6 +1,6 @@
 from src.data_preparation.image_loader import read_images_and_names
 from src.data_preparation.sharpness_assessment import calculate_sharpness
-from src.data_preparation.patch_cutter import cut_images, save_patches_with_metadata
+from src.data_preparation.patch_cutter import pad_and_cut_images, save_patches_with_metadata
 import config
 
 import numpy as np
@@ -27,7 +27,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, csv_file_path: str
             print(f"Processing image: {image_name}")
 
         # Cut the image into patches and get their coordinates
-        patches_with_coords = cut_images(image, patch_height=patch_size, patch_width=patch_size)
+        patches_with_coords = pad_and_cut_images(image, patch_height=patch_size, patch_width=patch_size)
         if verbose:
             print(f"Extracted {len(patches_with_coords)} patches from {image_name}")
 
@@ -47,7 +47,7 @@ def preprocessing_pipeline(images_path: str, saving_dir: str, csv_file_path: str
 
 if __name__ == "__main__":
 
-    week = 'week5'
+    week = 'week9'
     zoom_type = '3xr'
     patch_size = config.CANNABIS_PATCH_SIZE
     source_images_path = config.get_raw_image_path(week, zoom_type)
