@@ -22,14 +22,12 @@ def convert_detectron2_to_segments_format(image, outputs):
     counter = 1
     instances = outputs["instances"]
     for i in range(len(instances.pred_classes)):
+        category_id = int(instances.pred_classes[i])
         instance_id = counter
         mask = instances.pred_masks[i].cpu()
         segmentation_bitmap[mask] = instance_id
-        trichome_annotation_category_id = (
-            1  # assuming a single category for simplicity
-        )
         annotations.append(
-            {"id": instance_id, "category_id": trichome_annotation_category_id}
+            {"id": instance_id, "category_id": category_id}
         )
         counter += 1
     return segmentation_bitmap, annotations
@@ -109,7 +107,7 @@ class Detectron2Handler:
         self,
         score_thresh_test=0.7,
         num_workers=2,
-        ims_per_batch=2,
+        ims_per_batch=4,
         base_lr=0.00025,
         max_iter=300,
         batch_size_per_image=128,
