@@ -1,19 +1,23 @@
 from detectron2 import model_zoo
 from detectron2.engine import DefaultTrainer, DefaultPredictor
 from detectron2.config import get_cfg
-from detectron2.data import MetadataCatalog
+from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.data.datasets import register_coco_instances
+from detectron2.utils.logger import setup_logger
+from detectron2.utils.visualizer import Visualizer
 
 from segments.utils import export_dataset
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
 import os
 import numpy as np
 from datetime import datetime
+import yaml
+from matplotlib import pyplot as plt
+import cv2
 
-
+# Global variables
 SEGMENTS_HANDLER = SegmentsAIHandler()
 DETECTRON2_CHECKPOINT_BASE_PATH = "checkpoints/detectron2"
-
 
 
 def convert_detectron2_to_segments_format(image, outputs):
@@ -58,6 +62,8 @@ class Detectron2Handler:
         - input_mask_format (str, optional): Format of the input mask, default is 'bitmask'.
         - model_device (str, optional): Device to run the model on, default is 'cuda'.
         """
+        
+        setup_logger()
 
         # Extracting configuration settings from kwargs
         train_dataset_name = kwargs.get('dataset_name')
@@ -84,16 +90,13 @@ class Detectron2Handler:
             export_format=export_format, 
             output_dir=output_dir
         )
-        try:
-            register_coco_instances(train_dataset_name, {}, export_file, image_dir)
-        except Exception as e:
-            print(f"Dataset registration failed: {e}")
-        MetadataCatalog.get(train_dataset_name).set(
-            thing_classes=[c.name for c in self.dataset.categories]
-        )
-        segments_metadata = MetadataCatalog.get(train_dataset_name)
-        print(segments_metadata)
-        
+        register_coco_instances(train_dataset_name, {}, export_file, image_dir)
+        # MetadataCatalog.get(train_dataset_name).set(
+        #     thing_classes=[c.name for c in self.dataset.categories]
+        # )
+        self.train_metadata = MetadataCatalog.get(train_dataset_name)
+        self.train_dataset_dicts = DatasetCatalog.get(train_dataset_name)
+
         self.cfg.merge_from_file(model_zoo.get_config_file(model_config_path))
         self.cfg.DATASETS.TRAIN = train_dataset_name
         self.cfg.DATASETS.TEST = ()
@@ -107,10 +110,10 @@ class Detectron2Handler:
         self,
         score_thresh_test=0.7,
         num_workers=2,
-        ims_per_batch=4,
+        ims_per_batch=2,
         base_lr=0.00025,
         max_iter=300,
-        batch_size_per_image=128,
+        batch_size_per_image=256,
         num_classes=None,
     ):
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = score_thresh_test
@@ -118,24 +121,51 @@ class Detectron2Handler:
         self.cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
         self.cfg.SOLVER.BASE_LR = base_lr
         self.cfg.SOLVER.MAX_ITER = max_iter
+        self.cfg.SOLVER.STEPS = []        # do not decay learning rate
         self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size_per_image
         # If num_classes is not provided, calculate it from dataset.categories
-        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = (
-            num_classes if num_classes is not None else len(self.dataset.categories)
-        )
+        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = 4 # Currently 4 classes: trichome, clear, cloudy and amber - can use this if not working: len(self.dataset.categories) if num_classes is None else num_classes    
+        self.trainer = DefaultTrainer(self.cfg)
+        self.trainer.resume_or_load(resume=False)
 
 
 
     def train(self):
         # Training the model
-        trainer = DefaultTrainer(self.cfg)
-        trainer.resume_or_load(resume=False)
-        trainer.train()
+        self.trainer.train()
         
         # Saving the model
         self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")
         self.predictor = DefaultPredictor(self.cfg)
         
+        # Saving the configuration
+        config_yaml_path = os.path.join(self.cfg.OUTPUT_DIR, "config.yaml")
+        with open(config_yaml_path, 'w') as f:
+            yaml.dump(self.cfg, f)
+            
+    
+    def plot_samples(self, indices=None, scale=0.5):
+        """
+        Plots samples based on specified indices.
+
+        Parameters:
+        - indices (list): List of specific indices of samples to plot.
+        - scale (float): Scale factor for the visualizer.
+        
+        Example usage:
+        model - Detectron2Handler(...)
+        model.plot_samples(indices=[0, 2, 5]) # to plot images at specific indices
+        model..plot_samples() # to plot all images
+        """
+        selected_samples = self.train_dataset_dicts if indices is None else [self.train_dataset_dicts[i] for i in indices]
+
+        for d in selected_samples:
+            img = cv2.imread(d["file_name"])
+            visualizer = Visualizer(img[:, :, ::-1], metadata=self.train_metadata, scale=scale)
+            vis = visualizer.draw_dataset_dict(d)
+            plt.imshow(vis.get_image()[:, :, ::-1])
+            plt.show()
+            
         
     # TODO: create a function to eval the model on the test set
     def evaluate(self, dataset_name):
@@ -150,7 +180,7 @@ class Detectron2Handler:
 
         
     
-    def load_checkpoint(self, checkpoint_path):
+    def load_checkpoint(self, checkpoint_path, config_yaml_path=None):
         """
         Load a specific model weights checkpoint.
 
@@ -159,6 +189,11 @@ class Detectron2Handler:
         """
         # Update the model configuration to use the specified checkpoint
         self.cfg.MODEL.WEIGHTS = checkpoint_path
+        
+        # Load the configuration from the specified yaml file
+        if config_yaml_path is not None:
+            with open(config_yaml_path, 'r') as f:
+                self.cfg = yaml.load(f)
 
         # Re-initialize the model predictor with the updated configuration
         self.predictor = DefaultPredictor(self.cfg)
@@ -173,19 +208,19 @@ class Detectron2Handler:
         return segmentation_bitmap, annotations
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    model_config = {
-    'task_type': 'COCO-InstanceSegmentation',
-    'model_type': 'mask_rcnn_R_50_FPN_3x',
-    'dataset_name': 'etaylor/cannabis_patches_all_images',
-    'release_version': "v0.2",
-    'export_format': "coco-instance",
-    'model_device': "cuda",
-    }
+#     model_config = {
+#     'task_type': 'COCO-InstanceSegmentation',
+#     'model_type': 'mask_rcnn_R_50_FPN_3x',
+#     'dataset_name': 'etaylor/cannabis_patches_all_images',
+#     'release_version': "v0.2",
+#     'export_format': "coco-instance",
+#     'model_device': "cuda",
+#     }
 
-    handler = Detectron2Handler(**model_config)
+#     handler = Detectron2Handler(**model_config)
 
-    handler.setup_training()
-    handler.train() 
+#     handler.setup_training()
+#     handler.train() 
  
