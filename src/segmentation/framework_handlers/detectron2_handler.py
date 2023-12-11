@@ -1,3 +1,4 @@
+import detectron2
 from detectron2 import model_zoo
 from detectron2.engine import DefaultTrainer, DefaultPredictor
 from detectron2.config import get_cfg
@@ -5,6 +6,11 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.data.datasets import register_coco_instances
 from detectron2.utils.logger import setup_logger
 from detectron2.utils.visualizer import Visualizer
+from detectron2.utils.visualizer import ColorMode
+
+#eval detectron2 imports
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from detectron2.data import build_detection_test_loader
 
 from segments.utils import export_dataset
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
@@ -14,10 +20,17 @@ from datetime import datetime
 import yaml
 from matplotlib import pyplot as plt
 import cv2
+import torch
 
 # Global variables
 SEGMENTS_HANDLER = SegmentsAIHandler()
 DETECTRON2_CHECKPOINT_BASE_PATH = "checkpoints/detectron2"
+
+def print_version_info():
+    torch_version = ".".join(torch.__version__.split(".")[:2])
+    cuda_version = torch.version.cuda
+    print("torch: ", torch_version, "; cuda: ", cuda_version)
+    print("detectron2:", detectron2.__version__)
 
 
 def convert_detectron2_to_segments_format(image, outputs):
@@ -36,15 +49,13 @@ def convert_detectron2_to_segments_format(image, outputs):
         counter += 1
     return segmentation_bitmap, annotations
 
-def convert_segments_to_detectron2_format(
-    dataset_name, release_version, export_format="coco-instance", output_dir="."
-):
+def convert_segments_to_detectron2_format(dataset_name, release_version, export_format="coco-instance", output_dir="."):
     # get the dataset instance
     dataset = SEGMENTS_HANDLER.get_dataset_instance(dataset_name, version=release_version)
         
     # export the dataset - format is coco instance segmentation
-    export_file, image_dir = export_dataset(dataset, export_format=export_format, export_folder=output_dir)
-    return dataset, export_file, image_dir
+    export_json_path, saved_images_path = export_dataset(dataset, export_format=export_format, export_folder=output_dir)
+    return dataset, export_json_path, saved_images_path
 
 
 class Detectron2Handler:
@@ -56,8 +67,10 @@ class Detectron2Handler:
         Keyword Arguments:
         - config_path (str): Path to the Detectron2 configuration file.
         - model_weights_url (str): URL or local path to the model weights.
-        - dataset_name (str): Name of the dataset to be used.
-        - release_version (str): Version of the dataset.
+        - train_dataset_name (str): Name of the train dataset.
+        - train_release (str): Version of the train dataset.
+        - test_dataset_name (str): Name of the test dataset.
+        - test_release (str): Version of the test dataset.
         - export_format (str, optional): Format for exporting the dataset, default is 'coco-instance'.
         - input_mask_format (str, optional): Format of the input mask, default is 'bitmask'.
         - model_device (str, optional): Device to run the model on, default is 'cuda'.
@@ -66,8 +79,10 @@ class Detectron2Handler:
         setup_logger()
 
         # Extracting configuration settings from kwargs
-        train_dataset_name = kwargs.get('dataset_name')
-        release_version = kwargs.get('release_version')
+        self.train_dataset_name = kwargs.get('train_dataset_name')
+        train_release = kwargs.get('train_release')
+        self.test_dataset_name = kwargs.get('test_dataset_name')
+        test_release = kwargs.get('test_release')
         export_format = kwargs.get('export_format', 'coco-instance')
         input_mask_format = kwargs.get('input_mask_format', 'bitmask')
         model_device = kwargs.get('model_device', 'cuda')
@@ -75,46 +90,46 @@ class Detectron2Handler:
         self.task_type = kwargs.get('task_type')
         self.model_type = kwargs.get('model_type')
         model_config_path = f"{self.task_type}/{self.model_type}.yaml"
-        self.cfg = get_cfg()
                 
         # Setting up the output directory
-        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M")
         output_dir = f"{DETECTRON2_CHECKPOINT_BASE_PATH}/{self.task_type}/{self.model_type}/{timestamp}"
-        self.cfg.OUTPUT_DIR = output_dir
-        os.makedirs(self.cfg.OUTPUT_DIR, exist_ok=True)
 
-        # Rest of the initialization code
-        self.dataset, export_file, image_dir = convert_segments_to_detectron2_format(
-            dataset_name=train_dataset_name, 
-            release_version=release_version, 
+        # convert segments dataset to coco format
+        self.train_dataset, train_export_json_path, train_saved_images_path = convert_segments_to_detectron2_format(
+            dataset_name=self.train_dataset_name, 
+            release_version=train_release, 
             export_format=export_format, 
             output_dir=output_dir
         )
-        register_coco_instances(train_dataset_name, {}, export_file, image_dir)
-        # MetadataCatalog.get(train_dataset_name).set(
-        #     thing_classes=[c.name for c in self.dataset.categories]
-        # )
-        self.train_metadata = MetadataCatalog.get(train_dataset_name)
-        self.train_dataset_dicts = DatasetCatalog.get(train_dataset_name)
+        
+        self.test_dataset, test_export_json_path, test_saved_images_path = convert_segments_to_detectron2_format(
+            dataset_name=self.test_dataset_name, 
+            release_version=test_release, 
+            export_format=export_format, 
+            output_dir=output_dir
+        )
+        # register the coco format datasets
+        register_coco_instances("my_dataset_train", {}, train_export_json_path, train_saved_images_path)
+        register_coco_instances("my_dataset_val", {}, test_export_json_path, test_saved_images_path)
 
-        self.cfg.merge_from_file(model_zoo.get_config_file(model_config_path))
-        self.cfg.DATASETS.TRAIN = train_dataset_name
-        self.cfg.DATASETS.TEST = ()
-        self.cfg.INPUT.MASK_FORMAT = input_mask_format
-        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_config_path)
-        self.cfg.MODEL.DEVICE = model_device
+        # get the metadata and dataset dicts
+        self.train_metadata = MetadataCatalog.get("my_dataset_train")
+        self.train_dataset_dicts = DatasetCatalog.get("my_dataset_train")
+        self.test_metadata = MetadataCatalog.get("my_dataset_val")
+        self.test_dataset_dicts = DatasetCatalog.get("my_dataset_val")
 
 
     # Current setup for training the model with default values (I should work also on testing different values)
     def setup_training(
         self,
-        score_thresh_test=0.7,
+        score_thresh_test=0.5,
         num_workers=2,
         ims_per_batch=2,
         base_lr=0.00025,
-        max_iter=300,
-        batch_size_per_image=256,
-        num_classes=None,
+        max_iter=1000,
+        batch_size_per_image=512,
+        num_classes=4,
     ):
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = score_thresh_test
         self.cfg.DATALOADER.NUM_WORKERS = num_workers
@@ -124,7 +139,7 @@ class Detectron2Handler:
         self.cfg.SOLVER.STEPS = []        # do not decay learning rate
         self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size_per_image
         # If num_classes is not provided, calculate it from dataset.categories
-        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = 4 # Currently 4 classes: trichome, clear, cloudy and amber - can use this if not working: len(self.dataset.categories) if num_classes is None else num_classes    
+        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes # Currently 4 classes: trichome, clear, cloudy and amber - can use this if not working: len(self.dataset.categories) if num_classes is None else num_classes    
         self.trainer = DefaultTrainer(self.cfg)
         self.trainer.resume_or_load(resume=False)
 
@@ -136,6 +151,7 @@ class Detectron2Handler:
         
         # Saving the model
         self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")
+        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
         self.predictor = DefaultPredictor(self.cfg)
         
         # Saving the configuration
@@ -144,7 +160,7 @@ class Detectron2Handler:
             yaml.dump(self.cfg, f)
             
     
-    def plot_samples(self, indices=None, scale=0.5):
+    def plot_train_samples(self, indices=None, scale=0.5):
         """
         Plots samples based on specified indices.
 
@@ -162,13 +178,28 @@ class Detectron2Handler:
         for d in selected_samples:
             img = cv2.imread(d["file_name"])
             visualizer = Visualizer(img[:, :, ::-1], metadata=self.train_metadata, scale=scale)
-            vis = visualizer.draw_dataset_dict(d)
-            plt.imshow(vis.get_image()[:, :, ::-1])
+            out = visualizer.draw_dataset_dict(d)
+            image_rgb = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+            plt.imshow(image_rgb)
             plt.show()
             
+
+    def plot_test_predictions(self, indices=None, scale=0.5):
         
-    # TODO: create a function to eval the model on the test set
-    def evaluate(self, dataset_name):
+        selected_samples = self.test_dataset_dicts if indices is None else [self.test_dataset_dicts[i] for i in indices]
+
+        for d in selected_samples:
+            im = cv2.imread(d["file_name"])
+            outputs = self.predictor(im)
+            v = Visualizer(im[:, :, ::-1], metadata=self.test_metadata, scale=scale, 
+                        instance_mode=ColorMode.IMAGE_BW)
+            out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+            image_rgb = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+            plt.imshow(image_rgb)
+            plt.show()
+
+
+    def evaluate(self):
         """
         Evaluate the model on the specified dataset.
 
@@ -176,7 +207,9 @@ class Detectron2Handler:
         dataset_name (str): The name of the dataset to evaluate on.
         """
         # Set the dataset for testing
-        self.cfg.DATASETS.TEST = (dataset_name, )
+        evaluator = COCOEvaluator("my_dataset_val", output_dir=os.path.join(self.cfg.OUTPUT_DIR, "output"))
+        val_loader = build_detection_test_loader(self.cfg, "my_dataset_val")
+        print(inference_on_dataset(self.predictor.model, val_loader, evaluator))
 
         
     
@@ -192,20 +225,30 @@ class Detectron2Handler:
         
         # Load the configuration from the specified yaml file
         if config_yaml_path is not None:
-            with open(config_yaml_path, 'r') as f:
-                self.cfg = yaml.load(f)
+            self.cfg.merge_from_file(config_yaml_path)
 
         # Re-initialize the model predictor with the updated configuration
         self.predictor = DefaultPredictor(self.cfg)
 
 
 
-    def predict_image(self, image):
+    def predict_image(self, image_path, plot_image=False):
+        image = cv2.imread(image_path)
         outputs = self.predictor(image)
+        if plot_image:
+            # We can use `Visualizer` to draw the predictions on the image.
+            v = Visualizer(image[:, :, ::-1], metadata=self.train_metadata)
+            out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+            image_rgb = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)# Plot the image
+            plt.imshow(image_rgb)
+            plt.show()
         segmentation_bitmap, annotations = convert_detectron2_to_segments_format(
             image, outputs
         )
         return segmentation_bitmap, annotations
+    
+    # TODO: this code is not working well
+    # TODO: need to fix it and find a different may to reuse code for detectron2 notebooks
 
 
 # if __name__ == "__main__":
