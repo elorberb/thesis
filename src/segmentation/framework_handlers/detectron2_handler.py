@@ -23,6 +23,7 @@ import csv
 from skimage.measure import regionprops, label
 import seaborn as sns
 import pandas as pd
+import shutil
 
 # Global variables
 SEGMENTS_HANDLER = SegmentsAIHandler()
@@ -49,13 +50,25 @@ def convert_coco_to_segments_format(image, outputs):
         counter += 1
     return segmentation_bitmap, annotations
 
+
 def convert_segments_to_coco_format(dataset_name, release_version, export_format="coco-instance", output_dir="."):
     # get the dataset instance
     dataset = SEGMENTS_HANDLER.get_dataset_instance(dataset_name, version=release_version)
         
     # export the dataset - format is coco instance segmentation
     export_json_path, saved_images_path = export_dataset(dataset, export_format=export_format, export_folder=output_dir)
-    return dataset, export_json_path, saved_images_path
+
+    # Create the annotations folder one level up from saved_images_path
+    annotations_folder = os.path.join(os.path.dirname(saved_images_path), "annotations")
+    if not os.path.exists(annotations_folder):
+        os.makedirs(annotations_folder)
+
+    # Move the export_json_path file to the annotations folder
+    new_export_json_path = os.path.join(annotations_folder, os.path.basename(export_json_path))
+    shutil.move(export_json_path, new_export_json_path)
+
+    return dataset, new_export_json_path, saved_images_path
+
 
 
 def imshow(image):
@@ -64,19 +77,17 @@ def imshow(image):
     plt.show()
 
 
-def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release_train, release_test, saving_path):
+def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release_train, release_test):
     # Convert segments dataset to coco format for training dataset
     _, train_export_json_path, train_saved_images_path = convert_segments_to_coco_format(
         dataset_name=dataset_name_train, 
         release_version=release_train, 
-        output_dir=saving_path
     )
 
     # Convert segments dataset to coco format for testing dataset
     _, test_export_json_path, test_saved_images_path = convert_segments_to_coco_format(
         dataset_name=dataset_name_test, 
         release_version=release_test, 
-        output_dir=saving_path
     )
 
     # Register the coco format datasets
