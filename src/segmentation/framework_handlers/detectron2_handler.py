@@ -91,14 +91,14 @@ def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release
     )
 
     # Register the coco format datasets
-    register_coco_instances("my_dataset_train", {}, train_export_json_path, train_saved_images_path)
-    register_coco_instances("my_dataset_val", {}, test_export_json_path, test_saved_images_path)
+    register_coco_instances(dataset_name_train, {}, train_export_json_path, train_saved_images_path)
+    register_coco_instances(dataset_name_test, {}, test_export_json_path, test_saved_images_path)
 
     # Get the metadata and dataset dicts
-    metadata_train = MetadataCatalog.get("my_dataset_train")
-    dataset_dicts_train = DatasetCatalog.get("my_dataset_train")
-    metadata_test = MetadataCatalog.get("my_dataset_val")
-    dataset_dicts_test = DatasetCatalog.get("my_dataset_val")
+    metadata_train = MetadataCatalog.get(dataset_name_train)
+    dataset_dicts_train = DatasetCatalog.get(dataset_name_train)
+    metadata_test = MetadataCatalog.get(dataset_name_test)
+    dataset_dicts_test = DatasetCatalog.get(dataset_name_test)
 
     return metadata_train, dataset_dicts_train, metadata_test, dataset_dicts_test
 
