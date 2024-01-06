@@ -1,44 +1,69 @@
 import os
 import cv2
+import pandas as pd
 
-
-def cut_images(image, patch_height=500, patch_width=500):
-    patches = []
+# Deprecated for pad_and_cut_images function
+def cut_images(image, patch_height=512, patch_width=512):
     patches_with_coords = []
     height, width, _ = image.shape
 
     for i in range(0, height - patch_height + 1, patch_height):
         for j in range(0, width - patch_width + 1, patch_width):
-            patch = image[i : i + patch_height, j : j + patch_width]
-            # Check if the patch size is as expected
-            if patch.shape[0] != patch_height or patch.shape[1] != patch_width:
-                continue
-            patches.append(patch)
-            patches_with_coords.append((patch, i, j))
-    return patches, patches_with_coords
+            patch = image[i: i + patch_height, j: j + patch_width]
+            if patch.shape[0] == patch_height and patch.shape[1] == patch_width:
+                patches_with_coords.append((patch, (i, j)))  # Append (patch, (i, j))
+
+    return patches_with_coords
 
 
-def save_patches(image_name, patches, dir_path):
+def pad_and_cut_images(image, patch_height=512, patch_width=512):
+    # Calculate the required padding
+    pad_height = (patch_height - image.shape[0] % patch_height) % patch_height
+    pad_width = (patch_width - image.shape[1] % patch_width) % patch_width
+
+    # Pad the image
+    padded_image = cv2.copyMakeBorder(image, 0, pad_height, 0, pad_width, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+
+    # Then cut the padded image into patches
+    patches_with_coords = []
+    for i in range(0, padded_image.shape[0], patch_height):
+        for j in range(0, padded_image.shape[1], patch_width):
+            patch = padded_image[i: i + patch_height, j: j + patch_width]
+            patches_with_coords.append((patch, (i, j)))
+
+    return patches_with_coords
+
+
+def save_patches_with_metadata(image_name, patches_with_coords, saving_dir, csv_file_path):
     """
-    Saves the given patches with the original image name as the prefix in the specified directory.
+    Save the patches to the specified directory and update the metadata CSV file using Pandas.
 
     Parameters:
-        image_name (str): the original image name to use as the prefix for the file names
-        patches (list): a list of patches (images_and_names) to save
-        dir_path (str): the directory to save the patches in
-
-    Returns:
-        None
+    image_name (str): Name of the original image.
+    patches_with_coords (list): List of tuples containing patches and their coordinates.
+    saving_dir (str): Directory where the patches will be saved.
+    csv_file_path (str): Path to the CSV file where metadata will be stored.
     """
-    # Create the image name subdirectory if it does not exist
-    subdir_path = os.path.join(dir_path, image_name)
-    if not os.path.exists(subdir_path):
-        os.makedirs(subdir_path)
+    # Initialize an empty DataFrame for new metadata
+    new_metadata_df = pd.DataFrame(columns=['patch_name', 'y', 'x'])
 
-    for i, patch in enumerate(patches):
-        # Use the image name subdirectory as the file path
-        file_path = os.path.join(subdir_path, f"{image_name}_p{i}.png")
-        cv2.imwrite(file_path, patch)
+    for i, (patch, coords) in enumerate(patches_with_coords):
+        patch_filename = f"{image_name}_p{i}.png"
+        # ... [code to save patch image] ...
+        
+        # Add new row to the DataFrame
+        new_metadata_df.loc[i] = [patch_filename, coords[0], coords[1]]
+
+    # If the CSV file exists, load it and concatenate the new data, otherwise use new data
+    if os.path.exists(csv_file_path):
+        existing_df = pd.read_csv(csv_file_path)
+        metadata_df = pd.concat([existing_df, new_metadata_df], ignore_index=True)
+    else:
+        metadata_df = new_metadata_df
+
+    # Save the updated DataFrame to the CSV file
+    metadata_df.to_csv(csv_file_path, index=False)
+
 
 
 def apply_function_to_images(images_and_names, func):

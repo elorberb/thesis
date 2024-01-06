@@ -14,7 +14,12 @@ jobs:
         id: pragent
         uses: Codium-ai/pr-agent@main
         env:
-          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          api_key: ${{ secrets.api_key }}              # Azure API key
+          api_type: "azure"                            # API type, set as a literal string
+          api_version: "2023-05-15"      # Azure API version
+          api_base: ${{ secrets.api_base }}            # Azure API base URL
+          openai_deployment_id: ${{ secrets.openai_deployment_id }} # OpenAI deployment ID
+          model: ${{ secrets.model }}   
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           github_action.auto_review: "true" # enable\disable auto review
           github_action.auto_describe: "true" # enable\disable auto describe

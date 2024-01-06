@@ -1,0 +1,11 @@
+
+path: /home/etaylor/code_projects/thesis/segments/etaylor_all_cannabis_patches_multi_class/annotations/yolo/organized_dataset
+train: images/train
+val: images/val
+
+names:
+  0: trichome
+  1: clear
+  2: cloudy
+  3: amber
+    
