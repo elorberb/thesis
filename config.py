@@ -13,7 +13,7 @@ PROCESSED_CANNABIS_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'cannabis_patches'
 PROCESSED_TRICHOME_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'trichome_patches'
 
 # csv of good quality images
-GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images.csv')
+GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images_testings.csv')
 
 # Define specific paths for weeks and zoom types
 WEEKS_DIR = {
@@ -40,8 +40,10 @@ CANNABIS_PATCHES_METADATA_FILE = 'metadata/cannabis_patches_metadata.csv'
 ANNOTATIONS_TRACKING_METADATA_FILE = 'metadata/annotations_tracking.csv'
 CANNABIS_PATCH_SIZE = 512
 
-# Example of using a function to get a specific path
+# --- DATABASE CONFIGURATION ---
+EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
 
+# Example of using a function to get a specific path
 def get_raw_image_path(week, zoom_type):
     """Return the path for the raw images of a given week and zoom type."""
     week_dir = WEEKS_DIR.get(week, week)  # Get value if week is a key, else use week as is
