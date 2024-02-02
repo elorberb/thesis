@@ -1,0 +1,25 @@
+import streamlit as st
+from streamlit_extras.switch_page_button import switch_page
+import constants as const
+import streamlit_utils as st_utils
+
+print(st.session_state)
+
+st.set_page_config(
+    page_title="Tutorial",
+    page_icon="💡",
+)
+
+if not "user_registered" in st.session_state or not st.session_state.get("user_registered", False):
+    switch_page("Introduction")
+
+video_file = open(const.tutorial_video_path, 'rb')  # For a local file
+video_bytes = video_file.read()
+
+st_utils.display_sidebar()
+st.markdown(const.tutorial_text, unsafe_allow_html=True)
+st.video(video_bytes)
+st.markdown(const.tutorial_finish_text, unsafe_allow_html=True)
+
+if st.button('Go to Experiment'):
+    switch_page("Experiment")

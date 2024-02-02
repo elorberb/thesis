@@ -1,67 +1,30 @@
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 import time
-import sqlite3
 import config
 import re
+import constants as const
+import db_utils
+import streamlit_utils as st_utils
 
 st.set_page_config(
     page_title="Introduction",
     page_icon="👋",
 )
 
-import sqlite3
 
-def save_pre_questionnaire_feedback(feedback):
-    # Connect to the SQLite database
-    conn = sqlite3.connect(config.EXPERIMENT_DATABASE_FILE)
-    cur = conn.cursor()
-
-    # SQL command to insert the feedback data
-    sql = '''
-    INSERT INTO pre_questionnaire (user_name, email, age, gender)
-    VALUES (?, ?, ?, ?)
-    '''
-    
-    # Executing the SQL command with feedback data
-    cur.execute(sql, (feedback['user_name'], feedback['email'], feedback['age'], feedback['gender']))
-    
-    # Committing the changes
-    conn.commit()
-    
-    # Closing the database connection
-    conn.close()
-
-
-markdown_text = f'''
-# Trichome Classification Study
-
-This experiment aims to classify cannabis trichomes into clear, cloudy, and amber categories based on your observations. Your input will contribute to the development of a more advanced algorithm, which could be faster and more accurate in predicting the maturity level of cannabis.
-
-## 📋 Pre-Questionnaire
-Please answer the following questions before participating:
-
-1. 💼 Full Name
-2. 📧 Email
-3. 🎂 Age
-4. 👫 Gender
-
-## 📝 Instructions
-1. ✅ Check the box to indicate your consent to participate in the study.
-2. 🚀 Click the "Submit" button to begin.
-
-Your participation is highly valuable, and we appreciate your contribution to this research.
-
-Thank you for your time and involvement!
-'''
-
-st.markdown(markdown_text)
+st.markdown(const.intro_text)
 
 if not "switch_to_tutorial_page" in st.session_state:
     st.session_state.switch_to_tutorial_page = False
+    
+if not "user_registered" in st.session_state:
+    st.session_state.user_registered = False
 
 if st.session_state.switch_to_tutorial_page:
     switch_page("Experiment Tutorial")
+    
+st_utils.display_sidebar()
 
 with st.form("user_info_form"):
     user_name = st.text_input("Full Name:", placeholder="Please enter your full name")
@@ -84,8 +47,9 @@ with st.form("user_info_form"):
                 'age': age,
                 'gender': gender,
             }
-            # save_pre_questionnaire_feedback(pre_questionnaire_feedback)
+            # db_utils.save_pre_questionnaire_feedback(pre_questionnaire_feedback)
             st.session_state.switch_to_tutorial_page = True
+            st.session_state.user_registered = True
             st.success("Thank you for participating!")
             time.sleep(2)
             switch_page("Experiment Tutorial")
