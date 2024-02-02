@@ -1,5 +1,4 @@
 import streamlit as st
-import config
 from streamlit_extras.switch_page_button import switch_page
 import streamlit_utils as st_utils
 
@@ -13,4 +12,3 @@ if not "user_registered" in st.session_state or not st.session_state.get("user_r
 
 st_utils.display_sidebar()
 st_utils.display_post_questionnaire()
-

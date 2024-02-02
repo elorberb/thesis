@@ -23,3 +23,4 @@ st.markdown(const.tutorial_finish_text, unsafe_allow_html=True)
 
 if st.button('Go to Experiment'):
     switch_page("Experiment")
+    
