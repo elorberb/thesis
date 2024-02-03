@@ -1,7 +1,6 @@
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 import time
-import config
 import re
 import constants as const
 import db_utils
@@ -15,9 +14,11 @@ st.set_page_config(
 
 st.markdown(const.intro_text)
 
+
 if not "switch_to_tutorial_page" in st.session_state:
     st.session_state.switch_to_tutorial_page = False
-    
+
+
 if not "user_registered" in st.session_state:
     st.session_state.user_registered = False
 

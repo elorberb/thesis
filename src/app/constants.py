@@ -3,6 +3,7 @@ import utils
 #  ---------- General constants ---------- 
 contact_email = "etaylor@post.bgu.ac.il"
 tutorial_video_path = "/home/etaylor/code_projects/thesis/src/app/pages/images/exp_tutorial.mp4"
+google_storage_bucket = "trichome_classification_study_storage"
 
 #  ---------- Functions for messages ---------- 
 def assistance_message_app(contact_email: str) -> str:
