@@ -13,12 +13,12 @@ st.set_page_config(
 if not "user_registered" in st.session_state or not st.session_state.get("user_registered", False):
     switch_page("Introduction")
 
-video_file = open(const.tutorial_video_path, 'rb')  # For a local file
-video_bytes = video_file.read()
+# video_file = open(const.tutorial_video_path, 'rb')  # For a local file
+# video_bytes = video_file.read()
 
 st_utils.display_sidebar()
 st.markdown(const.tutorial_text, unsafe_allow_html=True)
-st.video(video_bytes)
+# st.video(video_bytes)
 st.markdown(const.tutorial_finish_text, unsafe_allow_html=True)
 
 if st.button('Go to Experiment'):

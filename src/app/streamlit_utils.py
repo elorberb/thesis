@@ -48,7 +48,8 @@ def display_experiment_sidebar():
         st.markdown(const.two_buttons_css, unsafe_allow_html=True)
         columns = st.columns(3)
         submit_feedback = columns[0].button('Next Image')
-        finish_experiment = columns[1].button('Finish')
+        columns[1].link_button('Open Image', st.session_state.current_image_path)
+        finish_experiment = columns[2].button('Finish')
         st.markdown(const.assistance_message_app(const.contact_email), unsafe_allow_html=True)
     return submit_feedback, clear_percentage, cloudy_percentage, amber_percentage, maturity_level, cultivation_week, finish_experiment
 
@@ -85,7 +86,7 @@ def display_post_questionnaire():
             'suggestions': suggestions,
             'additional_comments': additional_comments
         }
-        db_utils.save_post_questionnaire_feedback(feedback)
+        # db_utils.save_post_questionnaire_feedback(feedback)
         st.success('Thank you for completing the questionnaire!')
     else:
         st.error('Please fill in all the details.')

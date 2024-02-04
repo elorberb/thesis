@@ -2,8 +2,9 @@ import utils
 
 #  ---------- General constants ---------- 
 contact_email = "etaylor@post.bgu.ac.il"
-tutorial_video_path = "/home/etaylor/code_projects/thesis/src/app/pages/images/exp_tutorial.mp4"
-google_storage_bucket = "trichome_classification_study_storage"
+tutorial_video_path = "pages/images/exp_tutorial.mp4"
+BUCKET_NAME = "trichome_classification_study_storage"
+EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
 
 #  ---------- Functions for messages ---------- 
 def assistance_message_app(contact_email: str) -> str:
@@ -55,10 +56,10 @@ Thank you for your time and involvement!
 '''
 
 #  ---------- Tutorial page constants ---------- 
-image_display_area = utils.get_image_as_base64('/home/etaylor/code_projects/thesis/src/app/pages/images/images_area.png')
-sidebar_feedback = utils.get_image_as_base64('/home/etaylor/code_projects/thesis/src/app/pages/images/review_slider.png')
-adjusting_sliders = utils.get_image_as_base64('/home/etaylor/code_projects/thesis/src/app/pages/images/submit_image.png')
-submit_feedback = utils.get_image_as_base64('/home/etaylor/code_projects/thesis/src/app/pages/images/finish_review.png')
+image_display_area = utils.get_image_as_base64('pages/images/images_area.png')
+sidebar_feedback = utils.get_image_as_base64('pages/images/review_slider.png')
+adjusting_sliders = utils.get_image_as_base64('pages/images/submit_image.png')
+submit_feedback = utils.get_image_as_base64('pages/images/finish_review.png')
 
 width = 175
 

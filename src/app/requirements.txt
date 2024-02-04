@@ -1,3 +1,2 @@
 streamlit
 streamlit-extras
-google-cloud-storage

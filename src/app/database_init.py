@@ -1,9 +1,9 @@
 import sqlite3
-import config
+import constants as const
 
 print('Creating database...')
 # Connect to SQLite database (it will be created if it doesn't exist)
-conn = sqlite3.connect(config.EXPERIMENT_DATABASE_FILE)
+conn = sqlite3.connect(const.EXPERIMENT_DATABASE_FILE)
 print('Database created!')
 # Create cursor object
 cur = conn.cursor()

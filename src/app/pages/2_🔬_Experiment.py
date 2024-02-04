@@ -6,8 +6,6 @@ import constants as const
 import db_utils
 import utils
 import streamlit_utils as st_utils
-from PIL import Image
-from io import BytesIO
 
 
 st.set_page_config(
@@ -71,7 +69,7 @@ if submit_feedback:
 
 # Display the current image
 if st.session_state.current_image_path:
-
+    print(st.session_state.current_image_path)
     st.image(st.session_state.current_image_path, caption="Cannabis Image", output_format="PNG")
     st.markdown(const.hide_img_fs, unsafe_allow_html=True)
 

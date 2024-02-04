@@ -1,8 +1,8 @@
 import sqlite3
-import config
+import constants as const
 
 def save_pre_questionnaire_feedback(feedback):
-    conn = sqlite3.connect(config.EXPERIMENT_DATABASE_FILE)
+    conn = sqlite3.connect(const.EXPERIMENT_DATABASE_FILE)
     cur = conn.cursor()
 
     sql = '''
@@ -18,7 +18,7 @@ def save_pre_questionnaire_feedback(feedback):
     
     
 def save_experiment_feedback(feedback):
-    conn = sqlite3.connect(config.EXPERIMENT_DATABASE_FILE)
+    conn = sqlite3.connect(const.EXPERIMENT_DATABASE_FILE)
     cur = conn.cursor()
 
     sql = '''
@@ -35,7 +35,7 @@ def save_experiment_feedback(feedback):
     
     
 def save_post_questionnaire_feedback(feedback):
-    conn = sqlite3.connect(config.EXPERIMENT_DATABASE_FILE)
+    conn = sqlite3.connect(const.EXPERIMENT_DATABASE_FILE)
     cur = conn.cursor()
 
     sql = '''
