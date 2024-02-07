@@ -5,6 +5,7 @@ import re
 import constants as const
 import db_utils
 import streamlit_utils as st_utils
+import uuid
 
 st.set_page_config(
     page_title="Introduction",
@@ -17,6 +18,7 @@ st_utils.setup_intro_page()
 st_utils.display_sidebar()
 
 with st.form("user_info_form"):
+    user_id = str(uuid.uuid4())
     user_name = st.text_input("Full Name:", placeholder="Please enter your full name")
     email = st.text_input("Email:", placeholder="Please enter your email address")
     age = st.number_input('Age', min_value=18, max_value=100)
@@ -35,8 +37,9 @@ with st.form("user_info_form"):
             st.error("Please enter a valid email address.")
         else:
             st.session_state.user_name = user_name
-            st.session_state.email = email
-            pre_questionnaire_feedback = {
+            st.session_state.user_id = user_id
+            participant_info = {
+                'user_id': user_id,
                 'user_name': user_name,
                 'email': email, 
                 'age': age,
@@ -44,7 +47,7 @@ with st.form("user_info_form"):
                 'company': company,
                 'entity_type': entity_type,
             }
-            # db_utils.save_pre_questionnaire_feedback(pre_questionnaire_feedback)
+            db_utils.save_user_registration(participant_info)
             st.session_state.switch_to_tutorial_page = True
             st.session_state.user_registered = True
             st.success("Thank you for participating!")

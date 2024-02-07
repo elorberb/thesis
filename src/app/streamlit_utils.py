@@ -82,8 +82,8 @@ def display_post_questionnaire():
     additional_comments = st.text_area("Any additional comments or feedback")
 
     if st.button('Submit Feedback'):
-        feedback = {
-            'email': st.session_state.email,
+        post_questionnaire_feedback = {
+            'user_id': st.session_state.user_id,
             'difficulty': difficulty,
             'experience_level': experience_level,
             'vision_quality': vision_quality,
@@ -92,7 +92,7 @@ def display_post_questionnaire():
             'suggestions': suggestions,
             'additional_comments': additional_comments
         }
-        # db_utils.save_post_questionnaire_feedback(feedback)
+        db_utils.save_post_questionnaire_feedback(post_questionnaire_feedback)
         st.success('Thank you for completing the questionnaire!')
     else:
         st.error('Please fill in all the details.')

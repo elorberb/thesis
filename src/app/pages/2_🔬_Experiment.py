@@ -38,8 +38,8 @@ if submit_feedback:
     time_taken = round(time.time() - st.session_state.start_time, 2)  # Use start time
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    feedback = {
-        'email': st.session_state.email,
+    experiment_feedback = {
+        'user_id': st.session_state.user_id,
         'timestamp': timestamp,
         'image_path': st.session_state.current_image_path,
         'image_number': st.session_state.current_image_number,
@@ -49,8 +49,8 @@ if submit_feedback:
         'maturity_level': maturity_level, 
         'time_taken_seconds': time_taken,
     }
-    print(feedback)
-    # db_utils.save_experiment_feedback(feedback)
+    print(experiment_feedback)
+    db_utils.save_experiment_feedback(experiment_feedback)
     
     st.session_state.reviewed_images.append(st.session_state.current_image_number)
     print(f"reviewed_images: {st.session_state.reviewed_images}")

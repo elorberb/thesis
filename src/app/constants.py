@@ -2,9 +2,14 @@ import utils
 
 #  ---------- General constants ---------- 
 contact_email = "etaylor@post.bgu.ac.il"
-tutorial_video_path = "pages/images/exp_tutorial.mp4"
+tutorial_video_path = "resources/images/exp_tutorial.mp4"
 BUCKET_NAME = "trichome_classification_study_storage"
-EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
+
+#  ---------- Firebase constants ----------
+FIREBASE_CRED_PATH = "creds/trichome-classification-study-firebase-adminsdk-bon71-83313db895.json"
+FIREBASE_PARTICIPANTS_COLLECTION = "participants"
+FIREBASE_EXPERIMENT_FEEDBACK_COLLECTION = "experiment_feedback"
+FIREBASE_POST_QUESTIONNAIRE_FEEDBACK_COLLECTION = "post_questionnaire_feedback"
 
 #  ---------- Functions for messages ---------- 
 def assistance_message_app(contact_email: str) -> str:
@@ -58,12 +63,12 @@ Thank you for your time and involvement!
 '''
 
 #  ---------- Tutorial page constants ---------- 
-image_display_area = utils.get_image_as_base64('pages/images/images_area.png')
-maturity_estimate = utils.get_image_as_base64('pages/images/maturity_estimate_slider.png')
-sidebar_feedback = utils.get_image_as_base64('pages/images/review_slider.png')
-zoom_image = utils.get_image_as_base64('pages/images/zoom_image.png')
-adjusting_sliders = utils.get_image_as_base64('pages/images/submit_image.png')
-submit_feedback = utils.get_image_as_base64('pages/images/finish_review.png')
+image_display_area = utils.get_image_as_base64('resources/images/images_area.png')
+maturity_estimate = utils.get_image_as_base64('resources/images/maturity_estimate_slider.png')
+sidebar_feedback = utils.get_image_as_base64('resources/images/review_slider.png')
+zoom_image = utils.get_image_as_base64('resources/images/zoom_image.png')
+adjusting_sliders = utils.get_image_as_base64('resources/images/submit_image.png')
+submit_feedback = utils.get_image_as_base64('resources/images/finish_review.png')
 
 width = 175
 
