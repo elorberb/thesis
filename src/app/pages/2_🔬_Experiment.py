@@ -25,7 +25,7 @@ if 'started_experiment' not in st.session_state:
     st.session_state.start_time = time.time()  # Initialize start time here
     st.session_state.current_image_path, st.session_state.current_image_number = utils.load_random_image(st.session_state.reviewed_images)
 
-submit_feedback, clear_percentage, cloudy_percentage, amber_percentage, maturity_level, cultivation_week, finish_experiment = st_utils.display_experiment_sidebar()
+submit_feedback, clear_percentage, cloudy_percentage, amber_percentage, maturity_level, finish_experiment = st_utils.display_experiment_sidebar()
 
 # if user wants to finish the experiment earlier
 if finish_experiment:
@@ -69,8 +69,7 @@ if submit_feedback:
 
 # Display the current image
 if st.session_state.current_image_path:
-    print(st.session_state.current_image_path)
-    st.image(st.session_state.current_image_path, caption="Cannabis Image", output_format="PNG")
+    st.image(st.session_state.current_image_path, caption="Cannabis Image", output_format="PNG", use_column_width='always')
     st.markdown(const.hide_img_fs, unsafe_allow_html=True)
 
 else:

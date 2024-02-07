@@ -2,6 +2,18 @@ import constants as const
 import streamlit as st
 import db_utils
 
+def setup_intro_page():
+
+    if not "switch_to_tutorial_page" in st.session_state:
+        st.session_state.switch_to_tutorial_page = False
+
+    if not "user_registered" in st.session_state:
+        st.session_state.user_registered = False
+
+    if st.session_state.switch_to_tutorial_page:
+        switch_page("Experiment Tutorial")
+
+
 def display_sidebar():
     st.markdown(const.sidebar_color_css, unsafe_allow_html=True)
     with st.sidebar:
@@ -19,18 +31,12 @@ def display_experiment_sidebar():
             st.session_state['clear_percentage'] = const.DEFAULT_CLEAR_PERCENTAGE
         if 'cloudy_percentage' not in st.session_state:
             st.session_state['cloudy_percentage'] = const.DEFAULT_CLOUDY_PERCENTAGE
-            
-        # Create a question to select the cultivation week
-        cultivation_week = st.selectbox(
-            "Select the Cultivation Week of the Flower",
-            options=const.cultivation_weeks
-        )
-        
+
         maturity_stages = ['Early Development', 'Mid Flower', 'Nearly Harvest', 'At Harvest', 'Over Maturity']
         maturity_level = st.select_slider(
-        'Select the Maturity Stage of the Flower',
+        'Estimate the maturity stage of the flower',
         options=maturity_stages,
-        value='Early Development'
+        value='Nearly Harvest',
         )
         min_val, max_val = st.slider(
             "Clear % | Cloudy % | Amber % portions:",
@@ -47,11 +53,11 @@ def display_experiment_sidebar():
         st.markdown(const.percentages_html(clear_percentage, cloudy_percentage, amber_percentage), unsafe_allow_html=True)
         st.markdown(const.two_buttons_css, unsafe_allow_html=True)
         columns = st.columns(3)
-        submit_feedback = columns[0].button('Next Image')
-        columns[1].link_button('Open Image', st.session_state.current_image_path)
-        finish_experiment = columns[2].button('Finish')
+        submit_feedback = columns[0].button('➡️ ️', help="Next image")
+        columns[1].link_button('🔎 ', st.session_state.current_image_path, help="Zoom image")
+        finish_experiment = columns[2].button('🔚', help="End experiment")
         st.markdown(const.assistance_message_app(const.contact_email), unsafe_allow_html=True)
-    return submit_feedback, clear_percentage, cloudy_percentage, amber_percentage, maturity_level, cultivation_week, finish_experiment
+    return submit_feedback, clear_percentage, cloudy_percentage, amber_percentage, maturity_level, finish_experiment
 
 # Function to display the questionnaire
 def display_post_questionnaire():

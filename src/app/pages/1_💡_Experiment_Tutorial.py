@@ -3,13 +3,11 @@ from streamlit_extras.switch_page_button import switch_page
 import constants as const
 import streamlit_utils as st_utils
 
-print(st.session_state)
-
 st.set_page_config(
     page_title="Tutorial",
     page_icon="💡",
 )
-
+# if the user didnt registered return him to the intro page
 if not "user_registered" in st.session_state or not st.session_state.get("user_registered", False):
     switch_page("Introduction")
 

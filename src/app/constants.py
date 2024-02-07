@@ -36,7 +36,7 @@ two_buttons_css = """
 intro_text = '''
 # Trichome Classification Study
 
-This experiment aims to classify cannabis trichomes into clear, cloudy, and amber categories based on your observations. Your input will contribute to the development of a more advanced algorithm, which could be faster and more accurate in predicting the maturity level of cannabis.
+This experiment aims to classify cannabis trichomes into clear, cloudy, and amber categories based on your observations, as well as to assess the maturity level of the cannabis flower. Your input is valuable and will contribute to the development of a more advanced algorithm for both classification and maturity assessment. We deeply appreciate your full cooperation and the time you invest in providing detailed feedback. Your insights are crucial to the success of this project and our ability to better understand the maturation process of cannabis flowers.
 
 ## 📋 Pre-Questionnaire
 Please answer the following questions before participating:
@@ -45,19 +45,23 @@ Please answer the following questions before participating:
 2. 📧 Email
 3. 🎂 Age
 4. 👫 Gender
+5. 🏢 Company/Incubator Name
+6. 📊 Type of Entity
 
 ## 📝 Instructions
 1. ✅ Check the box to indicate your consent to participate in the study.
 2. 🚀 Click the "Submit" button to begin.
 
-Your participation is highly valuable, and we appreciate your contribution to this research.
+We appreciate your contribution to this research.
 
 Thank you for your time and involvement!
 '''
 
 #  ---------- Tutorial page constants ---------- 
 image_display_area = utils.get_image_as_base64('pages/images/images_area.png')
+maturity_estimate = utils.get_image_as_base64('pages/images/maturity_estimate_slider.png')
 sidebar_feedback = utils.get_image_as_base64('pages/images/review_slider.png')
+zoom_image = utils.get_image_as_base64('pages/images/zoom_image.png')
 adjusting_sliders = utils.get_image_as_base64('pages/images/submit_image.png')
 submit_feedback = utils.get_image_as_base64('pages/images/finish_review.png')
 
@@ -81,19 +85,36 @@ The experiment interface is divided into two main sections:
     <img src="{image_display_area}" alt="Image Display Area" style="width: {width}%; height: auto;">
 </div>
 
-### 2. Sidebar - Feedback and Controls
+### 2. User Feedback Sliders Explained
 
-- Here, you will find sliders to adjust the percentage of different trichome types.
-- The sliders include:
-    - **Clear Trichomes (%)**: Adjust the percentage of clear trichomes.
-    - **Cloudy Trichomes (%)**: Adjust the percentage of cloudy trichomes.
-    - **Amber Trichomes (%)**: Adjust the percentage of amber trichomes.
-    - **Maturity Level (0-10)**: Indicate the maturity level of the trichomes.
+#### Maturity Stage Slider:
+- This slider allows you to estimate the maturity stage of the cannabis flower. The scale ranges from "Early Development" to "Over Maturity."
+- You can move the slider to the position that best matches your assessment of the flower's maturity stage. In this example, the slider is set to "Nearly Harvest," indicating that the flower is approaching the optimal harvest time.
+
+<div>
+    <img src="{maturity_estimate}" alt="Sidebar Feedback" style="width: {width}%; height: auto;">
+</div>
+
+#### Trichome Percentage Sliders:
+These sliders are used to estimate the proportion of clear, cloudy, and amber trichomes in the image.
+
+Each type of trichome corresponds to a stage of maturity:
+
+- **Clear Trichomes** (%)
+- **Cloudy Trichomes** (%)
+- **Amber Trichomes** (%)
+- To provide your feedback, adjust each slider to reflect the percentage you estimate for each trichome type. The sliders are interactive, and as you move them, the numerical percentage will update accordingly.
 
 <div>
     <img src="{sidebar_feedback}" alt="Sidebar Feedback" style="width: {width}%; height: auto;">
 </div>
 
+#### Navigations Buttons
+- **➡️ (Next Image) Button**: Use this to send your trichome assessment for the current image and move to the next image.
+
+- **🔎 (Zoom Image) Button**: Click to zoom the image for a closer look, aiding in more precise feedback.
+
+- **🔚 (End Experiment) Button**: Ends the experiment early. You can click this if you need to exit the experiment before reviewing all the images. However, we encourage all participants to complete the assessment of all images provided
 
 ## Flow of Reviewing Images
 
@@ -104,27 +125,20 @@ The experiment interface is divided into two main sections:
 
 ### Step 2: Adjusting Sliders
 
-- Based on your observation, use the sliders in the sidebar to estimate the percentages of clear, cloudy, and amber trichomes.
-- Make sure the total percentage sums up to 100%.
+- Based on your observation, use the sliders in the sidebar to estimate the maturity level and the percentages of clear, cloudy, and amber trichomes.
 
 ### Step 3: Submitting Your Feedback
 
-- After adjusting the sliders, click on the **Next Image** button to submit your feedback.
+- After adjusting the sliders, click on the ➡️ (Next image) button to submit your feedback.
+- For your convinience, you can use the 🔎 (Zoom Image) button to zoom the image for a closer look, aiding in more accurate feedback.
 - This action will save your inputs and load the next image for review.
-
-<div>
-    <img src="{adjusting_sliders}" alt="Adjusting Sliders" style="width: {width}%; height: auto;">
-</div>
 
 
 ### Step 4: Completing the Experiment
 
 - Continue the process of reviewing images and submitting feedback.
-- Once all images have been reviewed, a message will thank you for your participation.
+- Once all images have been reviewed or you have clicked the 🔚 (End experiment) button, a message will thank you for your participation.
 
-<div>
-    <img src="{submit_feedback}" alt="Submit Feedback" style="width: {width}%; height: auto;">
-</div>
 
 ## Video Demonstration
 Watch this video to see the process of tagging images in action.
