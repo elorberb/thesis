@@ -2,7 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/annotation_handling/fast_labeling_workflow" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/annotation_handling/fast_labeling_workflow/detectron2" vcs="Git" />
   </component>
 </project>
