@@ -63,7 +63,6 @@ def display_experiment_sidebar():
 
 # Function to display the questionnaire
 def display_post_questionnaire():
-    print(st.session_state.get("feedback_submitted", False))
     if st.session_state.get("feedback_submitted", False):
         # Display thank you message if feedback has already been submitted
         st.header("Thank You!")
