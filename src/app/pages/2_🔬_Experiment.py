@@ -12,8 +12,11 @@ st.set_page_config(
     page_title="Experiment",
     page_icon="🔬",
 )
+#if participant already added feedback to the post questionnaire page, return
+if st.session_state.get("feedback_submitted", False):
+    switch_page("Post Questionnaire")
 
-if not "user_registered" in st.session_state or not st.session_state.get("user_registered", False):
+if not "participant_registered" in st.session_state or not st.session_state.get("participant_registered", False):
     switch_page("Introduction")
 
 st.markdown(const.hide_streamlit_style, unsafe_allow_html=True)
@@ -25,12 +28,19 @@ if 'started_experiment' not in st.session_state:
     st.session_state.start_time = time.time()  # Initialize start time here
     st.session_state.current_image_path, st.session_state.current_image_number = utils.load_random_image(st.session_state.reviewed_images)
 
+# handle the case where the participant clicked to finish the experiment but returned back to the experiment page
+if 'experiment_finished_not_final' in st.session_state and st.session_state.experiment_finished_not_final:
+    st.session_state.start_time = time.time()
+    del st.session_state.experiment_finished_not_final  # or st.session_state.experiment_finished_not_final = False
+
+
 submit_feedback, clear_percentage, cloudy_percentage, amber_percentage, maturity_level, finish_experiment = st_utils.display_experiment_sidebar()
 
-# if user wants to finish the experiment earlier
+# if participant wants to finish the experiment earlier
 if finish_experiment:
     st.success("Thank you for participating in our experiment.")
     time.sleep(2)
+    st.session_state.experiment_finished_not_final = True
     switch_page("Post Questionnaire")
 
 # Process feedback and load next image
@@ -39,7 +49,7 @@ if submit_feedback:
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     experiment_feedback = {
-        'user_id': st.session_state.user_id,
+        'participant_id': st.session_state.participant_id,
         'timestamp': timestamp,
         'image_path': st.session_state.current_image_path,
         'image_number': st.session_state.current_image_number,
@@ -49,7 +59,6 @@ if submit_feedback:
         'maturity_level': maturity_level, 
         'time_taken_seconds': time_taken,
     }
-    print(experiment_feedback)
     db_utils.save_experiment_feedback(experiment_feedback)
     
     st.session_state.reviewed_images.append(st.session_state.current_image_number)

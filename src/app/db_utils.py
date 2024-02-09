@@ -1,4 +1,3 @@
-import sqlite3
 import constants as const
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -13,10 +12,10 @@ def connect_to_database():
     db = firestore.client()
     return db
 
-def save_user_registration(document):
+def save_participant_registration(document):
     db = connect_to_database()
-    user_id = document.get('user_id')
-    doc_ref = db.collection(const.FIREBASE_PARTICIPANTS_COLLECTION).document(user_id)  # Use a unique identifier if available
+    participant_id = document.get('participant_id')
+    doc_ref = db.collection(const.FIREBASE_PARTICIPANTS_COLLECTION).document(participant_id)  # Use a unique identifier if available
     doc_ref.set(document)
     pp.pprint(f'Participant = {document} registration saved successfully to {const.FIREBASE_PARTICIPANTS_COLLECTION} collection.')
 

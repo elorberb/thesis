@@ -90,7 +90,7 @@ The experiment interface is divided into two main sections:
     <img src="{image_display_area}" alt="Image Display Area" style="width: {width}%; height: auto;">
 </div>
 
-### 2. User Feedback Sliders Explained
+### 2. Participant Feedback Sliders Explained
 
 #### Maturity Stage Slider:
 - This slider allows you to estimate the maturity stage of the cannabis flower. The scale ranges from "Early Development" to "Over Maturity."
@@ -119,7 +119,7 @@ Each type of trichome corresponds to a stage of maturity:
 
 - **🔎 (Zoom Image) Button**: Click to zoom the image for a closer look, aiding in more precise feedback.
 
-- **🔚 (End Experiment) Button**: Ends the experiment early. You can click this if you need to exit the experiment before reviewing all the images. However, we encourage all participants to complete the assessment of all images provided
+- **⏸️ (Pause/End Experiment) Button**: Pause or Ends the experiment early. You can click this if you want to pause the experiment or to exit the experiment before reviewing all the images. We encourage all participants to complete the assessment of all images provided.
 
 ## Flow of Reviewing Images
 
@@ -135,14 +135,14 @@ Each type of trichome corresponds to a stage of maturity:
 ### Step 3: Submitting Your Feedback
 
 - After adjusting the sliders, click on the ➡️ (Next image) button to submit your feedback.
-- For your convinience, you can use the 🔎 (Zoom Image) button to zoom the image for a closer look, aiding in more accurate feedback.
-- This action will save your inputs and load the next image for review.
+- For your convenience, you can use the 🔎 (Zoom Image) button to zoom the image for a closer look, aiding in more accurate feedback.
+- - If you would like to take a pause, you can use the ⏸️ button to take a break, this button will move you to the post questionnaire page, and when you are ready you can click the '🔬 Experiment' page on the left and return to the experiment.
 
 
 ### Step 4: Completing the Experiment
 
 - Continue the process of reviewing images and submitting feedback.
-- Once all images have been reviewed or you have clicked the 🔚 (End experiment) button, a message will thank you for your participation.
+- Once all images have been reviewed or you have clicked the ⏸️ (Pause/End experiment) button, a message will thank you for your participation.
 
 
 ## Video Demonstration
@@ -191,14 +191,11 @@ def slider_html(min_val: int, max_val: int) -> str:
     <div style="width: 100%; height: 20px; background: linear-gradient(to right, grey {min_val}%, white {min_val}% {max_val}%, orange {max_val}%);"></div>
     """
 
-# Define the cultivation week options
-cultivation_weeks = ['4-6 weeks', '6-8 weeks', '8-10 weeks', '10 weeks+']
-
 # ---------- Post-questionnaire page constants ----------
 
 education_options = [
+'No Education',
 'High School',
-'Associate Degree',
 'Bachelor’s Degree',
 'Master’s Degree',
 'Doctorate or Higher',

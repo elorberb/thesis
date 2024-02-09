@@ -17,9 +17,9 @@ st.markdown(const.intro_text)
 st_utils.setup_intro_page()
 st_utils.display_sidebar()
 
-with st.form("user_info_form"):
-    user_id = str(uuid.uuid4())
-    user_name = st.text_input("Full Name:", placeholder="Please enter your full name")
+with st.form("participant_info_form"):
+    participant_id = str(uuid.uuid4())
+    participant_name = st.text_input("Full Name:", placeholder="Please enter your full name")
     email = st.text_input("Email:", placeholder="Please enter your email address")
     age = st.number_input('Age', min_value=18, max_value=100)
     gender = st.selectbox('Gender', ['Female', 'Male', 'Other', 'Prefer not to say'])
@@ -30,26 +30,26 @@ with st.form("user_info_form"):
     submitted = st.form_submit_button("Submit")
     if submitted:
         # validate all fields
-        if not all([user_name, email, age, gender, company, entity_type, consent]):
+        if not all([participant_name, email, age, gender, company, entity_type, consent]):
             st.error("Please fill out all fields and agree to participate.")
         # Validate the email format using a regular expression
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             st.error("Please enter a valid email address.")
         else:
-            st.session_state.user_name = user_name
-            st.session_state.user_id = user_id
+            st.session_state.participant_name = participant_name
+            st.session_state.participant_id = participant_id
             participant_info = {
-                'user_id': user_id,
-                'user_name': user_name,
+                'participant_id': participant_id,
+                'participant_name': participant_name,
                 'email': email, 
                 'age': age,
                 'gender': gender,
                 'company': company,
                 'entity_type': entity_type,
             }
-            db_utils.save_user_registration(participant_info)
+            db_utils.save_participant_registration(participant_info)
             st.session_state.switch_to_tutorial_page = True
-            st.session_state.user_registered = True
+            st.session_state.participant_registered = True
             st.success("Thank you for participating!")
             time.sleep(2)
             switch_page("Experiment Tutorial")

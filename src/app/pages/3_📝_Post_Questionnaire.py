@@ -7,7 +7,7 @@ st.set_page_config(
     page_icon="📝",
 )
 
-if not "user_registered" in st.session_state or not st.session_state.get("user_registered", False):
+if not "participant_registered" in st.session_state or not st.session_state.get("participant_registered", False):
     switch_page("Introduction")
 
 st_utils.display_sidebar()
