@@ -17,4 +17,4 @@ RUN pip3 install -r requirements.txt
 COPY . .
 
 # Command to run the Streamlit app
-CMD ["streamlit", "run", "👋_Introduction.py", "--server.port", "8080"]
+CMD ["streamlit", "run", "☘️_Introduction.py", "--server.port", "8080"]
