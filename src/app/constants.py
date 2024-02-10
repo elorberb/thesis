@@ -2,7 +2,7 @@ import utils
 
 #  ---------- General constants ---------- 
 contact_email = "etaylor@post.bgu.ac.il"
-tutorial_video_path = "resources/images/exp_tutorial.mp4"
+tutorial_video_path = "resources/tutorial_video.mp4"
 BUCKET_NAME = "trichome_classification_study_storage"
 
 #  ---------- Firebase constants ----------
