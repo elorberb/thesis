@@ -12,6 +12,8 @@ PROCESSED_IMAGE_DIR = ROOT_IMAGES_DIR / 'processed_images'
 PROCESSED_CANNABIS_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'cannabis_patches'
 PROCESSED_TRICHOME_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'trichome_patches'
 
+# csv of good quality images
+GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images_testings.csv')
 
 # Define specific paths for weeks and zoom types
 WEEKS_DIR = {
@@ -33,19 +35,33 @@ ZOOM_TYPES_DIR = {
     '3xfs': '3x_focus_stacking',
 }
 
-# Example of using a function to get a specific path
+# --- METADATA CONFIGURATION ---
+CANNABIS_PATCHES_METADATA_FILE = 'metadata/cannabis_patches_metadata.csv'
+ANNOTATIONS_TRACKING_METADATA_FILE = 'metadata/annotations_tracking.csv'
+CANNABIS_PATCH_SIZE = 512
 
+# --- DATABASE CONFIGURATION ---
+EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
+
+# Example of using a function to get a specific path
 def get_raw_image_path(week, zoom_type):
     """Return the path for the raw images of a given week and zoom type."""
-    return RAW_IMAGE_DIR / WEEKS_DIR[week] / ZOOM_TYPES_DIR[zoom_type]
+    week_dir = WEEKS_DIR.get(week, week)  # Get value if week is a key, else use week as is
+    zoom_type_dir = ZOOM_TYPES_DIR.get(zoom_type, zoom_type)  # Get value if zoom_type is a key, else use zoom_type as is
+    return RAW_IMAGE_DIR / week_dir / zoom_type_dir
 
 def get_processed_cannabis_image_path(week, zoom_type):
     """Return the path for the processed cannabis images of a given week and zoom type."""
-    return PROCESSED_CANNABIS_PATCHES_DIR / WEEKS_DIR[week] / ZOOM_TYPES_DIR[zoom_type]
+    week_dir = WEEKS_DIR.get(week, week)
+    zoom_type_dir = ZOOM_TYPES_DIR.get(zoom_type, zoom_type)
+    return PROCESSED_CANNABIS_PATCHES_DIR / week_dir / zoom_type_dir
 
 def get_processed_trichome_image_path(week, zoom_type):
     """Return the path for the processed trichome images of a given week and zoom type."""
-    return PROCESSED_TRICHOME_PATCHES_DIR / WEEKS_DIR[week] / ZOOM_TYPES_DIR[zoom_type]
+    week_dir = WEEKS_DIR.get(week, week)
+    zoom_type_dir = ZOOM_TYPES_DIR.get(zoom_type, zoom_type)
+    return PROCESSED_TRICHOME_PATCHES_DIR / week_dir / zoom_type_dir
+
 
 def find_image_details(image_number, base_path=RAW_IMAGE_DIR):
     """

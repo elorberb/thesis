@@ -17,6 +17,9 @@
 # Env variables
 .env
 
+# all . files
+.*
+
 # Checkpoints and images folders
 /checkpoints
 /segments
@@ -25,6 +28,10 @@
 *.pyc
 
 # Ignore Python cache directories
-__pycache__/
+*__pycache__/
+
+# metadata folder
+/metadata
 
 
+/src/app/creds/

@@ -193,36 +193,40 @@ class SegmentsAIHandler:
         )
         
     
-    def copy_dataset_contents(self, source_dataset_id, destination_dataset_id, only_patches=False, verbose=False):
+    def copy_dataset_contents(self, source_dataset_id, destination_dataset_id, label_status='REVIEWED', only_patches=False, verbose=False):
         """
-        Copies all samples and their annotations from one dataset to another, with an option to copy only patch images.
+        Copies all samples and their annotations from one dataset to another based on label status.
 
         Parameters:
         - source_dataset_id: Identifier for the source dataset.
         - destination_dataset_id: Identifier for the destination dataset.
+        - label_status: The status of the labels to be copied (e.g., 'REVIEWED').
         - only_patches: If True, copy only patch images. If False, copy all images.
         - verbose: Flag to enable verbose logging of the process.
         """
         source_samples = self.client.get_samples(source_dataset_id)
 
         for index, sample in enumerate(source_samples):
-            self.copy_sample(sample, destination_dataset_id, index, only_patches, verbose)
+            self.copy_sample(sample, destination_dataset_id, label_status, index, only_patches, verbose)
 
 
-    def copy_sample(self, sample, destination_dataset_id, index, only_patches, verbose):
+    def copy_sample(self, sample, destination_dataset_id, label_status, index, only_patches, verbose):
         # Filter out raw images if only copying patches
         if only_patches and (sample.name.endswith('.JPG') or '_p' not in sample.name):
             if verbose:
                 print(f"Skipping raw image {sample.name}")
             return
 
-        # Copy an individual sample and its annotations to another dataset
-        if verbose:
-            print(f"Processing sample {index + 1}: {sample.name}")
-
+        # Fetch the label for the sample
         label = self.client.get_label(sample.uuid)
-        if label:
+        
+        # Check if the label status matches the desired status
+        if label and label.label_status == label_status:
+            if verbose:
+                print(f"Processing sample {index + 1}: {sample.name}")
             self.copy_sample_and_label(sample, label, destination_dataset_id, verbose)
+        elif verbose:
+            print(f"Skipping sample {sample.name} due to label status mismatch")
 
 
     def copy_sample_and_label(self, sample, label, destination_dataset_id, verbose):
@@ -230,10 +234,37 @@ class SegmentsAIHandler:
         new_sample = self.client.add_sample(
             destination_dataset_id, sample.name, sample.attributes
         )
-        self.client.add_label(new_sample.uuid, "ground-truth", label.attributes)
+        self.client.add_label(new_sample.uuid, "ground-truth", label.attributes, label_status=label.label_status)
 
         if verbose:
             if new_sample:
                 print(f"  - Copied sample {sample.name} and its label.")
             else:
                 print(f"  - Failed to copy sample {sample.name}.")
+                
+                
+    def decrement_label_category_ids(self, dataset_id, labelset_name="ground-truth"):
+        samples = self.client.get_samples(dataset_id)
+
+        for sample in samples:
+            label = self.client.get_label(sample.uuid, labelset_name)
+
+            if label and hasattr(label.attributes, 'annotations'):
+                # Convert label.attributes to a dictionary if necessary
+                if not isinstance(label.attributes, dict):
+                    attributes_dict = label.attributes.dict()
+                else:
+                    attributes_dict = label.attributes
+
+                # Decrement each label category ID by one
+                for annotation in attributes_dict['annotations']:
+                    if 'category_id' in annotation and annotation['category_id'] > 0:
+                        annotation['category_id'] -= 1
+
+                # Update the label
+                self.client.update_label(sample_uuid=sample.uuid, labelset=labelset_name, attributes=attributes_dict)
+
+        print("Label category IDs have been decremented.")
+
+
+
