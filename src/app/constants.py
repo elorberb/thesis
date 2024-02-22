@@ -2,9 +2,10 @@ import utils
 
 #  ---------- General constants ---------- 
 contact_email = "etaylor@post.bgu.ac.il"
-tutorial_video_path = "resources/tutorial_video.mp4"
+tutorial_video_URL = "https://storage.googleapis.com/trichome_classification_study_storage/resources/tutorial_video.mp4"
 BUCKET_NAME = "trichome_classification_study_storage"
-
+etay_image = "resources/images/etay.jpg"
+guy_image = "resources/images/guy_shani_image.jpg"
 #  ---------- Firebase constants ----------
 FIREBASE_CRED_PATH = "creds/trichome-classification-study-firebase-adminsdk-bon71-83313db895.json"
 FIREBASE_PARTICIPANTS_COLLECTION = "participants"
@@ -38,11 +39,18 @@ two_buttons_css = """
 """
 
 #  ---------- Intro page constants ---------- 
-intro_text = '''
+intro_first_part_text = '''
 # Trichome Classification Study
 
 This experiment aims to classify cannabis trichomes into clear, cloudy, and amber categories based on your observations, as well as to assess the maturity level of the cannabis flower. Your input is valuable and will contribute to the development of a more advanced algorithm for both classification and maturity assessment. We deeply appreciate your full cooperation and the time you invest in providing detailed feedback. Your insights are crucial to the success of this project and our ability to better understand the maturation process of cannabis flowers.
 
+## 🧑‍🔬 Who Are We?
+
+This study is conducted by Etay Lorberboym, a master's student in the [Department of Software and Information Systems Engineering](https://in.bgu.ac.il/en/engn/sise/ennew/Pages/default.aspx) at Ben Gurion University, alongside [Prof. Guy Shani](https://cris.bgu.ac.il/en/persons/guy-shani).
+
+'''
+
+intro_second_part_text = '''
 ## 📋 Pre-Questionnaire
 Please answer the following questions before participating:
 
@@ -57,9 +65,8 @@ Please answer the following questions before participating:
 1. ✅ Check the box to indicate your consent to participate in the study.
 2. 🚀 Click the "Submit" button to begin.
 
-We appreciate your contribution to this research.
+Thank you for your time and involvement in this research. Your contribution is invaluable.
 
-Thank you for your time and involvement!
 '''
 
 #  ---------- Tutorial page constants ---------- 

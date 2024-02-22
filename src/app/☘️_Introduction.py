@@ -13,7 +13,16 @@ st.set_page_config(
 )
 
 
-st.markdown(const.intro_text)
+st.markdown(const.intro_first_part_text)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.image(const.etay_image, width=200, caption="Etay Lorberboym", use_column_width=False)
+
+with col2:
+    st.image(const.guy_image, width=150, caption="Prof. Guy Shani", use_column_width=False)
+
+st.markdown(const.intro_second_part_text)
 st_utils.setup_intro_page()
 st_utils.display_sidebar()
 
