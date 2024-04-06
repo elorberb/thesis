@@ -27,11 +27,18 @@
 # Ignore Python compiled files
 *.pyc
 
+# Ignore checkpoint files
+*.pth
+*.pt
+
 # Ignore Python cache directories
 *__pycache__/
 
 # metadata folder
 /metadata
 
+# Experiement app creds
+trichome-classification-study.json
 
-/src/app/creds/
+# App video tutorial
+exp_tutorial.mp4

@@ -13,7 +13,7 @@ PROCESSED_CANNABIS_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'cannabis_patches'
 PROCESSED_TRICHOME_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'trichome_patches'
 
 # csv of good quality images
-GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images_testings.csv')
+GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images.csv')
 
 # Define specific paths for weeks and zoom types
 WEEKS_DIR = {
@@ -85,6 +85,35 @@ def find_image_details(image_number, base_path=RAW_IMAGE_DIR):
                         return week, zoom_type
     return None, None
 
+def get_image_path(image_name, base_path=RAW_IMAGE_DIR, processed_type=None):
+    """
+    Return the path for an image given its name and optional processing type.
+
+    Parameters:
+    image_name (str): The name of the image (e.g., 'IMG_2242').
+    base_path (str): The base path where images are stored. Defaults to RAW_IMAGE_DIR.
+    processed_type (str): The type of processed image ('cannabis' or 'trichome') if applicable.
+
+    Returns:
+    str: The path to the image, if found, otherwise None.
+    """
+    # Find the week and zoom type for the image
+    week, zoom_type = find_image_details(image_name, base_path)
+    
+    if week is not None and zoom_type is not None:
+        week_dir = WEEKS_DIR.get(week, week)
+        zoom_type_dir = ZOOM_TYPES_DIR.get(zoom_type, zoom_type)
+        
+        if processed_type == 'cannabis':
+            return os.path.join(PROCESSED_CANNABIS_PATCHES_DIR, week_dir, zoom_type_dir, f"{image_name}.JPG")
+        elif processed_type == 'trichome':
+            return os.path.join(PROCESSED_TRICHOME_PATCHES_DIR, week_dir, zoom_type_dir, f"{image_name}.JPG")
+        else:
+            # For raw images or if no processed_type is specified
+            return os.path.join(base_path, week_dir, zoom_type_dir, f"{image_name}.JPG")
+    
+    return None
+
 
 if __name__ == "__main__":
     # Example usage:
@@ -104,3 +133,7 @@ if __name__ == "__main__":
         print(f"Week: {week}, Zoom Type: {zoom_type}")
     else:
         print("Image not found.")
+        
+    # Example of using get_image_path
+    image_path = get_image_path(image_number)
+    print(f"Path for image {image_number}: {image_path}")
