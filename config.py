@@ -43,6 +43,9 @@ CANNABIS_PATCH_SIZE = 512
 # --- DATABASE CONFIGURATION ---
 EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
 
+# --- SEGMENTS FOLDER PATH ---
+SEGMENTS_FOLDER = '/home/etaylor/code_projects/thesis/segments'
+
 # Example of using a function to get a specific path
 def get_raw_image_path(week, zoom_type):
     """Return the path for the raw images of a given week and zoom type."""

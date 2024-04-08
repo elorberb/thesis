@@ -42,3 +42,7 @@ trichome-classification-study.json
 
 # App video tutorial
 exp_tutorial.mp4
+
+# YOLO runs
+runs/
+yaml_files/

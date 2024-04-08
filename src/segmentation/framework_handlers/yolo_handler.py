@@ -2,6 +2,11 @@ import os
 import shutil
 import random
 from pathlib import Path
+from IPython import display as ipydisplay
+import ultralytics
+from ultralytics.data.converter import convert_coco
+import config
+import shutil
 
 
 def split_data(image_dir, label_dir, train_percentage, output_base_dir):
@@ -91,3 +96,60 @@ def create_yaml(dataset_path, yaml_path):
 
     with Path(yaml_path).open('w') as f:
         f.write(yaml_content)
+        
+        
+def validate_version_and_gpu():
+    """
+    Clears the current IPython output and checks the ultralytics package version and GPU availability.
+    """
+    # Clear the current IPython output to ensure the display is not cluttered
+    ipydisplay.clear_output(wait=True)
+    
+    # Perform the checks using ultralytics package
+    ultralytics.checks()
+    
+
+def prepare_data_for_yolo(annotations_folder_name, dataset_version, saving_yaml_path, train_percentage=0.8):
+    """
+    Converts COCO annotations to YOLO format, splits the data into training and validation sets,
+    and creates a YAML file for training configuration.
+
+    :param segments_base_folder: Base folder path for segments.
+    :param annotations_folder_name: Folder name containing COCO annotations.
+    :param images_folder_name: Folder name containing images.
+    :param yaml_path: Path to save the YAML configuration file.
+    :param train_percentage: Percentage of data to use for training (default is 0.8).
+    """
+    # Construct paths
+    annotations_dir = f"{config.SEGMENTS_FOLDER}/{annotations_folder_name}/annotations"
+    output_dir = f"{annotations_dir}/yolo"
+    image_dir = f"{config.SEGMENTS_FOLDER}/{annotations_folder_name}/{dataset_version}"
+    label_dir = f"{output_dir}/labels/export_coco-instance_{annotations_folder_name}_{dataset_version}"
+    organized_dataset_path = f"{output_dir}_split"
+
+    # Convert annotations from COCO to YOLO format
+    convert_coco(
+        labels_dir=annotations_dir,
+        save_dir=output_dir,
+        use_segments=False,
+    )
+
+    # Split data into training and validation sets
+    split_data(
+        image_dir=image_dir,
+        label_dir=label_dir,
+        train_percentage=train_percentage,
+        output_base_dir=organized_dataset_path
+    )
+    
+    # Create YAML file for YOLO training
+    saving_yaml_file_path = os.path.join(saving_yaml_path, f"{annotations_folder_name}_{dataset_version}_data.yaml")
+    create_yaml(organized_dataset_path, saving_yaml_file_path)
+    
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+        print(f"The folder {output_dir} has been deleted.")
+    else:
+        print(f"The folder {output_dir} does not exist.")
+        
+    return saving_yaml_file_path
