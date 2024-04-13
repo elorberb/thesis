@@ -13,7 +13,7 @@ PROCESSED_CANNABIS_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'cannabis_patches'
 PROCESSED_TRICHOME_PATCHES_DIR = PROCESSED_IMAGE_DIR / 'trichome_patches'
 
 # csv of good quality images
-GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images_testings.csv')
+GOOD_QUALITY_IMAGES_CSV = Path('/home/etaylor/code_projects/thesis/metadata/good_quality_images.csv')
 
 # Define specific paths for weeks and zoom types
 WEEKS_DIR = {
