@@ -34,8 +34,6 @@
 # Ignore Python cache directories
 *__pycache__/
 
-# metadata folder
-/metadata
 
 # Experiement app creds
 trichome-classification-study.json
