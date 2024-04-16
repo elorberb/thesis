@@ -1,5 +1,7 @@
 from pathlib import Path
 import os
+from datetime import datetime
+import csv
 
 # --- IMAGES CONFIGURATION ---
 
@@ -117,6 +119,42 @@ def get_image_path(image_name, base_path=RAW_IMAGE_DIR, processed_type=None):
     
     return None
 
+# Metadata handling functions
+def add_annotation_tracking_entry(image_number, annotator, csv_path=ANNOTATIONS_TRACKING_METADATA_FILE):
+    # Create a timestamp for the entry
+    time_stamp = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
+    # Set the done flag to False
+    done_flag = 'False'
+    # New entry to add
+    new_entry = [image_number, annotator, time_stamp, done_flag]
+    
+    # Open the CSV file and append the new entry
+    with open(csv_path, mode='a', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(new_entry)
+        
+        
+def update_annotation_status(image_number, csv_path=ANNOTATIONS_TRACKING_METADATA_FILE):
+    # Create a timestamp for the update
+    time_stamp = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
+    # Temporary list to hold updated rows
+    updated_rows = []
+
+    # Read the CSV, update the necessary row, and store the updates
+    with open(csv_path, mode='r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            if row[0] == image_number:
+                # Update the 'done' flag to True and the time
+                row[2] = time_stamp
+                row[3] = 'True'
+            updated_rows.append(row)
+
+    # Write the updated content back to the CSV
+    with open(csv_path, mode='w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerows(updated_rows)
+
 
 if __name__ == "__main__":
     # Example usage:
@@ -140,3 +178,10 @@ if __name__ == "__main__":
     # Example of using get_image_path
     image_path = get_image_path(image_number)
     print(f"Path for image {image_number}: {image_path}")
+    
+    # METADATA annotation handling function Usage example:
+    # To add a new image for annotation
+    add_annotation_tracking_entry('IMG_test', 'etaylor')
+
+    # To update an existing image as annotated
+    update_annotation_status('IMG_test')

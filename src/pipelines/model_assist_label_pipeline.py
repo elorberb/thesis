@@ -8,7 +8,6 @@ Model Assist Label Pipeline Stages:
     Creates a release and uploads predictions as annotations to the dataset.
 """
 
-from extra_deps.fast_labeling_workflow.fast_labeling_utils import train_model
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
 from segments import SegmentsDataset
 import config
@@ -16,14 +15,9 @@ import config
 segmentsai_handler = SegmentsAIHandler()
 
 
-
 def train_segmentation_model(train_dataset_name):
-    # Initialize a dataset from the release file
-    release = segmentsai_handler.client.get_release(train_dataset_name, "v0.2")
-    dataset = SegmentsDataset(release)
-
-    # Train an instance segmentation model on the dataset
-    model = train_model(dataset)
+    #TODO: implement this based on the best model achieved for the segmentation/detection task
+    model = None
     return model
 
 

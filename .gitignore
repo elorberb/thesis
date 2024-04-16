@@ -26,6 +26,7 @@
 
 # Ignore Python compiled files
 *.pyc
+segmentsai_handler.cpython-39.pyc
 
 # Ignore checkpoint files
 *.pth
@@ -46,4 +47,3 @@ runs/
 yaml_files/
 
 # added files
-
