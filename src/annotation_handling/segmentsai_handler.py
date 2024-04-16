@@ -265,6 +265,3 @@ class SegmentsAIHandler:
                 self.client.update_label(sample_uuid=sample.uuid, labelset=labelset_name, attributes=attributes_dict)
 
         print("Label category IDs have been decremented.")
-
-
-
