@@ -4,6 +4,7 @@ from segments.utils import bitmap2file
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import config
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -265,3 +266,34 @@ class SegmentsAIHandler:
                 self.client.update_label(sample_uuid=sample.uuid, labelset=labelset_name, attributes=attributes_dict)
 
         print("Label category IDs have been decremented.")
+        
+    
+    def get_trichome_distribution(self, dataset_identifier):
+        """
+        Fetches samples from a given dataset and calculates the distribution of trichome annotations.
+        
+        Args:
+        dataset_identifier (str): The unique identifier for the dataset.
+
+        Returns:
+        dict: A dictionary with counts of each trichome type.
+        """
+        # Fetch the samples
+        samples = self.client.get_samples(dataset_identifier)
+
+        # Initialize counters for each trichome type
+        distribution = {
+            'clear': 0,
+            'cloudy': 0,
+            'amber': 0
+        }
+
+        # Fetch labels for each sample and count annotations
+        for sample in samples:
+            label = self.client.get_label(sample.uuid)
+            for annotation in label.attributes.annotations:
+                trichome_type = config.ANNOTATIONS_CLASS_MAPPINGS.get(annotation.category_id, 0)
+                if trichome_type in distribution:
+                    distribution[trichome_type] += 1
+
+        return distribution

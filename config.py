@@ -37,6 +37,13 @@ ZOOM_TYPES_DIR = {
     '3xfs': '3x_focus_stacking',
 }
 
+ANNOTATIONS_CLASS_MAPPINGS = {
+            0: 'trichome',
+            1: 'clear',
+            2: 'cloudy',
+            3: 'amber'
+        }
+
 # --- METADATA CONFIGURATION ---
 CANNABIS_PATCHES_METADATA_FILE = 'metadata/cannabis_patches_metadata.csv'
 ANNOTATIONS_TRACKING_METADATA_FILE = 'metadata/annotations_tracking.csv'
