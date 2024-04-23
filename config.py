@@ -164,31 +164,44 @@ def update_annotation_status(image_number, csv_path=ANNOTATIONS_TRACKING_METADAT
 
 
 if __name__ == "__main__":
-    # Example usage:
-    raw_image_path = get_raw_image_path('week9', '1xr')
-    print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
+    # # Example usage:
+    # raw_image_path = get_raw_image_path('week9', '1xr')
+    # print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
 
-    processed_cannabis_image_path = get_processed_cannabis_image_path('week9', '3xr')
-    print(f"Path for processed cannabis images for week 2, 1x regular: {processed_cannabis_image_path}")
+    # processed_cannabis_image_path = get_processed_cannabis_image_path('week9', '3xr')
+    # print(f"Path for processed cannabis images for week 2, 1x regular: {processed_cannabis_image_path}")
 
-    processed_trichome_image_path = get_processed_trichome_image_path('week9', '3xr')
-    print(f"Path for processed trichome images for week 2, 1x regular: {processed_trichome_image_path}")
+    # processed_trichome_image_path = get_processed_trichome_image_path('week9', '3xr')
+    # print(f"Path for processed trichome images for week 2, 1x regular: {processed_trichome_image_path}")
     
-    # Example usage for find_image_details
-    image_number = "IMG_9969"
-    week, zoom_type = find_image_details(image_number)
-    if week and zoom_type:
-        print(f"Week: {week}, Zoom Type: {zoom_type}")
-    else:
-        print("Image not found.")
+    # # Example usage for find_image_details
+    # image_number = "IMG_9969"
+    # week, zoom_type = find_image_details(image_number)
+    # if week and zoom_type:
+    #     print(f"Week: {week}, Zoom Type: {zoom_type}")
+    # else:
+    #     print("Image not found.")
         
-    # Example of using get_image_path
-    image_path = get_image_path(image_number)
-    print(f"Path for image {image_number}: {image_path}")
+    # # Example of using get_image_path
+    # image_path = get_image_path(image_number)
+    # print(f"Path for image {image_number}: {image_path}")
     
-    # METADATA annotation handling function Usage example:
-    # To add a new image for annotation
-    add_annotation_tracking_entry('IMG_test', 'etaylor')
+    # # METADATA annotation handling function Usage example:
+    # # To add a new image for annotation
+    # add_annotation_tracking_entry('IMG_test', 'etaylor')
 
     # To update an existing image as annotated
-    update_annotation_status('IMG_test')
+    # print("Updating annotation status for images...")
+    # update_annotation_status('IMG_1827')
+    # update_annotation_status('IMG_0597')
+    # update_annotation_status('IMG_0058')
+    # update_annotation_status('IMG_1784')
+    # update_annotation_status('IMG_0572')
+    # update_annotation_status('IMG_0562')
+    # update_annotation_status('IMG_0019')
+    # update_annotation_status('IMG_0045')
+    # update_annotation_status('IMG_0612')
+    # update_annotation_status('IMG_1186')
+    # update_annotation_status('IMG_2157')
+    # update_annotation_status('IMG_2134')
+    # print("Annotation status updated successfully!")

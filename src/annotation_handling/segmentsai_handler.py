@@ -270,7 +270,7 @@ class SegmentsAIHandler:
     
     def get_trichome_distribution(self, dataset_identifier):
         """
-        Fetches samples from a given dataset and calculates the distribution of trichome annotations.
+        Fetches samples from a given dataset image number or full dataset identifier and calculates the distribution of trichome annotations.
         
         Args:
         dataset_identifier (str): The unique identifier for the dataset.
@@ -278,6 +278,13 @@ class SegmentsAIHandler:
         Returns:
         dict: A dictionary with counts of each trichome type.
         """
+        # if only the image number was provided, build the full dataset identifier
+        if "etaylor" not in dataset_identifier:
+            full_week, full_zoom = config.find_image_details(dataset_identifier)
+            full_week = full_week.split("_")[0]
+            zoom_type = full_zoom.split("_")[0] + "r"
+            dataset_identifier = f"etaylor/cannabis_patches_{config.WEEKS_DIR[full_week]}_{config.ZOOM_TYPES_DIR[zoom_type]}_{dataset_identifier}"
+            
         # Fetch the samples
         samples = self.client.get_samples(dataset_identifier)
 

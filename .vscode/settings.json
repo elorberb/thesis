@@ -5,7 +5,8 @@
         "dotenv",
         "Rohama",
         "SEGMENTSAI",
-        "trichomes"
+        "trichomes",
+        "YOLO"
     ], 
     "python.envFile": "${workspaceFolder}/.env",
     "jupyter.notebookFileRoot": "${workspaceFolder}",

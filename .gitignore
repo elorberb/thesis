@@ -19,6 +19,7 @@
 
 # all . files
 .*
+.vscode/
 
 # Checkpoints and images folders
 /checkpoints
@@ -47,3 +48,4 @@ runs/
 yaml_files/
 
 # added files
+settings.json

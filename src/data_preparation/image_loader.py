@@ -18,37 +18,42 @@ def extract_file_name(file_path):
     return file_name
 
 
-def read_images_and_names(dir_path, func=None, verbose=False):
+def read_images(input_path_or_list, func=None, verbose=False):
     """
-    Read all images and their corresponding names in a directory and return them as a list of tuples.
-    Each tuple in the list contains a NumPy array representing the image and a string representing the name of the image.
+    Read images from either a directory path or a list of image paths and return them as a dictionary.
+    The dictionary's keys are the names of the images, and the values are the NumPy arrays representing the images.
 
     Parameters:
-    - dir_path (str): Path to the directory containing images.
+    - input_path_or_list (str or list): A string path to the directory containing images or a list of image paths.
     - func (function, optional): A function to apply to each image after reading.
     - verbose (bool): Flag to print information about the ongoing operations. Defaults to False.
 
     Returns:
-    - list of tuples: A list containing tuples of images and their corresponding names.
+    - dict: A dictionary with image names as keys and image data as values.
     """
-    images_and_names = []
+    images = {}
 
-    for filename in os.listdir(dir_path):
-        # Check if file is an image
-        if filename.endswith((".png", ".jpg", ".PNG", ".JPG", ".jpeg")):
-            # Read image and store as NumPy array
-            file_path = os.path.join(dir_path, filename)
-            image = cv2.imread(file_path)
+    # Determine if input is a directory path or a list of paths
+    if isinstance(input_path_or_list, str):
+        # Assume it is a directory path
+        image_paths = [os.path.join(input_path_or_list, filename) for filename in os.listdir(input_path_or_list)
+                    if filename.endswith((".png", ".jpg", ".PNG", ".JPG", ".jpeg"))]
+    elif isinstance(input_path_or_list, list):
+        # Assume it is a list of file paths
+        image_paths = input_path_or_list
+    else:
+        raise ValueError("Input must be a directory path or a list of image paths.")
 
-            # If a function is provided, apply it to the image
-            if func is not None:
-                image = func(image)
+    for file_path in image_paths:
+        filename = os.path.basename(file_path)
+        image = cv2.imread(file_path)
 
-            image_name = extract_file_name(file_path)
-            images_and_names.append((image, image_name))
+        if func is not None:
+            image = func(image)
 
-            # If verbose is True, print the image being processed
-            if verbose:
-                print(f"Processed image: {filename}")
+        images[filename] = image
 
-    return images_and_names
+        if verbose:
+            print(f"Processed image: {filename}")
+
+    return images
