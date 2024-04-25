@@ -55,6 +55,8 @@ EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
 # --- SEGMENTS FOLDER PATH ---
 SEGMENTS_FOLDER = '/home/etaylor/code_projects/thesis/segments'
 
+DATETIME_STR_FORMAT = '%d-%m-%Y_%H-%M-%S'
+
 # Example of using a function to get a specific path
 def get_raw_image_path(week, zoom_type):
     """Return the path for the raw images of a given week and zoom type."""
@@ -129,7 +131,7 @@ def get_image_path(image_name, base_path=RAW_IMAGE_DIR, processed_type=None):
 # Metadata handling functions
 def add_annotation_tracking_entry(image_number, annotator, csv_path=ANNOTATIONS_TRACKING_METADATA_FILE):
     # Create a timestamp for the entry
-    time_stamp = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
+    time_stamp = datetime.now().strftime(DATETIME_STR_FORMAT)
     # Set the done flag to False
     done_flag = 'False'
     # New entry to add
@@ -163,7 +165,7 @@ def update_annotation_status(image_number, csv_path=ANNOTATIONS_TRACKING_METADAT
         csv_writer.writerows(updated_rows)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # # Example usage:
     # raw_image_path = get_raw_image_path('week9', '1xr')
     # print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
