@@ -57,6 +57,7 @@ SEGMENTS_FOLDER = '/home/etaylor/code_projects/thesis/segments'
 
 DATETIME_STR_FORMAT = '%d-%m-%Y_%H-%M-%S'
 
+
 # Example of using a function to get a specific path
 def get_raw_image_path(week, zoom_type):
     """Return the path for the raw images of a given week and zoom type."""
@@ -64,11 +65,13 @@ def get_raw_image_path(week, zoom_type):
     zoom_type_dir = ZOOM_TYPES_DIR.get(zoom_type, zoom_type)  # Get value if zoom_type is a key, else use zoom_type as is
     return RAW_IMAGE_DIR / week_dir / zoom_type_dir
 
+
 def get_processed_cannabis_image_path(week, zoom_type):
     """Return the path for the processed cannabis images of a given week and zoom type."""
     week_dir = WEEKS_DIR.get(week, week)
     zoom_type_dir = ZOOM_TYPES_DIR.get(zoom_type, zoom_type)
     return PROCESSED_CANNABIS_PATCHES_DIR / week_dir / zoom_type_dir
+
 
 def get_processed_trichome_image_path(week, zoom_type):
     """Return the path for the processed trichome images of a given week and zoom type."""
@@ -194,16 +197,5 @@ def update_annotation_status(image_number, csv_path=ANNOTATIONS_TRACKING_METADAT
 
     # To update an existing image as annotated
     # print("Updating annotation status for images...")
-    # update_annotation_status('IMG_1827')
-    # update_annotation_status('IMG_0597')
-    # update_annotation_status('IMG_0058')
-    # update_annotation_status('IMG_1784')
-    # update_annotation_status('IMG_0572')
-    # update_annotation_status('IMG_0562')
-    # update_annotation_status('IMG_0019')
-    # update_annotation_status('IMG_0045')
-    # update_annotation_status('IMG_0612')
-    # update_annotation_status('IMG_1186')
-    # update_annotation_status('IMG_2157')
-    # update_annotation_status('IMG_2134')
+    # update_annotation_status('IMG_1096')
     # print("Annotation status updated successfully!")

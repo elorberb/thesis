@@ -15,6 +15,9 @@ class SegmentsAIHandler:
         api_key = os.getenv("SEGMENTS_API_KEY")
         self.client = SegmentsClient(api_key)
         
+    @staticmethod
+    def get_segments_dataset_identifier(image_number, week, zoom_type="3x_regular"):
+        return f"etaylor/cannabis_patches_{week}_{zoom_type}_{image_number}"
         
 
     def get_dataset_instance(self, dataset_name, version='v0.1'):
@@ -268,23 +271,25 @@ class SegmentsAIHandler:
         print("Label category IDs have been decremented.")
         
     
-    def get_trichome_distribution(self, dataset_identifier):
+    def get_trichome_distribution(self, image_number):
         """
         Fetches samples from a given dataset image number or full dataset identifier and calculates the distribution of trichome annotations.
         
         Args:
-        dataset_identifier (str): The unique identifier for the dataset.
+        image_number (str): The Image number we want to get the dataset in SegmentsAI.
 
         Returns:
         dict: A dictionary with counts of each trichome type.
         """
         # if only the image number was provided, build the full dataset identifier
-        if "etaylor" not in dataset_identifier:
-            full_week, full_zoom = config.find_image_details(dataset_identifier)
+        if "etaylor" not in image_number:
+            full_week, full_zoom = config.find_image_details(image_number)
             full_week = full_week.split("_")[0]
             zoom_type = full_zoom.split("_")[0] + "r"
-            dataset_identifier = f"etaylor/cannabis_patches_{config.WEEKS_DIR[full_week]}_{config.ZOOM_TYPES_DIR[zoom_type]}_{dataset_identifier}"
-            
+            dataset_identifier = self.get_segments_dataset_identifier(image_number,
+                                                                    week=config.WEEKS_DIR[full_week],
+                                                                    zoom_type=config.ZOOM_TYPES_DIR[zoom_type])
+
         # Fetch the samples
         samples = self.client.get_samples(dataset_identifier)
 
