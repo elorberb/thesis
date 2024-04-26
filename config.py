@@ -57,6 +57,10 @@ SEGMENTS_FOLDER = '/home/etaylor/code_projects/thesis/segments'
 
 DATETIME_STR_FORMAT = '%d-%m-%Y_%H-%M-%S'
 
+# ultralytics settings configuration
+ULTRALYTICS_RUNS_DIR = "/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs"
+ULTRALYTICS_WEIGHTS_DIR = "/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/weights"
+ULTRALYTICS_DATASETS_DIR = "/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/datasets"
 
 # Example of using a function to get a specific path
 def get_raw_image_path(week, zoom_type):
