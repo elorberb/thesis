@@ -23,6 +23,42 @@ import pandas as pd
 SEGMENTS_HANDLER = SegmentsAIHandler()
 DETECTRON2_CHECKPOINT_BASE_PATH = "checkpoints/detectron2"
 
+detectron2_detection_models = [
+    "COCO-Detection/fast_rcnn_R_50_FPN_1x",
+    "COCO-Detection/faster_rcnn_R_101_C4_3x",
+    "COCO-Detection/faster_rcnn_R_101_DC5_3x",
+    "COCO-Detection/faster_rcnn_R_101_FPN_3x",
+    "COCO-Detection/faster_rcnn_R_50_C4_1x",
+    "COCO-Detection/faster_rcnn_R_50_C4_3x",
+    "COCO-Detection/faster_rcnn_R_50_DC5_1x",
+    "COCO-Detection/faster_rcnn_R_50_DC5_3x",
+    "COCO-Detection/faster_rcnn_R_50_FPN_1x",
+    "COCO-Detection/faster_rcnn_R_50_FPN_3x",
+    "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x",
+    "COCO-Detection/fcos_R_50_FPN_1x",
+    "COCO-Detection/retinanet_R_101_FPN_3x",
+    "COCO-Detection/retinanet_R_50_FPN_1x",
+    "COCO-Detection/retinanet_R_50_FPN_3x",
+    "COCO-Detection/rpn_R_50_C4_1x",
+    "COCO-Detection/rpn_R_50_FPN_1x"
+]
+
+detectron2_segmentation_models = [
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_C4_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_DC5_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_C4_1x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_C4_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_DC5_1x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_DC5_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_regnetx_4gf_dds_fpn_1x",
+    "COCO-InstanceSegmentation/mask_rcnn_regnetx_4gf_dds_fpn_1x"
+]
+
+
 def print_version_info():
     torch_version = ".".join(torch.__version__.split(".")[:2])
     cuda_version = torch.version.cuda

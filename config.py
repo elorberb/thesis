@@ -56,6 +56,9 @@ EXPERIMENT_DATABASE_FILE = 'src/app/experiment_db.db'
 SEGMENTS_FOLDER = '/home/etaylor/code_projects/thesis/segments'
 
 DATETIME_STR_FORMAT = '%d-%m-%Y_%H-%M-%S'
+def get_datetime_str():
+    """Return the current date and time as a formatted string."""
+    return datetime.now().strftime(DATETIME_STR_FORMAT)
 
 # ultralytics settings configuration
 ULTRALYTICS_RUNS_DIR = "/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs"
