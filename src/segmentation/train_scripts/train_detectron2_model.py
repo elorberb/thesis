@@ -10,7 +10,6 @@ from datetime import datetime
 from src.segmentation.framework_handlers.detectron2_handler import prepare_and_register_datasets
 import yaml
 
-from src.segmentation.framework_handlers.detectron2_handler import evaluate_model_on_dataset
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 import json

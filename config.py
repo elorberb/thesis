@@ -45,8 +45,8 @@ ANNOTATIONS_CLASS_MAPPINGS = {
         }
 
 # --- METADATA CONFIGURATION ---
-CANNABIS_PATCHES_METADATA_FILE = 'metadata/cannabis_patches_metadata.csv'
-ANNOTATIONS_TRACKING_METADATA_FILE = 'metadata/annotations_tracking.csv'
+CANNABIS_PATCHES_METADATA_FILE = 'data/metadata/cannabis_patches_metadata.csv'
+ANNOTATIONS_TRACKING_METADATA_FILE = 'data/metadata/annotations_tracking.csv'
 CANNABIS_PATCH_SIZE = 512
 
 # --- DATABASE CONFIGURATION ---
@@ -204,5 +204,8 @@ def update_annotation_status(image_number, csv_path=ANNOTATIONS_TRACKING_METADAT
 
     # To update an existing image as annotated
     # print("Updating annotation status for images...")
-    # update_annotation_status('IMG_1096')
+    # update_annotation_status('IMG_1118')
+    # update_annotation_status('IMG_1187')
+    # update_annotation_status('IMG_2135')
+    # update_annotation_status('IMG_1906')
     # print("Annotation status updated successfully!")
