@@ -1,9 +1,0 @@
-python-dotenv
-segments-ai
-ipykernel
-ultralytics
-Deprecated
-# for torch with cuda
-# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-# for torch with cpu
-# pip3 install torch torchvision torchaudio

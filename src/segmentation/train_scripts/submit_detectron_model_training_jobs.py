@@ -1,7 +1,6 @@
 import subprocess
 import os
 from src.segmentation.framework_handlers import detectron2_handler
-import sys
 
 
 def create_and_submit_slurm_job(model_config):
@@ -30,6 +29,6 @@ if __name__ == '__main__':
         create_and_submit_slurm_job(model)
         
     print("Starting jobs for detectron2 segmentation models...")
-    for model in detectron2_handler.detectron2_segmentation_models:
-        print(f"Starting job for model: {model}")
-        create_and_submit_slurm_job(model)
+    # for model in detectron2_handler.detectron2_segmentation_models:
+    #     print(f"Starting job for model: {model}")
+    #     create_and_submit_slurm_job(model)

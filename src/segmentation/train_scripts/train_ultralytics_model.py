@@ -23,12 +23,12 @@ def setup_ultralytics_settings():
     })
     logger.info("Ultralytics settings updated:\n%s", settings)
 
-def train_model(model_type, config_yaml, model_checkpoint, epochs=100, imgsz=512):
+def train_model(config_yaml, model_checkpoint, epochs=100, imgsz=512):
     """Train the model using specified configurations."""
     ultralytics_checkpoint_paths = "/home/etaylor/code_projects/thesis/checkpoints/ultralytics"
     model_checkpoint_path = os.path.join(ultralytics_checkpoint_paths, model_checkpoint)
 
-    if model_type == 'rt_detr':
+    if model_checkpoint == 'rtdetr-x.pt':
         model = RTDETR(model_checkpoint_path)
     else:
         model = YOLO(model_checkpoint_path)
@@ -55,7 +55,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and Validate Ultralytics models.")
-    parser.add_argument('--model_type', type=str, required=True, choices=['yolo', 'rt_detr'], help='Type of model to train (yolo or rt_detr)')
     parser.add_argument('--config', type=str, required=True, help='Path to config YAML file')
     parser.add_argument('--checkpoint', type=str, default='', help='Path to model checkpoint file')
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs to train the model')
