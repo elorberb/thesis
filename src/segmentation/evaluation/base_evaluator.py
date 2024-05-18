@@ -6,19 +6,23 @@ import matplotlib.patches as patches
 from PIL import Image
 import copy
 
+
 class BaseEvaluator(ABC):
     def __init__(self, num_classes=3):
         self.num_classes = num_classes
+
 
     @abstractmethod
     def parse_annotations(self, file_path):
         """ Abstract method to parse the annotations for any framework."""
         pass
 
+
     @abstractmethod
     def parse_model_outputs(self, outputs):
         """ Abstract method to parse the model outputs for any framework."""
         pass
+
 
     @staticmethod
     def iou(boxA, boxB):
@@ -35,6 +39,7 @@ class BaseEvaluator(ABC):
         iou = interArea / float(boxAArea + boxBArea - interArea)
         return iou
 
+
     @staticmethod
     def calculate_precision(true_positives, false_positives):
         """Calculate precision from true positives and false positives."""
@@ -42,19 +47,19 @@ class BaseEvaluator(ABC):
             return 0
         return true_positives / (true_positives + false_positives)
 
+
     @staticmethod
     def calculate_recall(true_positives, false_negatives):
         """Calculate recall from true positives and false negatives."""
         if true_positives + false_negatives == 0:
             return 0
         return true_positives / (true_positives + false_negatives)
+    
 
     def compute_confusion_matrix(self, matches, false_positives, false_negatives, gt_boxes, pred_boxes, normalize=False, single_class=False):
         """Compute confusion matrix based on matches and misclassifications."""
-        if single_class:
-            cm = np.zeros((2, 2), dtype=int)
-        else:
-            cm = np.zeros((self.num_classes + 1, self.num_classes + 1), dtype=int)
+        matrix_size = self.num_classes + 1 if not single_class else 2
+        cm = np.zeros((matrix_size, matrix_size), dtype=int)
 
         for match in matches:
             gt_idx, pred_idx, _ = match
@@ -62,23 +67,31 @@ class BaseEvaluator(ABC):
             pred_class = 0 if single_class else pred_boxes[pred_idx]['class_id']
             cm[gt_class, pred_class] += 1
 
+        # Debugging
+        print(f"CM after matches: {cm}")
+
         for fp in false_positives:
             pred_class = 0 if single_class else fp['class_id']
-            cm[-1, pred_class] += 1
+            cm[self.num_classes, pred_class] += 1  # Use the last row for FP
+
+        # Debugging
+        print(f"CM after FPs: {cm}")
 
         for fn in false_negatives:
             gt_class = 0 if single_class else fn['class_id']
-            cm[gt_class, -1] += 1
+            cm[gt_class, self.num_classes] += 1  # Use the last column for FN
+
+        # Debugging
+        print(f"CM after FNs: {cm}")
 
         if normalize:
             cm = cm.astype(np.float32)
-            for i in range(len(cm) - 1):
+            for i in range(len(cm)):
                 if cm[i, :].sum() > 0:
                     cm[i, :] /= cm[i, :].sum()
-            if cm[-1, :-1].sum() > 0:
-                cm[-1, :-1] /= cm[-1, :-1].sum()
 
         return cm
+
 
     def match_predictions(self, gt_boxes, pred_boxes, iou_thresh=0.5):
         """Match predictions to ground truth boxes based on IoU threshold, and classify predictions."""
@@ -147,7 +160,7 @@ class BaseEvaluator(ABC):
             "class_wise_recall": recall
         }
 
-    def evaluate(self, gt_boxes, pred_boxes, iou_thresh=0.5, single_class=False):
+    def evaluate_patch(self, gt_boxes, pred_boxes, iou_thresh=0.5, single_class=False):
         """ Evaluate the model outputs against the ground truth annotations.
             If single_class is True, convert all classes to a single class.
         """
@@ -170,7 +183,63 @@ class BaseEvaluator(ABC):
             "confusion_matrix": confusion_matrix,
             "normalized_confusion_matrix": normalized_confusion_matrix
         }
+        
+        
+    def evaluate_image(self, patches_gt_boxes_dict, patches_pred_boxes_dict, iou_thresh=0.5, single_class=False):
+        """
+        Evaluate all patches of a single image and aggregate the results, with input as dictionaries.
 
+        Args:
+            patches_gt_boxes_dict (dict): A dictionary where each key is a patch identifier and the value is a list of ground truth boxes for that patch.
+            patches_pred_boxes_dict (dict): A dictionary where each key is a patch identifier and the value is a list of predicted boxes for that patch.
+            iou_thresh (float): The IoU threshold for determining matches.
+            single_class (bool): Whether to treat all detections as a single class.
+
+        Returns:
+            dict: A dictionary containing metrics, confusion matrix, and normalized confusion matrix for the entire image.
+        """
+        all_matches = []
+        all_false_positives = []
+        all_false_negatives = []
+
+        # Ensure both dictionaries have the same keys
+        if patches_gt_boxes_dict.keys() != patches_pred_boxes_dict.keys():
+            raise ValueError("Ground truth and prediction patches must have the same keys.")
+
+        # Evaluate each patch and aggregate results
+        for patch_key in patches_gt_boxes_dict.keys():
+            gt_boxes = patches_gt_boxes_dict[patch_key]
+            pred_boxes = patches_pred_boxes_dict[patch_key]
+            matches, false_positives, false_negatives = self.match_predictions(gt_boxes, pred_boxes, iou_thresh)
+            all_matches.extend(matches)
+            all_false_positives.extend(false_positives)
+            all_false_negatives.extend(false_negatives)
+
+        # Flatten lists for confusion matrix calculation
+        flat_gt_boxes = [box for sublist in patches_gt_boxes_dict.values() for box in sublist]
+        flat_pred_boxes = [box for sublist in patches_pred_boxes_dict.values() for box in sublist]
+
+        # Compute aggregated results
+        aggregated_confusion_matrix = self.compute_confusion_matrix(
+            all_matches, all_false_positives, all_false_negatives, 
+            flat_gt_boxes, flat_pred_boxes, normalize=False, single_class=single_class
+        )
+        
+        aggregated_normalized_confusion_matrix = self.compute_confusion_matrix(
+            all_matches, all_false_positives, all_false_negatives, 
+            flat_gt_boxes, flat_pred_boxes, normalize=True, single_class=single_class
+        )
+
+        # Calculate metrics based on the aggregated confusion matrix
+        metrics = self.calculate_metrics(aggregated_confusion_matrix)
+
+        return {
+            "metrics": metrics,
+            "confusion_matrix": aggregated_confusion_matrix,
+            "normalized_confusion_matrix": aggregated_normalized_confusion_matrix
+        }
+
+        
     # ------------- Plot functions ------------- 
     @staticmethod
     def plot_confusion_matrix(cm, class_names=['Clear', 'Cloudy', 'Amber']):

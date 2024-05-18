@@ -1,6 +1,8 @@
 from src.segmentation.evaluation.base_evaluator import BaseEvaluator
 import json
-import copy
+import os
+import cv2
+
 
 class Detectron2Evaluator(BaseEvaluator):
     def __init__(self, num_classes, coco_annotations_file_path):
@@ -13,8 +15,8 @@ class Detectron2Evaluator(BaseEvaluator):
             coco_data = json.load(f)
         return coco_data
 
-    def get_annotations_for_image(self, file_name):
-        # Find the image entry based on the file name
+    def get_annotations_for_patch(self, file_name):
+        # Find the patch image entry based on the file name
         image_entry = next((img for img in self.coco_data['images'] if img['file_name'] == file_name), None)
         if not image_entry:
             raise ValueError(f"No image with file name {file_name} found in annotations.")
@@ -25,11 +27,12 @@ class Detectron2Evaluator(BaseEvaluator):
         annotations = [ann for ann in self.coco_data['annotations'] if ann['image_id'] == image_id]
         
         return image_entry, annotations
-
+    
+    
     def parse_annotations(self, file_path):
         """ Parse the COCO annotations and return the ground truth bounding boxes and class IDs."""
         
-        _, annotations = self.get_annotations_for_image(file_path)
+        _, annotations = self.get_annotations_for_patch(file_path)
         ground_truths = []
         for annotation in annotations:
             bbox = annotation['bbox']  # COCO provides bboxes as [x_min, y_min, width, height]
@@ -37,12 +40,36 @@ class Detectron2Evaluator(BaseEvaluator):
             y_min = bbox[1]
             x_max = x_min + bbox[2]
             y_max = y_min + bbox[3]
-            class_id = annotation['category_id'] - 1  # COCO class IDs are 1-indexed
+            class_id = annotation['category_id']  
             ground_truths.append({
                 'bbox': [x_min, y_min, x_max, y_max],
-                'class_id': class_id
+                'class_id': class_id - 1 # COCO class IDs are 1-indexed
             })
         return ground_truths
+    
+    
+    def get_annotations_for_image_patches(self, image_base_name):
+        """
+        Retrieve all patch annotations for a given base image name and organize them in a dictionary.
+        
+        Args:
+            image_base_name (str): The base name of the image, e.g., 'IMG_2157'.
+        
+        Returns:
+            dict: A dictionary where each key is the patch's file name and the value is a list of dictionaries,
+                each representing bounding boxes and class IDs for that patch.
+        """
+        patches_gt_boxes = {}
+
+        # Iterate through all images in the COCO dataset to find matches
+        for img in self.coco_data['images']:
+            if image_base_name in img['file_name']:  # Check if the base image name is in the file name
+                gt_boxes = self.parse_annotations(img['file_name'])
+                patches_gt_boxes[img['file_name']] = gt_boxes
+        
+        return patches_gt_boxes
+
+
 
     def parse_model_outputs(self, outputs):
         """ Parse the Detectron2 model outputs to extract bounding boxes, confidence scores, and class IDs."""
@@ -60,4 +87,33 @@ class Detectron2Evaluator(BaseEvaluator):
                 'class_id': class_id - 1 # Detectron2 class IDs are 1-indexed
             })
         return parsed_outputs
+    
+    
+    def predict_and_parse_image_patches(self, image_number, images_directory, predictor):
+        """
+        Process all patches of a given image, predict on them, and collect outputs in the format of the parsed model output.
+
+        Args:
+            image_number (str): The base image number, e.g., 'IMG_2157'.
+            images_directory (str): The directory path where image patches are stored.
+            predictor (callable): The predictor object to use for making predictions.
+        
+        Returns:
+            dict: A dictionary containing the patch file names as keys and prediction outputs as values.
+        """
+        parsed_outputs_by_patch = {}
+        for file_name in os.listdir(images_directory):
+            if image_number in file_name and 'label_ground-truth' not in file_name:
+                print(f"Processing patch: {file_name}")
+                # Load the image
+                image_path = os.path.join(images_directory, file_name)
+
+                # Predict using the Detectron2 model
+                outputs = predictor(cv2.imread(image_path))
+
+                # Parse the model outputs
+                parsed_outputs = self.parse_model_outputs(outputs)
+                parsed_outputs_by_patch[file_name] = parsed_outputs
+        
+        return parsed_outputs_by_patch
     
