@@ -2,6 +2,7 @@ from src.segmentation.evaluation.base_evaluator import BaseEvaluator
 import json
 import os
 import cv2
+import re
 
 
 class Detectron2Evaluator(BaseEvaluator):
@@ -14,6 +15,31 @@ class Detectron2Evaluator(BaseEvaluator):
         with open(file_path, 'r') as f:
             coco_data = json.load(f)
         return coco_data
+    
+
+    @staticmethod
+    def get_image_numbers(images_directory):
+        """
+        Extract unique base image numbers from a directory containing image patches.
+
+        Args:
+            images_directory (str): The directory path where image patches are stored.
+
+        Returns:
+            set: A set containing unique base image numbers.
+        """
+        image_numbers = set()
+        pattern = re.compile(r"IMG_\d+")
+
+        # Iterate over each file in the directory
+        for file_name in os.listdir(images_directory):
+            match = pattern.search(file_name)
+            if match:
+                image_number = match.group(0)  # Extracts the matched part of the filename, e.g., IMG_0019
+                image_numbers.add(image_number)
+
+        return image_numbers
+
 
     def get_annotations_for_patch(self, file_name):
         # Find the patch image entry based on the file name
@@ -48,12 +74,12 @@ class Detectron2Evaluator(BaseEvaluator):
         return ground_truths
     
     
-    def get_annotations_for_image_patches(self, image_base_name):
+    def get_annotations_for_image_patches(self, image_number):
         """
         Retrieve all patch annotations for a given base image name and organize them in a dictionary.
         
         Args:
-            image_base_name (str): The base name of the image, e.g., 'IMG_2157'.
+            image_number (str): The base name of the image, e.g., 'IMG_2157'.
         
         Returns:
             dict: A dictionary where each key is the patch's file name and the value is a list of dictionaries,
@@ -63,11 +89,31 @@ class Detectron2Evaluator(BaseEvaluator):
 
         # Iterate through all images in the COCO dataset to find matches
         for img in self.coco_data['images']:
-            if image_base_name in img['file_name']:  # Check if the base image name is in the file name
+            if image_number in img['file_name']:  # Check if the base image name is in the file name
                 gt_boxes = self.parse_annotations(img['file_name'])
                 patches_gt_boxes[img['file_name']] = gt_boxes
         
         return patches_gt_boxes
+    
+    
+    def get_annotations_for_dataset(self, images_directory):
+        """
+        Collect annotations for all images in the dataset from their respective patches.
+        
+        Args:
+            images_directory (str): The directory path where image patches are stored.
+        
+        Returns:
+            dict: A dictionary containing the image base names as keys and ground truth for each image as values.
+        """
+        image_numbers = self.get_image_numbers(images_directory)
+                
+        image_gt_boxes = {}
+        for image_number in image_numbers:
+                patches_gt_boxes = self.get_annotations_for_image_patches(image_number)
+                image_gt_boxes[image_number] = patches_gt_boxes
+        
+        return image_gt_boxes
 
 
 
@@ -104,7 +150,7 @@ class Detectron2Evaluator(BaseEvaluator):
         parsed_outputs_by_patch = {}
         for file_name in os.listdir(images_directory):
             if image_number in file_name and 'label_ground-truth' not in file_name:
-                print(f"Processing patch: {file_name}")
+                
                 # Load the image
                 image_path = os.path.join(images_directory, file_name)
 
@@ -116,4 +162,26 @@ class Detectron2Evaluator(BaseEvaluator):
                 parsed_outputs_by_patch[file_name] = parsed_outputs
         
         return parsed_outputs_by_patch
+    
+    
+    def predict_and_parse_dataset(self, images_directory, predictor):
+        """
+        Process all images in the dataset, predict on their patches, and collect outputs in the format of the parsed model output.
+
+        Args:
+            images_directory (str): The directory path where image patches are stored.
+            predictor (callable): The predictor object to use for making predictions.
+        
+        Returns:
+            dict: A dictionary containing the image base names as keys and prediction outputs for each image as values.
+        """
+        # get the image numbers from the images directory
+        image_numbers = self.get_image_numbers(images_directory)
+                
+        parsed_outputs_by_image = {}
+        for image_number in image_numbers:
+                parsed_outputs_by_patch = self.predict_and_parse_image_patches(image_number, images_directory, predictor)
+                parsed_outputs_by_image[image_number] = parsed_outputs_by_patch
+        
+        return parsed_outputs_by_image
     

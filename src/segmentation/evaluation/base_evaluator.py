@@ -55,7 +55,26 @@ class BaseEvaluator(ABC):
             return 0
         return true_positives / (true_positives + false_negatives)
     
+    
+    @ staticmethod
+    def normalize_confusion_matrix(confusion_matrix):
+        """
+        Normalize a confusion matrix to show proportions instead of counts.
 
+        Args:
+            confusion_matrix (numpy.ndarray): The confusion matrix to normalize.
+
+        Returns:
+            numpy.ndarray: The normalized confusion matrix.
+        """
+        normalized_matrix = confusion_matrix.astype(np.float32)
+        for i in range(len(normalized_matrix)):
+            row_sum = normalized_matrix[i, :].sum()
+            if row_sum > 0:
+                normalized_matrix[i, :] /= row_sum
+        return normalized_matrix
+
+    
     def compute_confusion_matrix(self, matches, false_positives, false_negatives, gt_boxes, pred_boxes, normalize=False, single_class=False):
         """Compute confusion matrix based on matches and misclassifications."""
         matrix_size = self.num_classes + 1 if not single_class else 2
@@ -67,22 +86,13 @@ class BaseEvaluator(ABC):
             pred_class = 0 if single_class else pred_boxes[pred_idx]['class_id']
             cm[gt_class, pred_class] += 1
 
-        # Debugging
-        print(f"CM after matches: {cm}")
-
         for fp in false_positives:
             pred_class = 0 if single_class else fp['class_id']
             cm[self.num_classes, pred_class] += 1  # Use the last row for FP
 
-        # Debugging
-        print(f"CM after FPs: {cm}")
-
         for fn in false_negatives:
             gt_class = 0 if single_class else fn['class_id']
             cm[gt_class, self.num_classes] += 1  # Use the last column for FN
-
-        # Debugging
-        print(f"CM after FNs: {cm}")
 
         if normalize:
             cm = cm.astype(np.float32)
@@ -184,7 +194,7 @@ class BaseEvaluator(ABC):
             "normalized_confusion_matrix": normalized_confusion_matrix
         }
         
-        
+
     def evaluate_image(self, patches_gt_boxes_dict, patches_pred_boxes_dict, iou_thresh=0.5, single_class=False):
         """
         Evaluate all patches of a single image and aggregate the results, with input as dictionaries.
@@ -198,45 +208,66 @@ class BaseEvaluator(ABC):
         Returns:
             dict: A dictionary containing metrics, confusion matrix, and normalized confusion matrix for the entire image.
         """
-        all_matches = []
-        all_false_positives = []
-        all_false_negatives = []
+        num_classes = self.num_classes
+        global_conf_matrix = np.zeros((num_classes + 1, num_classes + 1), dtype=int)
 
-        # Ensure both dictionaries have the same keys
-        if patches_gt_boxes_dict.keys() != patches_pred_boxes_dict.keys():
-            raise ValueError("Ground truth and prediction patches must have the same keys.")
-
-        # Evaluate each patch and aggregate results
+        # Evaluate each patch using evaluate_patch function and aggregate the results
         for patch_key in patches_gt_boxes_dict.keys():
-            gt_boxes = patches_gt_boxes_dict[patch_key]
-            pred_boxes = patches_pred_boxes_dict[patch_key]
-            matches, false_positives, false_negatives = self.match_predictions(gt_boxes, pred_boxes, iou_thresh)
-            all_matches.extend(matches)
-            all_false_positives.extend(false_positives)
-            all_false_negatives.extend(false_negatives)
+            patch_result = self.evaluate_patch(patches_gt_boxes_dict[patch_key], patches_pred_boxes_dict[patch_key], iou_thresh, single_class)
+            global_conf_matrix += patch_result['confusion_matrix']
 
-        # Flatten lists for confusion matrix calculation
-        flat_gt_boxes = [box for sublist in patches_gt_boxes_dict.values() for box in sublist]
-        flat_pred_boxes = [box for sublist in patches_pred_boxes_dict.values() for box in sublist]
+        # Normalize the global confusion matrix
+        normalized_conf_matrix = self.normalize_confusion_matrix(global_conf_matrix)
 
-        # Compute aggregated results
-        aggregated_confusion_matrix = self.compute_confusion_matrix(
-            all_matches, all_false_positives, all_false_negatives, 
-            flat_gt_boxes, flat_pred_boxes, normalize=False, single_class=single_class
-        )
-        
-        aggregated_normalized_confusion_matrix = self.compute_confusion_matrix(
-            all_matches, all_false_positives, all_false_negatives, 
-            flat_gt_boxes, flat_pred_boxes, normalize=True, single_class=single_class
-        )
-
-        # Calculate metrics based on the aggregated confusion matrix
-        metrics = self.calculate_metrics(aggregated_confusion_matrix)
+        # Calculate metrics based on the global confusion matrix
+        metrics = self.calculate_metrics(global_conf_matrix, single_class=single_class)
 
         return {
             "metrics": metrics,
-            "confusion_matrix": aggregated_confusion_matrix,
-            "normalized_confusion_matrix": aggregated_normalized_confusion_matrix
+            "confusion_matrix": global_conf_matrix,
+            "normalized_confusion_matrix": normalized_conf_matrix
+        }
+        
+        
+    def evaluate_dataset(self, dataset_gt_boxes_dict, dataset_pred_boxes_dict, iou_thresh=0.5, single_class=False):
+        """
+        Evaluate all images in the dataset and aggregate the results, with input as dictionaries of dictionaries.
+
+        Args:
+            dataset_gt_boxes_dict (dict): A dictionary where each key is an image number and the value is 
+                                        a dictionary of ground truth boxes for each patch of that image.
+            dataset_pred_boxes_dict (dict): A dictionary where each key is an image number and the value is 
+                                            a dictionary of predicted boxes for each patch of that image.
+            iou_thresh (float): The IoU threshold for determining matches.
+            single_class (bool): Whether to treat all detections as a single class.
+
+        Returns:
+            dict: A dictionary containing aggregated metrics, confusion matrix, and normalized confusion matrix for the entire dataset.
+        """
+        num_classes = self.num_classes
+        dataset_conf_matrix = np.zeros((num_classes + 1, num_classes + 1), dtype=int)
+
+        # Iterate over each image in the dataset
+        for image_number in dataset_gt_boxes_dict.keys():
+            patches_gt_boxes_dict = dataset_gt_boxes_dict[image_number]
+            patches_pred_boxes_dict = dataset_pred_boxes_dict[image_number]
+
+            # Evaluate each image using the evaluate_image function
+            image_results = self.evaluate_image(patches_gt_boxes_dict, patches_pred_boxes_dict, iou_thresh, single_class)
+
+            # Aggregate the confusion matrices
+            dataset_conf_matrix += image_results['confusion_matrix']
+
+        # normalize the dataset confusion matrix
+        normalized_conf_matrix = self.normalize_confusion_matrix(dataset_conf_matrix)
+
+        # Calculate metrics based on the aggregated dataset confusion matrix
+        metrics = self.calculate_metrics(dataset_conf_matrix)
+
+        return {
+            "metrics": metrics,
+            "confusion_matrix": dataset_conf_matrix,
+            "normalized_confusion_matrix": normalized_conf_matrix
         }
 
         
