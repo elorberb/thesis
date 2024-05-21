@@ -5,7 +5,8 @@ import seaborn as sns
 import matplotlib.patches as patches
 from PIL import Image
 import copy
-
+import os
+import re
 
 class BaseEvaluator(ABC):
     def __init__(self, num_classes=3):
@@ -73,26 +74,56 @@ class BaseEvaluator(ABC):
             if row_sum > 0:
                 normalized_matrix[i, :] /= row_sum
         return normalized_matrix
+    
+    
+    @staticmethod
+    def get_image_numbers(images_directory):
+        """
+        Extract unique base image numbers from a directory containing image patches.
+
+        Args:
+            images_directory (str): The directory path where image patches are stored.
+
+        Returns:
+            set: A set containing unique base image numbers.
+        """
+        image_numbers = set()
+        pattern = re.compile(r"IMG_\d+")
+
+        # Iterate over each file in the directory
+        for file_name in os.listdir(images_directory):
+            match = pattern.search(file_name)
+            if match:
+                image_number = match.group(0)  # Extracts the matched part of the filename, e.g., IMG_0019
+                image_numbers.add(image_number)
+
+        return image_numbers
 
     
-    def compute_confusion_matrix(self, matches, false_positives, false_negatives, gt_boxes, pred_boxes, normalize=False, single_class=False):
-        """Compute confusion matrix based on matches and misclassifications."""
-        matrix_size = self.num_classes + 1 if not single_class else 2
-        cm = np.zeros((matrix_size, matrix_size), dtype=int)
+    def compute_confusion_matrix(self, matches, misclassifications, false_positives, false_negatives, gt_boxes, pred_boxes, normalize=False, single_class=False):
+        num_classes = self.num_classes  # Assuming this is set correctly
+        cm = np.zeros((num_classes + 1, num_classes + 1), dtype=int)  # Last row/col for FPs/FNs
 
-        for match in matches:
-            gt_idx, pred_idx, _ = match
-            gt_class = 0 if single_class else gt_boxes[gt_idx]['class_id']
-            pred_class = 0 if single_class else pred_boxes[pred_idx]['class_id']
-            cm[gt_class, pred_class] += 1
+        # True Positives
+        for gt_idx, pred_idx, _ in matches:
+            class_id = gt_boxes[gt_idx]['class_id']
+            cm[class_id, class_id] += 1
 
-        for fp in false_positives:
-            pred_class = 0 if single_class else fp['class_id']
-            cm[self.num_classes, pred_class] += 1  # Use the last row for FP
+        # Misclassifications
+        for gt_idx, pred_idx, _ in misclassifications:
+            true_class = gt_boxes[gt_idx]['class_id']
+            pred_class = pred_boxes[pred_idx]['class_id']
+            cm[true_class, pred_class] += 1
 
+        # False Positives
+        for pred in false_positives:
+            pred_class = pred['class_id']
+            cm[num_classes, pred_class] += 1
+
+        # False Negatives
         for fn in false_negatives:
-            gt_class = 0 if single_class else fn['class_id']
-            cm[gt_class, self.num_classes] += 1  # Use the last column for FN
+            true_class = fn['class_id']
+            cm[true_class, num_classes] += 1
 
         if normalize:
             cm = cm.astype(np.float32)
@@ -104,64 +135,79 @@ class BaseEvaluator(ABC):
 
 
     def match_predictions(self, gt_boxes, pred_boxes, iou_thresh=0.5):
-        """Match predictions to ground truth boxes based on IoU threshold, and classify predictions."""
         matches = []
-        detected = []
+        misclassifications = []
         false_positives = []
-        unmatched_gts = set(range(len(gt_boxes)))
+        detected = set()
 
         for pred_idx, pred in enumerate(pred_boxes):
             best_iou = 0
             best_match = None
 
             for gt_idx, gt in enumerate(gt_boxes):
-                if gt['class_id'] == pred['class_id']:
-                    current_iou = self.iou(pred['bbox'], gt['bbox'])
-                    if current_iou > best_iou:
-                        best_iou = current_iou
-                        best_match = (gt_idx, pred_idx, best_iou)
+                current_iou = self.iou(pred['bbox'], gt['bbox'])
+                if current_iou > best_iou:
+                    best_iou = current_iou
+                    best_match = (gt_idx, pred_idx, current_iou)
 
             if best_match and best_iou >= iou_thresh:
-                if best_match[0] not in detected:
-                    matches.append(best_match)
-                    detected.append(best_match[0])
-                    unmatched_gts.discard(best_match[0])
-                else:
-                    false_positives.append(pred)
+                gt_idx, pred_idx, _ = best_match
+                if gt_idx not in detected:  # Ensure the gt has not been matched already
+                    if gt_boxes[gt_idx]['class_id'] == pred['class_id']:
+                        matches.append(best_match)
+                        detected.add(gt_idx)
+                    else:
+                        misclassifications.append(best_match)
+                        detected.add(gt_idx)
+                # If gt_idx was already used, you can decide to handle differently or ignore
             else:
-                false_positives.append(pred)
+                false_positives.append(pred)  # No good match found, treat as false positive
 
-        false_negatives = [{'bbox': gt['bbox'], 'class_id': gt['class_id']} for gt_idx, gt in enumerate(gt_boxes) if gt_idx in unmatched_gts]
+        # Identify false negatives
+        false_negatives = [{'bbox': gt['bbox'], 'class_id': gt['class_id']} for gt_idx, gt in enumerate(gt_boxes) if gt_idx not in detected]
 
-        return matches, false_positives, false_negatives
+        return matches, misclassifications, false_positives, false_negatives
+
 
     def calculate_metrics(self, confusion_matrix, single_class=False):
-        """Calculate precision and recall based on the confusion matrix."""
+        """
+        Calculate precision and recall for each class and overall based on the provided confusion matrix.
+        Args:
+            confusion_matrix (np.array): The confusion matrix, with shape (num_classes+1, num_classes+1).
+        Returns:
+            dict: A dictionary containing metrics such as class-wise precision and recall, and overall metrics.
+        """
         if single_class:
+            # This block assumes confusion_matrix is a 2x2 matrix for a single class.
             tp = confusion_matrix[0, 0]
-            fp = confusion_matrix[-1, 0]
-            fn = confusion_matrix[0, -1]
+            fp = confusion_matrix[0, 1] + confusion_matrix[1, 0]
+            fn = confusion_matrix[1, 0]
             precision = self.calculate_precision(tp, fp)
             recall = self.calculate_recall(tp, fn)
             return {"precision": precision, "recall": recall}
-
+        
         num_classes = confusion_matrix.shape[0] - 1
         precision = np.zeros(num_classes)
         recall = np.zeros(num_classes)
-        overall_true_positives = np.diag(confusion_matrix)[:num_classes].sum()
-        overall_false_positives = confusion_matrix[-1, :num_classes].sum()
-        overall_false_negatives = confusion_matrix[:num_classes, -1].sum()
 
+        # Compute precision and recall for each class
         for i in range(num_classes):
             tp = confusion_matrix[i, i]
-            fp = confusion_matrix[-1, i]
-            fn = confusion_matrix[i, -1]
+            
+            # Correctly compute fp by summing the misclassifications for the predicted class
+            fp = np.sum(confusion_matrix[:, i]) - tp
+            fn = np.sum(confusion_matrix[i, :]) - tp
 
             precision[i] = self.calculate_precision(tp, fp)
             recall[i] = self.calculate_recall(tp, fn)
 
-        overall_precision = self.calculate_precision(overall_true_positives, overall_false_positives)
-        overall_recall = self.calculate_recall(overall_true_positives, overall_false_negatives)
+        # Compute overall precision and recall
+        overall_tp = np.trace(confusion_matrix[:num_classes, :num_classes])
+        overall_fp = np.sum(confusion_matrix[-1, :num_classes])
+        overall_fn = np.sum(confusion_matrix[:num_classes, -1])
+
+        overall_precision = self.calculate_precision(overall_tp, overall_fp)
+        overall_recall = self.calculate_recall(overall_tp, overall_fn)
 
         return {
             "precision": overall_precision,
@@ -169,6 +215,8 @@ class BaseEvaluator(ABC):
             "class_wise_precision": precision,
             "class_wise_recall": recall
         }
+
+
 
     def evaluate_patch(self, gt_boxes, pred_boxes, iou_thresh=0.5, single_class=False):
         """ Evaluate the model outputs against the ground truth annotations.
@@ -183,9 +231,9 @@ class BaseEvaluator(ABC):
             for box in working_pred_boxes:
                 box['class_id'] = 0
 
-        matches, false_positives, false_negatives = self.match_predictions(working_gt_boxes, working_pred_boxes, iou_thresh)
-        confusion_matrix = self.compute_confusion_matrix(matches, false_positives, false_negatives, working_gt_boxes, working_pred_boxes, single_class=single_class)
-        normalized_confusion_matrix = self.compute_confusion_matrix(matches, false_positives, false_negatives, working_gt_boxes, working_pred_boxes, normalize=True, single_class=single_class)
+        matches, misclassifications, false_positives, false_negatives = self.match_predictions(working_gt_boxes, working_pred_boxes, iou_thresh)
+        confusion_matrix = self.compute_confusion_matrix(matches, misclassifications, false_positives, false_negatives, working_gt_boxes, working_pred_boxes, single_class=single_class)
+        normalized_confusion_matrix = self.compute_confusion_matrix(matches, misclassifications, false_positives, false_negatives, working_gt_boxes, working_pred_boxes, normalize=True, single_class=single_class)
         metrics = self.calculate_metrics(confusion_matrix, single_class=single_class)
 
         return {
@@ -283,13 +331,14 @@ class BaseEvaluator(ABC):
         plt.show()
 
     @staticmethod
-    def plot_boxes(image, boxes, is_ground_truth=True):
+    def plot_boxes(image, boxes, class_label=None, is_ground_truth=True):
         """
-        Plots bounding boxes on the image.
+        Plots bounding boxes on the image for a specific class label.
 
         Args:
             image (PIL Image or str): The image on which to plot, or the path to the image.
             boxes (list): List of dictionaries containing bounding boxes with 'bbox' and 'class_id'.
+            class_label (int, optional): Specific class label to plot. If None, plots all classes.
             is_ground_truth (bool): Flag indicating if the boxes are ground truth. Defaults to True.
         """
         # If image is the path to the image, read it
@@ -313,10 +362,11 @@ class BaseEvaluator(ABC):
 
         # Plot boxes
         for box in boxes:
-            x_min, y_min, x_max, y_max = box['bbox']
-            cls_id = box['class_id']
-            rect = patches.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, linewidth=1, edgecolor=colors[cls_id], facecolor='none', linestyle=linestyle, label=class_labels[cls_id])
-            ax.add_patch(rect)
+            if class_label is None or box['class_id'] == class_label:
+                x_min, y_min, x_max, y_max = box['bbox']
+                cls_id = box['class_id']
+                rect = patches.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, linewidth=1, edgecolor=colors[cls_id], facecolor='none', linestyle=linestyle, label=class_labels[cls_id])
+                ax.add_patch(rect)
 
         # Set legend
         handles, labels = ax.get_legend_handles_labels()

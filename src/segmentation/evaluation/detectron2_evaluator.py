@@ -17,30 +17,6 @@ class Detectron2Evaluator(BaseEvaluator):
         return coco_data
     
 
-    @staticmethod
-    def get_image_numbers(images_directory):
-        """
-        Extract unique base image numbers from a directory containing image patches.
-
-        Args:
-            images_directory (str): The directory path where image patches are stored.
-
-        Returns:
-            set: A set containing unique base image numbers.
-        """
-        image_numbers = set()
-        pattern = re.compile(r"IMG_\d+")
-
-        # Iterate over each file in the directory
-        for file_name in os.listdir(images_directory):
-            match = pattern.search(file_name)
-            if match:
-                image_number = match.group(0)  # Extracts the matched part of the filename, e.g., IMG_0019
-                image_numbers.add(image_number)
-
-        return image_numbers
-
-
     def get_annotations_for_patch(self, file_name):
         # Find the patch image entry based on the file name
         image_entry = next((img for img in self.coco_data['images'] if img['file_name'] == file_name), None)
@@ -86,10 +62,11 @@ class Detectron2Evaluator(BaseEvaluator):
                 each representing bounding boxes and class IDs for that patch.
         """
         patches_gt_boxes = {}
+        pattern = re.compile(rf"^{image_number}_p\d+\.\w+$")  # Regex pattern to match specific file names
 
         # Iterate through all images in the COCO dataset to find matches
         for img in self.coco_data['images']:
-            if image_number in img['file_name']:  # Check if the base image name is in the file name
+            if pattern.match(img['file_name']):  # Check if the base image name is in the file name
                 gt_boxes = self.parse_annotations(img['file_name'])
                 patches_gt_boxes[img['file_name']] = gt_boxes
         
