@@ -189,7 +189,11 @@ class BaseEvaluator(ABC):
         num_classes = confusion_matrix.shape[0] - 1
         precision = np.zeros(num_classes)
         recall = np.zeros(num_classes)
-
+        
+        overall_tp = 0
+        overall_fp = 0
+        overall_fn = 0
+        
         # Compute precision and recall for each class
         for i in range(num_classes):
             tp = confusion_matrix[i, i]
@@ -200,11 +204,10 @@ class BaseEvaluator(ABC):
 
             precision[i] = self.calculate_precision(tp, fp)
             recall[i] = self.calculate_recall(tp, fn)
-
-        # Compute overall precision and recall
-        overall_tp = np.trace(confusion_matrix[:num_classes, :num_classes])
-        overall_fp = np.sum(confusion_matrix[-1, :num_classes])
-        overall_fn = np.sum(confusion_matrix[:num_classes, -1])
+            
+            overall_tp += tp
+            overall_fp += fp
+            overall_fn += fn
 
         overall_precision = self.calculate_precision(overall_tp, overall_fp)
         overall_recall = self.calculate_recall(overall_tp, overall_fn)

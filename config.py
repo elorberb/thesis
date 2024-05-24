@@ -175,7 +175,7 @@ def update_annotation_status(image_number, csv_path=ANNOTATIONS_TRACKING_METADAT
         csv_writer.writerows(updated_rows)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # # Example usage:
     # raw_image_path = get_raw_image_path('week9', '1xr')
     # print(f"Path for raw images for week 2, 1x regular: {raw_image_path}")
@@ -204,9 +204,14 @@ if __name__ == "__main__":
 
     # To update an existing image as annotated
     # print("Updating annotation status for images...")
-    update_annotation_status('IMG_2161')
-    update_annotation_status('IMG_1145')
-    update_annotation_status('IMG_0577')
-    update_annotation_status('IMG_1193')
-    update_annotation_status('IMG_0642')
+    # image_numbers = [
+    # "2228", "1849", "9985", "2171", "0071", "9986", "0575",
+    # "1798", "0583", "2140", "1137", "1128",
+    # "2148", "2224", "1799", "1094", "1112"
+    # ]
+    # for number in image_numbers:
+    #     image_id = f"IMG_{number}"
+    #     print(f"Updating annotation status for {image_id}")
+    #     update_annotation_status(image_id)
+    
     # print("Annotation status updated successfully!")
