@@ -4,6 +4,7 @@ from segments.utils import bitmap2file
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import config
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -14,6 +15,9 @@ class SegmentsAIHandler:
         api_key = os.getenv("SEGMENTS_API_KEY")
         self.client = SegmentsClient(api_key)
         
+    @staticmethod
+    def get_segments_dataset_identifier(image_number, week, zoom_type="3x_regular"):
+        return f"etaylor/cannabis_patches_{week}_{zoom_type}_{image_number}"
         
 
     def get_dataset_instance(self, dataset_name, version='v0.1'):
@@ -265,6 +269,43 @@ class SegmentsAIHandler:
                 self.client.update_label(sample_uuid=sample.uuid, labelset=labelset_name, attributes=attributes_dict)
 
         print("Label category IDs have been decremented.")
+        
+    
+    def get_trichome_distribution(self, image_number):
+        """
+        Fetches samples from a given dataset image number or full dataset identifier and calculates the distribution of trichome annotations.
+        
+        Args:
+        image_number (str): The Image number we want to get the dataset in SegmentsAI.
 
+        Returns:
+        dict: A dictionary with counts of each trichome type.
+        """
+        # if only the image number was provided, build the full dataset identifier
+        if "etaylor" not in image_number:
+            full_week, full_zoom = config.find_image_details(image_number)
+            full_week = full_week.split("_")[0]
+            zoom_type = full_zoom.split("_")[0] + "r"
+            dataset_identifier = self.get_segments_dataset_identifier(image_number,
+                                                                    week=config.WEEKS_DIR[full_week],
+                                                                    zoom_type=config.ZOOM_TYPES_DIR[zoom_type])
 
+        # Fetch the samples
+        samples = self.client.get_samples(dataset_identifier)
 
+        # Initialize counters for each trichome type
+        distribution = {
+            'clear': 0,
+            'cloudy': 0,
+            'amber': 0
+        }
+
+        # Fetch labels for each sample and count annotations
+        for sample in samples:
+            label = self.client.get_label(sample.uuid)
+            for annotation in label.attributes.annotations:
+                trichome_type = config.ANNOTATIONS_CLASS_MAPPINGS.get(annotation.category_id, 0)
+                if trichome_type in distribution:
+                    distribution[trichome_type] += 1
+
+        return distribution

@@ -3,12 +3,19 @@ import numpy as np
 
 
 # Gradient-based sharpness
-# TODO - check if there is a gradient calculation with cv2 - using kernel.
-def calculate_image_sharpness(image):
-    array = np.asarray(image, dtype=np.int32)
-    gradients = np.gradient(array)
-    gnorm_squares = np.sum([g**2 for g in gradients], axis=0)
-    gnorm = np.sqrt(gnorm_squares)
+def calculate_gradient_based_sharpness(image):
+    # Convert image to grayscale if it is not already
+    if len(image.shape) > 2:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+    # Calculate gradients along the x and y axis
+    grad_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
+    
+    # Compute the gradient magnitude
+    gnorm = np.sqrt(grad_x**2 + grad_y**2)
+    
+    # Calculate the average sharpness
     sharpness = np.average(gnorm)
     return sharpness
 
@@ -58,34 +65,3 @@ def calculate_sharpness(image):
     Currently sharpness function for the pipeline.
     """
     return edge_sharpness(image)
-
-
-# ------- Old sharpness functions -------
-
-
-def calculate_sharpness_old(image):
-    # Apply Gaussian blur
-    image = cv2.GaussianBlur(image, (3, 3), 0, 0, cv2.BORDER_DEFAULT)
-    # Convert to gray
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # Calculate the sharpness
-    sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
-    return sharpness
-
-
-def is_monochromatic_old(image, tolerance=30):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    h_std = np.std(h)
-    s_std = np.std(s)
-    v_std = np.std(v)
-    if h_std > tolerance or s_std > tolerance or v_std > tolerance:
-        return False
-    else:
-        return True
-
-
-def is_blurry_old(image, threshold=50):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    variance = cv2.Laplacian(gray, cv2.CV_64F).var()
-    return variance < threshold

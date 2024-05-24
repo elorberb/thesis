@@ -1,0 +1,1350 @@
+Tue May 7 13:59:14 IDT 2024
+
+SLURM_JOBID:		
+SLURM_JOB_NODELIST:	 
+
+
+INFO:__main__:Cleared CUDA cache
+INFO:__main__:Ultralytics settings updated:
+{'settings_version': '0.0.4', 'datasets_dir': '/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/datasets', 'weights_dir': '/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/weights', 'runs_dir': '/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/rtdetr-x', 'uuid': '0def00e56c3a400afc7ba4172404e1311f32262b0c5348e767a82883f2e1b76d', 'sync': True, 'api_key': '', 'openai_api_key': '', 'clearml': True, 'comet': True, 'dvc': True, 'hub': True, 'mlflow': True, 'neptune': True, 'raytune': True, 'tensorboard': True, 'wandb': True}
+INFO:__main__:Starting training of Ultralytics model rtdetr-x.pt
+[34m[1mTuner: [0mInitialized Tuner instance with 'tune_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2'
+[34m[1mTuner: [0m💡 Learn about tuning at https://docs.ultralytics.com/guides/hyperparameter-tuning
+[34m[1mTuner: [0mStarting iteration 1/10 with hyperparameters: {'lr0': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'weight_decay': 0.0005, 'warmup_epochs': 3.0, 'warmup_momentum': 0.8, 'box': 7.5, 'cls': 0.5, 'dfl': 1.5, 'hsv_h': 0.015, 'hsv_s': 0.7, 'hsv_v': 0.4, 'degrees': 0.0, 'translate': 0.1, 'scale': 0.5, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.5, 'bgr': 0.0, 'mosaic': 1.0, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01, lrf=0.01, momentum=0.937, weight_decay=0.0005, warmup_epochs=3.0, warmup_momentum=0.8, warmup_bias_lr=0.1, box=7.5, cls=0.5, dfl=1.5, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.015, hsv_s=0.7, hsv_v=0.4, degrees=0.0, translate=0.1, scale=0.5, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.5, bgr=0.0, mosaic=1.0, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01' and 'momentum=0.937' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.0005), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 1
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01', 'lrf=0.01', 'momentum=0.937', 'weight_decay=0.0005', 'warmup_epochs=3.0', 'warmup_momentum=0.8', 'warmup_bias_lr=0.1', 'box=7.5', 'cls=0.5', 'dfl=1.5', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.015', 'hsv_s=0.7', 'hsv_v=0.4', 'degrees=0.0', 'translate=0.1', 'scale=0.5', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.5', 'bgr=0.0', 'mosaic=1.0', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m1/10 iterations complete ✅ (58.69s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 2/10 with hyperparameters: {'lr0': 0.01075, 'lrf': 0.01, 'momentum': 0.86174, 'weight_decay': 0.00042, 'warmup_epochs': 2.63234, 'warmup_momentum': 0.67764, 'box': 9.29733, 'cls': 0.47397, 'dfl': 1.65134, 'hsv_h': 0.01234, 'hsv_s': 0.7, 'hsv_v': 0.48604, 'degrees': 0.0, 'translate': 0.09465, 'scale': 0.52693, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.57024, 'bgr': 0.0, 'mosaic': 1.0, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train4, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01075, lrf=0.01, momentum=0.86174, weight_decay=0.00042, warmup_epochs=2.63234, warmup_momentum=0.67764, warmup_bias_lr=0.1, box=9.29733, cls=0.47397, dfl=1.65134, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.01234, hsv_s=0.7, hsv_v=0.48604, degrees=0.0, translate=0.09465, scale=0.52693, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.57024, bgr=0.0, mosaic=1.0, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train4
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train4', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train4/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01075' and 'momentum=0.86174' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.00042), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train4[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 2
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01075', 'lrf=0.01', 'momentum=0.86174', 'weight_decay=0.00042', 'warmup_epochs=2.63234', 'warmup_momentum=0.67764', 'warmup_bias_lr=0.1', 'box=9.29733', 'cls=0.47397', 'dfl=1.65134', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.01234', 'hsv_s=0.7', 'hsv_v=0.48604', 'degrees=0.0', 'translate=0.09465', 'scale=0.52693', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.57024', 'bgr=0.0', 'mosaic=1.0', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m2/10 iterations complete ✅ (99.71s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 3/10 with hyperparameters: {'lr0': 0.01075, 'lrf': 0.00995, 'momentum': 0.86325, 'weight_decay': 0.0004, 'warmup_epochs': 2.57051, 'warmup_momentum': 0.67764, 'box': 9.20721, 'cls': 0.44004, 'dfl': 1.72921, 'hsv_h': 0.01117, 'hsv_s': 0.7, 'hsv_v': 0.45379, 'degrees': 0.0, 'translate': 0.09465, 'scale': 0.55088, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.61392, 'bgr': 0.0, 'mosaic': 1.0, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train5, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01075, lrf=0.00995, momentum=0.86325, weight_decay=0.0004, warmup_epochs=2.57051, warmup_momentum=0.67764, warmup_bias_lr=0.1, box=9.20721, cls=0.44004, dfl=1.72921, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.01117, hsv_s=0.7, hsv_v=0.45379, degrees=0.0, translate=0.09465, scale=0.55088, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.61392, bgr=0.0, mosaic=1.0, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train5
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train5', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train5/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01075' and 'momentum=0.86325' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.0004), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train5[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 3
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01075', 'lrf=0.00995', 'momentum=0.86325', 'weight_decay=0.0004', 'warmup_epochs=2.57051', 'warmup_momentum=0.67764', 'warmup_bias_lr=0.1', 'box=9.20721', 'cls=0.44004', 'dfl=1.72921', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.01117', 'hsv_s=0.7', 'hsv_v=0.45379', 'degrees=0.0', 'translate=0.09465', 'scale=0.55088', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.61392', 'bgr=0.0', 'mosaic=1.0', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m3/10 iterations complete ✅ (140.31s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 4/10 with hyperparameters: {'lr0': 0.01, 'lrf': 0.00967, 'momentum': 0.98, 'weight_decay': 0.00049, 'warmup_epochs': 3.30243, 'warmup_momentum': 0.8, 'box': 7.22492, 'cls': 0.30766, 'dfl': 1.77218, 'hsv_h': 0.015, 'hsv_s': 0.7689, 'hsv_v': 0.34219, 'degrees': 0.0, 'translate': 0.1, 'scale': 0.54015, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.44732, 'bgr': 0.0, 'mosaic': 1.0, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train6, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01, lrf=0.00967, momentum=0.98, weight_decay=0.00049, warmup_epochs=3.30243, warmup_momentum=0.8, warmup_bias_lr=0.1, box=7.22492, cls=0.30766, dfl=1.77218, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.015, hsv_s=0.7689, hsv_v=0.34219, degrees=0.0, translate=0.1, scale=0.54015, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.44732, bgr=0.0, mosaic=1.0, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train6
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train6', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train6/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01' and 'momentum=0.98' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.00049), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train6[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 4
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01', 'lrf=0.00967', 'momentum=0.98', 'weight_decay=0.00049', 'warmup_epochs=3.30243', 'warmup_momentum=0.8', 'warmup_bias_lr=0.1', 'box=7.22492', 'cls=0.30766', 'dfl=1.77218', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.015', 'hsv_s=0.7689', 'hsv_v=0.34219', 'degrees=0.0', 'translate=0.1', 'scale=0.54015', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.44732', 'bgr=0.0', 'mosaic=1.0', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m4/10 iterations complete ✅ (180.66s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 5/10 with hyperparameters: {'lr0': 0.01148, 'lrf': 0.00698, 'momentum': 0.82412, 'weight_decay': 0.00037, 'warmup_epochs': 2.63234, 'warmup_momentum': 0.67764, 'box': 8.25231, 'cls': 0.63, 'dfl': 1.94241, 'hsv_h': 0.00926, 'hsv_s': 0.7911, 'hsv_v': 0.5074, 'degrees': 0.0, 'translate': 0.08708, 'scale': 0.53552, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.53132, 'bgr': 0.0, 'mosaic': 0.92742, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train7, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01148, lrf=0.00698, momentum=0.82412, weight_decay=0.00037, warmup_epochs=2.63234, warmup_momentum=0.67764, warmup_bias_lr=0.1, box=8.25231, cls=0.63, dfl=1.94241, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.00926, hsv_s=0.7911, hsv_v=0.5074, degrees=0.0, translate=0.08708, scale=0.53552, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.53132, bgr=0.0, mosaic=0.92742, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train7
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train7', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train7/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01148' and 'momentum=0.82412' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.00037), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train7[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 5
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01148', 'lrf=0.00698', 'momentum=0.82412', 'weight_decay=0.00037', 'warmup_epochs=2.63234', 'warmup_momentum=0.67764', 'warmup_bias_lr=0.1', 'box=8.25231', 'cls=0.63', 'dfl=1.94241', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.00926', 'hsv_s=0.7911', 'hsv_v=0.5074', 'degrees=0.0', 'translate=0.08708', 'scale=0.53552', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.53132', 'bgr=0.0', 'mosaic=0.92742', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m5/10 iterations complete ✅ (218.30s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 6/10 with hyperparameters: {'lr0': 0.01064, 'lrf': 0.00891, 'momentum': 0.86325, 'weight_decay': 0.0004, 'warmup_epochs': 2.38053, 'warmup_momentum': 0.67764, 'box': 9.35356, 'cls': 0.44706, 'dfl': 1.68266, 'hsv_h': 0.01103, 'hsv_s': 0.72844, 'hsv_v': 0.45379, 'degrees': 0.0, 'translate': 0.09061, 'scale': 0.55088, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.61392, 'bgr': 0.0, 'mosaic': 0.9937, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train8, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01064, lrf=0.00891, momentum=0.86325, weight_decay=0.0004, warmup_epochs=2.38053, warmup_momentum=0.67764, warmup_bias_lr=0.1, box=9.35356, cls=0.44706, dfl=1.68266, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.01103, hsv_s=0.72844, hsv_v=0.45379, degrees=0.0, translate=0.09061, scale=0.55088, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.61392, bgr=0.0, mosaic=0.9937, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train8
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train8', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train8/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01064' and 'momentum=0.86325' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.0004), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train8[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 6
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01064', 'lrf=0.00891', 'momentum=0.86325', 'weight_decay=0.0004', 'warmup_epochs=2.38053', 'warmup_momentum=0.67764', 'warmup_bias_lr=0.1', 'box=9.35356', 'cls=0.44706', 'dfl=1.68266', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.01103', 'hsv_s=0.72844', 'hsv_v=0.45379', 'degrees=0.0', 'translate=0.09061', 'scale=0.55088', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.61392', 'bgr=0.0', 'mosaic=0.9937', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m6/10 iterations complete ✅ (257.53s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 7/10 with hyperparameters: {'lr0': 0.01106, 'lrf': 0.00989, 'momentum': 0.88741, 'weight_decay': 0.0003, 'warmup_epochs': 2.61038, 'warmup_momentum': 0.70576, 'box': 7.73138, 'cls': 0.48792, 'dfl': 1.65134, 'hsv_h': 0.01293, 'hsv_s': 0.57927, 'hsv_v': 0.37526, 'degrees': 0.0, 'translate': 0.10526, 'scale': 0.52504, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.4842, 'bgr': 0.0, 'mosaic': 0.80303, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train9, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01106, lrf=0.00989, momentum=0.88741, weight_decay=0.0003, warmup_epochs=2.61038, warmup_momentum=0.70576, warmup_bias_lr=0.1, box=7.73138, cls=0.48792, dfl=1.65134, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.01293, hsv_s=0.57927, hsv_v=0.37526, degrees=0.0, translate=0.10526, scale=0.52504, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.4842, bgr=0.0, mosaic=0.80303, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train9
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train9', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train9/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01106' and 'momentum=0.88741' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.0003), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train9[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 7
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01106', 'lrf=0.00989', 'momentum=0.88741', 'weight_decay=0.0003', 'warmup_epochs=2.61038', 'warmup_momentum=0.70576', 'warmup_bias_lr=0.1', 'box=7.73138', 'cls=0.48792', 'dfl=1.65134', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.01293', 'hsv_s=0.57927', 'hsv_v=0.37526', 'degrees=0.0', 'translate=0.10526', 'scale=0.52504', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.4842', 'bgr=0.0', 'mosaic=0.80303', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m7/10 iterations complete ✅ (296.14s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 8/10 with hyperparameters: {'lr0': 0.0117, 'lrf': 0.00602, 'momentum': 0.82391, 'weight_decay': 0.00041, 'warmup_epochs': 2.67697, 'warmup_momentum': 0.65676, 'box': 6.53875, 'cls': 0.67632, 'dfl': 1.7224, 'hsv_h': 0.00904, 'hsv_s': 0.7911, 'hsv_v': 0.5074, 'degrees': 0.0, 'translate': 0.08616, 'scale': 0.47167, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.5229, 'bgr': 0.0, 'mosaic': 0.7652, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train10, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.0117, lrf=0.00602, momentum=0.82391, weight_decay=0.00041, warmup_epochs=2.67697, warmup_momentum=0.65676, warmup_bias_lr=0.1, box=6.53875, cls=0.67632, dfl=1.7224, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.00904, hsv_s=0.7911, hsv_v=0.5074, degrees=0.0, translate=0.08616, scale=0.47167, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.5229, bgr=0.0, mosaic=0.7652, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train10
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train10', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train10/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.0117' and 'momentum=0.82391' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.00041), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train10[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 8
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.0117', 'lrf=0.00602', 'momentum=0.82391', 'weight_decay=0.00041', 'warmup_epochs=2.67697', 'warmup_momentum=0.65676', 'warmup_bias_lr=0.1', 'box=6.53875', 'cls=0.67632', 'dfl=1.7224', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.00904', 'hsv_s=0.7911', 'hsv_v=0.5074', 'degrees=0.0', 'translate=0.08616', 'scale=0.47167', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.5229', 'bgr=0.0', 'mosaic=0.7652', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m8/10 iterations complete ✅ (335.32s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 9/10 with hyperparameters: {'lr0': 0.01075, 'lrf': 0.00995, 'momentum': 0.88774, 'weight_decay': 0.00049, 'warmup_epochs': 2.57051, 'warmup_momentum': 0.6846, 'box': 9.40179, 'cls': 0.37219, 'dfl': 1.85881, 'hsv_h': 0.01117, 'hsv_s': 0.77649, 'hsv_v': 0.47611, 'degrees': 0.0, 'translate': 0.08682, 'scale': 0.5348, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.69095, 'bgr': 0.0, 'mosaic': 0.96881, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train11, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01075, lrf=0.00995, momentum=0.88774, weight_decay=0.00049, warmup_epochs=2.57051, warmup_momentum=0.6846, warmup_bias_lr=0.1, box=9.40179, cls=0.37219, dfl=1.85881, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.01117, hsv_s=0.77649, hsv_v=0.47611, degrees=0.0, translate=0.08682, scale=0.5348, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.69095, bgr=0.0, mosaic=0.96881, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train11
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train11', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train11/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01075' and 'momentum=0.88774' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.00049), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train11[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 9
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01075', 'lrf=0.00995', 'momentum=0.88774', 'weight_decay=0.00049', 'warmup_epochs=2.57051', 'warmup_momentum=0.6846', 'warmup_bias_lr=0.1', 'box=9.40179', 'cls=0.37219', 'dfl=1.85881', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.01117', 'hsv_s=0.77649', 'hsv_v=0.47611', 'degrees=0.0', 'translate=0.08682', 'scale=0.5348', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.69095', 'bgr=0.0', 'mosaic=0.96881', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m9/10 iterations complete ✅ (373.73s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+[34m[1mTuner: [0mStarting iteration 10/10 with hyperparameters: {'lr0': 0.01148, 'lrf': 0.00698, 'momentum': 0.8199, 'weight_decay': 0.00043, 'warmup_epochs': 2.1211, 'warmup_momentum': 0.62107, 'box': 9.93293, 'cls': 0.63, 'dfl': 1.69249, 'hsv_h': 0.00946, 'hsv_s': 0.9, 'hsv_v': 0.52294, 'degrees': 0.0, 'translate': 0.05677, 'scale': 0.53552, 'shear': 0.0, 'perspective': 0.0, 'flipud': 0.0, 'fliplr': 0.38917, 'bgr': 0.0, 'mosaic': 0.916, 'mixup': 0.0, 'copy_paste': 0.0}
+New https://pypi.org/project/ultralytics/8.2.10 available 😃 Update with 'pip install -U ultralytics'
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+[34m[1mengine/trainer: [0mtask=detect, mode=train, model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt, data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml, epochs=100, time=None, patience=100, batch=8, imgsz=512, save=True, save_period=-1, cache=False, device=0, workers=8, project=None, name=train12, exist_ok=False, pretrained=True, optimizer=auto, verbose=True, seed=0, deterministic=True, single_cls=False, rect=False, cos_lr=False, close_mosaic=10, resume=False, amp=True, fraction=1.0, profile=False, freeze=None, multi_scale=False, overlap_mask=True, mask_ratio=4, dropout=0.0, val=True, split=val, save_json=False, save_hybrid=False, conf=None, iou=0.7, max_det=300, half=False, dnn=False, plots=True, source=None, vid_stride=1, stream_buffer=False, visualize=False, augment=False, agnostic_nms=False, classes=None, retina_masks=False, embed=None, show=False, save_frames=False, save_txt=False, save_conf=False, save_crop=False, show_labels=True, show_conf=True, show_boxes=True, line_width=None, format=torchscript, keras=False, optimize=False, int8=False, dynamic=False, simplify=False, opset=None, workspace=4, nms=False, lr0=0.01148, lrf=0.00698, momentum=0.8199, weight_decay=0.00043, warmup_epochs=2.1211, warmup_momentum=0.62107, warmup_bias_lr=0.1, box=9.93293, cls=0.63, dfl=1.69249, pose=12.0, kobj=1.0, label_smoothing=0.0, nbs=64, hsv_h=0.00946, hsv_s=0.9, hsv_v=0.52294, degrees=0.0, translate=0.05677, scale=0.53552, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.38917, bgr=0.0, mosaic=0.916, mixup=0.0, copy_paste=0.0, auto_augment=randaugment, erasing=0.4, crop_fraction=1.0, cfg=None, tracker=botsort.yaml, save_dir=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train12
+Overriding model.yaml nc=80 with nc=3
+WARNING ⚠️ no model scale passed. Assuming scale='x'.
+
+                   from  n    params  module                                       arguments                     
+  0                  -1  1     25792  ultralytics.nn.modules.block.HGStem          [3, 32, 64]                   
+  1                  -1  6    259200  ultralytics.nn.modules.block.HGBlock         [64, 64, 128, 3, 6]           
+  2                  -1  1      1408  ultralytics.nn.modules.conv.DWConv           [128, 128, 3, 2, 1, False]    
+  3                  -1  6   1248256  ultralytics.nn.modules.block.HGBlock         [128, 128, 512, 3, 6]         
+  4                  -1  6   1788928  ultralytics.nn.modules.block.HGBlock         [512, 128, 512, 3, 6, False, True]
+  5                  -1  1      5632  ultralytics.nn.modules.conv.DWConv           [512, 512, 3, 2, 1, False]    
+  6                  -1  6   2079232  ultralytics.nn.modules.block.HGBlock         [512, 256, 1024, 5, 6, True, False]
+  7                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  8                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+  9                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 10                  -1  6   2472448  ultralytics.nn.modules.block.HGBlock         [1024, 256, 1024, 5, 6, True, True]
+ 11                  -1  1     11264  ultralytics.nn.modules.conv.DWConv           [1024, 1024, 3, 2, 1, False]  
+ 12                  -1  6   8221696  ultralytics.nn.modules.block.HGBlock         [1024, 512, 2048, 5, 6, True, False]
+ 13                  -1  6   9794560  ultralytics.nn.modules.block.HGBlock         [2048, 512, 2048, 5, 6, True, True]
+ 14                  -1  1    787200  ultralytics.nn.modules.conv.Conv             [2048, 384, 1, 1, None, 1, 1, False]
+ 15                  -1  1   2168192  ultralytics.nn.modules.transformer.AIFI      [384, 2048, 8]                
+ 16                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 17                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 18                  10  1    393984  ultralytics.nn.modules.conv.Conv             [1024, 384, 1, 1, None, 1, 1, False]
+ 19            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 20                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 21                  -1  1    148224  ultralytics.nn.modules.conv.Conv             [384, 384, 1, 1]              
+ 22                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, 'nearest']          
+ 23                   4  1    197376  ultralytics.nn.modules.conv.Conv             [512, 384, 1, 1, None, 1, 1, False]
+ 24            [-2, -1]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 25                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 26                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 27            [-1, 21]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 28                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 29                  -1  1   1327872  ultralytics.nn.modules.conv.Conv             [384, 384, 3, 2]              
+ 30            [-1, 16]  1         0  ultralytics.nn.modules.conv.Concat           [1]                           
+ 31                  -1  3   5019648  ultralytics.nn.modules.block.RepC3           [768, 384, 3]                 
+ 32        [25, 28, 31]  1   7406321  ultralytics.nn.modules.head.RTDETRDecoder    [3, [384, 384, 384]]          
+rt-detr-x summary: 867 layers, 67309617 parameters, 67309617 gradients, 232.3 GFLOPs
+
+Transferred 1226/1241 items from pretrained weights
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train12', view at http://localhost:6006/
+[34m[1mAMP: [0mrunning Automatic Mixed Precision (AMP) checks with YOLOv8n...
+[34m[1mAMP: [0mchecks passed ✅
+[34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s][34m[1mtrain: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 369 images, 395 backgrounds, 0 corrupt: 100%|██████████| 764/764 [00:00<?, ?it/s]
+[34m[1malbumentations: [0mBlur(p=0.01, blur_limit=(3, 7)), MedianBlur(p=0.01, blur_limit=(3, 7)), ToGray(p=0.01), CLAHE(p=0.01, clip_limit=(1, 4.0), tile_grid_size=(8, 8))
+[34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s][34m[1mval: [0mScanning /sise/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_test_26-04-2024_15-44-44/annotations/yolo_split/labels.cache... 106 images, 108 backgrounds, 0 corrupt: 100%|██████████| 214/214 [00:00<?, ?it/s]
+/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py:558: UserWarning: This DataLoader will create 16 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+Plotting labels to /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train12/labels.jpg... 
+[34m[1moptimizer:[0m 'optimizer=auto' found, ignoring 'lr0=0.01148' and 'momentum=0.8199' and determining best 'optimizer', 'lr0' and 'momentum' automatically... 
+[34m[1moptimizer:[0m AdamW(lr=0.001429, momentum=0.9) with parameter groups 193 weight(decay=0.0), 256 weight(decay=0.00043), 276 bias(decay=0.0)
+[34m[1mTensorBoard: [0mmodel graph visualization added ✅
+Image sizes 512 train, 512 val
+Using 8 dataloader workers
+Logging results to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train12[0m
+Starting training for 100 epochs...
+
+      Epoch    GPU_mem  giou_loss   cls_loss    l1_loss  Instances       Size
+  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/bin/yolo", line 8, in <module>
+    sys.exit(entrypoint())
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/cfg/__init__.py", line 582, in entrypoint
+    getattr(model, mode)(**overrides)  # default args from model
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 673, in train
+    self.trainer.train()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 199, in train
+    self._do_train(world_size)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/trainer.py", line 353, in _do_train
+    for i, batch in pbar:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 48, in __iter__
+    yield next(self.iterator)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/_utils.py", line 722, in reraise
+    raise exception
+OSError: Caught OSError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 250, in _worker_loop
+    init_fn(worker_id)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/data/build.py", line 83, in seed_worker
+    os.sched_setaffinity(0, range(NUM_THREADS))  # fix https://github.com/ultralytics/ultralytics/pull/11195
+OSError: [Errno 22] Invalid argument
+
+WARNING ❌️ training failure for hyperparameter tuning iteration 10
+Command '['yolo', 'train', 'task=detect', 'mode=train', 'model=/home/etaylor/code_projects/thesis/checkpoints/ultralytics/rtdetr-x.pt', 'data=/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/yaml_files/yolo_dataset_config.yaml', 'epochs=100', 'time=None', 'patience=100', 'batch=8', 'imgsz=512', 'save=True', 'save_period=-1', 'cache=False', 'device=0', 'workers=8', 'project=None', 'name=None', 'exist_ok=False', 'pretrained=True', 'optimizer=auto', 'verbose=True', 'seed=0', 'deterministic=True', 'single_cls=False', 'rect=False', 'cos_lr=False', 'close_mosaic=10', 'resume=False', 'amp=True', 'fraction=1.0', 'profile=False', 'freeze=None', 'multi_scale=False', 'overlap_mask=True', 'mask_ratio=4', 'dropout=0.0', 'val=True', 'split=val', 'save_json=False', 'save_hybrid=False', 'conf=None', 'iou=0.7', 'max_det=300', 'half=False', 'dnn=False', 'plots=True', 'source=None', 'vid_stride=1', 'stream_buffer=False', 'visualize=False', 'augment=False', 'agnostic_nms=False', 'classes=None', 'retina_masks=False', 'embed=None', 'show=False', 'save_frames=False', 'save_txt=False', 'save_conf=False', 'save_crop=False', 'show_labels=True', 'show_conf=True', 'show_boxes=True', 'line_width=None', 'format=torchscript', 'keras=False', 'optimize=False', 'int8=False', 'dynamic=False', 'simplify=False', 'opset=None', 'workspace=4', 'nms=False', 'lr0=0.01148', 'lrf=0.00698', 'momentum=0.8199', 'weight_decay=0.00043', 'warmup_epochs=2.1211', 'warmup_momentum=0.62107', 'warmup_bias_lr=0.1', 'box=9.93293', 'cls=0.63', 'dfl=1.69249', 'pose=12.0', 'kobj=1.0', 'label_smoothing=0.0', 'nbs=64', 'hsv_h=0.00946', 'hsv_s=0.9', 'hsv_v=0.52294', 'degrees=0.0', 'translate=0.05677', 'scale=0.53552', 'shear=0.0', 'perspective=0.0', 'flipud=0.0', 'fliplr=0.38917', 'bgr=0.0', 'mosaic=0.916', 'mixup=0.0', 'copy_paste=0.0', 'auto_augment=randaugment', 'erasing=0.4', 'crop_fraction=1.0', 'cfg=None', 'tracker=botsort.yaml']' returned non-zero exit status 1.
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_scatter_plots.png
+Saved /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/tune_fitness.png
+
+[34m[1mTuner: [0m10/10 iterations complete ✅ (413.62s)
+[34m[1mTuner: [0mResults saved to [1m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2[0m
+[34m[1mTuner: [0mBest fitness=0.0 observed at iteration 1
+[34m[1mTuner: [0mBest fitness metrics are {}
+[34m[1mTuner: [0mBest fitness model is /home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/train
+[34m[1mTuner: [0mBest fitness hyperparameters are printed below.
+
+Printing '[1m[30m/home/etaylor/code_projects/thesis/src/segmentation/notebooks/ultralytics/runs/yolov5xu/detect/tune2/best_hyperparameters.yaml[0m'
+
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+box: 7.5
+cls: 0.5
+dfl: 1.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+INFO:__main__:Training results:
+None
+Ultralytics YOLOv8.2.9 🚀 Python-3.10.0 torch-2.2.2+cu118 CUDA:0 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+rt-detr-x summary: 638 layers, 65631836 parameters, 0 gradients, 222.8 GFLOPs
+Traceback (most recent call last):
+  File "/home/etaylor/code_projects/thesis/src/segmentation/train_scripts/tune_ultralytics_model.py", line 66, in <module>
+    main(args)
+  File "/home/etaylor/code_projects/thesis/src/segmentation/train_scripts/tune_ultralytics_model.py", line 56, in main
+    validate_model(model)
+  File "/home/etaylor/code_projects/thesis/src/segmentation/train_scripts/tune_ultralytics_model.py", line 42, in validate_model
+    valid_results = model.val()
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/model.py", line 527, in val
+    validator(model=self.model)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/etaylor/.conda/envs/yolov9/lib/python3.10/site-packages/ultralytics/engine/validator.py", line 147, in __call__
+    raise FileNotFoundError(emojis(f"Dataset '{self.args.data}' for task={self.args.task} not found ❌"))
+FileNotFoundError: Dataset 'None' for task=detect not found ❌

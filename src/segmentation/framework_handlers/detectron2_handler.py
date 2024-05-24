@@ -1,10 +1,6 @@
 import detectron2
-from detectron2 import model_zoo
-from detectron2.engine import DefaultTrainer, DefaultPredictor
-from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.data.datasets import register_coco_instances
-from detectron2.utils.logger import setup_logger
 from detectron2.utils.visualizer import Visualizer
 from detectron2.utils.visualizer import ColorMode
 
@@ -12,10 +8,9 @@ from detectron2.utils.visualizer import ColorMode
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-from segments.utils import export_dataset
 from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
+from src.annotation_handling import annotation_handler
 import os
-import numpy as np
 from matplotlib import pyplot as plt
 import cv2
 import torch
@@ -23,52 +18,39 @@ import csv
 from skimage.measure import regionprops, label
 import seaborn as sns
 import pandas as pd
-import shutil
 
 # Global variables
 SEGMENTS_HANDLER = SegmentsAIHandler()
 DETECTRON2_CHECKPOINT_BASE_PATH = "checkpoints/detectron2"
+
+detectron2_detection_models = [
+    "COCO-Detection/faster_rcnn_R_101_C4_3x",
+    "COCO-Detection/faster_rcnn_R_101_DC5_3x",
+    "COCO-Detection/faster_rcnn_R_101_FPN_3x",
+    "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x",
+    "COCO-Detection/retinanet_R_101_FPN_3x",
+]
+
+detectron2_segmentation_models = [
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_C4_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_DC5_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x",
+    "COCO-InstanceSegmentation/mask_rcnn_regnetx_4gf_dds_fpn_1x",
+    "COCO-InstanceSegmentation/mask_rcnn_regnetx_4gf_dds_fpn_1x",
+    "Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml",
+    "Misc/mask_rcnn_R_50_FPN_3x_dconv_c3-c5.yaml",
+    "Misc/scratch_mask_rcnn_R_50_FPN_9x_syncbn.yaml",
+    "Misc/panoptic_fpn_R_101_dconv_cascade_gn_3x.yaml"
+    "Misc/cascade_mask_rcnn_X_152_32x8d_FPN_IN5k_gn_dconv.yaml",
+]
+
 
 def print_version_info():
     torch_version = ".".join(torch.__version__.split(".")[:2])
     cuda_version = torch.version.cuda
     print("torch: ", torch_version, "; cuda: ", cuda_version)
     print("detectron2:", detectron2.__version__)
-
-
-def convert_coco_to_segments_format(image, outputs):
-    segmentation_bitmap = np.zeros((image.shape[0], image.shape[1]), np.uint32)
-    annotations = []
-    counter = 1
-    instances = outputs['instances']
-    for i in range(len(instances.pred_classes)):
-        category_id = int(instances.pred_classes[i])
-        instance_id = counter
-        mask = instances.pred_masks[i].cpu()
-        segmentation_bitmap[mask] = instance_id
-        annotations.append({'id': instance_id, 'category_id': category_id})
-        counter += 1
-    return segmentation_bitmap, annotations
-
-
-def convert_segments_to_coco_format(dataset_name, release_version, export_format="coco-instance", output_dir="."):
-    # get the dataset instance
-    dataset = SEGMENTS_HANDLER.get_dataset_instance(dataset_name, version=release_version)
-        
-    # export the dataset - format is coco instance segmentation
-    export_json_path, saved_images_path = export_dataset(dataset, export_format=export_format, export_folder=output_dir)
-
-    # Create the annotations folder one level up from saved_images_path
-    annotations_folder = os.path.join(os.path.dirname(saved_images_path), "annotations")
-    if not os.path.exists(annotations_folder):
-        os.makedirs(annotations_folder)
-
-    # Move the export_json_path file to the annotations folder
-    new_export_json_path = os.path.join(annotations_folder, os.path.basename(export_json_path))
-    shutil.move(export_json_path, new_export_json_path)
-
-    return dataset, new_export_json_path, saved_images_path
-
 
 
 def imshow(image):
@@ -79,13 +61,13 @@ def imshow(image):
 
 def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release_train, release_test):
     # Convert segments dataset to coco format for training dataset
-    _, train_export_json_path, train_saved_images_path = convert_segments_to_coco_format(
+    _, train_export_json_path, train_saved_images_path = annotation_handler.convert_segments_to_coco_format(
         dataset_name=dataset_name_train, 
         release_version=release_train, 
     )
 
     # Convert segments dataset to coco format for testing dataset
-    _, test_export_json_path, test_saved_images_path = convert_segments_to_coco_format(
+    _, test_export_json_path, test_saved_images_path = annotation_handler.convert_segments_to_coco_format(
         dataset_name=dataset_name_test, 
         release_version=release_test, 
     )
@@ -101,8 +83,6 @@ def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release
     dataset_dicts_test = DatasetCatalog.get(dataset_name_test)
 
     return metadata_train, dataset_dicts_train, metadata_test, dataset_dicts_test
-
-
 
 
 def plot_train_samples(dataset_dicts_train, metadata_train, indices=None, scale=0.5):

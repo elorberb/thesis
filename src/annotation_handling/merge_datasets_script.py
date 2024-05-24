@@ -4,10 +4,19 @@ import config
 
 
 if __name__ == "__main__":
-    src_dataset_identifier = 'etaylor/cannabis_patches_week9_15_06_2023_3x_regular_IMG_2198'
-    dest_dataset_identifier = "etaylor/cannabis_patches_week9_15_06_2023_3x_regular_test"
+    # src_dataset_identifier = 'etaylor/cannabis_patches_week9_15_06_2023_3x_regular_IMG_2198'
+    dest_dataset_identifier = "etaylor/cannabis_patches_all_11_4_24"
     verbose = True
-
+    
+    # merge train and test datasets to all images dataset created in 11.4.24
+    segmentsai_handler.copy_dataset_contents(source_dataset_id="etaylor/cannabis_patches_train",
+                                             destination_dataset_id=dest_dataset_identifier,
+                                             verbose=verbose,
+                                             only_patches=True)
+    segmentsai_handler.copy_dataset_contents(source_dataset_id="etaylor/cannabis_patches_test",
+                                             destination_dataset_id=dest_dataset_identifier,
+                                             verbose=verbose,
+                                             only_patches=True)
     # # merge datasets
     # segmentsai_handler.copy_dataset_contents("etaylor/cannabis_patches_week9_15_06_2023_3x_regular_IMG_2242", dest_dataset_identifier, verbose=verbose, only_patches=True)
     # segmentsai_handler.copy_dataset_contents("etaylor/cannabis_patches_week9_15_06_2023_3x_regular_IMG_2305", dest_dataset_identifier, verbose=verbose, only_patches=True)

@@ -19,6 +19,7 @@
 
 # all . files
 .*
+.vscode/
 
 # Checkpoints and images folders
 /checkpoints
@@ -26,8 +27,32 @@
 
 # Ignore Python compiled files
 *.pyc
+segmentsai_handler.cpython-39.pyc
+
+# Ignore checkpoint files
+*.pth
+*.pt
 
 # Ignore Python cache directories
 *__pycache__/
 
-/src/app/creds/
+
+# Experiement app creds
+trichome-classification-study.json
+
+# Ignore data files
+data/
+
+# App video tutorial
+exp_tutorial.mp4
+
+# YOLO runs
+runs/
+yaml_files/
+
+# added files
+settings.json
+
+# sahi package images results
+sahi_results/
+/home/etaylor/code_projects/thesis/src/segmentation/notebooks/detectron2/sahi_results

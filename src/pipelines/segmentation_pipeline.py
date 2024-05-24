@@ -1,5 +1,5 @@
 from src.segmentation.framework_handlers.detectron2_handler import Detectron2Handler
-from src.data_preparation.image_loader import read_images_and_names
+from src.data_preparation.image_loader import read_images_and_names_from_dir
 
 
 # TODO: Implement the following functions
@@ -12,7 +12,7 @@ def save_masks(masks, output_folder):
 
 
 def segmentation_pipeline(input_folder, output_folder, detectron_handler):
-    images_names = read_images_and_names(input_folder)
+    images_names = read_images_and_names_from_dir(input_folder)
     masks = predict_masks(images_names, detectron_handler)
     save_masks(masks, output_folder)
     print("Segmentation pipeline process completed.")

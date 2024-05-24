@@ -5,7 +5,7 @@ import sys
 
 
 def setup_sam():
-    !{sys.executable} -m pip install 'git+https://github.com/facebookresearch/segment-anything.git'
+    # !{sys.executable} -m pip install 'git+https://github.com/facebookresearch/segment-anything.git'
     sam_checkpoint = "sam_vit_h_4b8939.pth"
     model_type = "vit_h"
     device = "cuda"
