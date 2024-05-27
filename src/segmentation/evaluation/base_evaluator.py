@@ -101,28 +101,34 @@ class BaseEvaluator(ABC):
 
     
     def compute_confusion_matrix(self, matches, misclassifications, false_positives, false_negatives, gt_boxes, pred_boxes, normalize=False, single_class=False):
-        num_classes = self.num_classes  # Assuming this is set correctly
+        if single_class:
+            num_classes = 1  # Use 1 to represent the single class scenario
+        else:
+            num_classes = self.num_classes  # Use the actual number of classes
+
+        # Initialize the confusion matrix
         cm = np.zeros((num_classes + 1, num_classes + 1), dtype=int)  # Last row/col for FPs/FNs
 
         # True Positives
         for gt_idx, pred_idx, _ in matches:
-            class_id = gt_boxes[gt_idx]['class_id']
-            cm[class_id, class_id] += 1
+            gt_class = 0 if single_class else gt_boxes[gt_idx]['class_id']
+            pred_class = 0 if single_class else pred_boxes[pred_idx]['class_id']
+            cm[gt_class, pred_class] += 1
 
         # Misclassifications
         for gt_idx, pred_idx, _ in misclassifications:
-            true_class = gt_boxes[gt_idx]['class_id']
-            pred_class = pred_boxes[pred_idx]['class_id']
+            true_class = 0 if single_class else gt_boxes[gt_idx]['class_id']
+            pred_class = 0 if single_class else pred_boxes[pred_idx]['class_id']
             cm[true_class, pred_class] += 1
 
         # False Positives
         for pred in false_positives:
-            pred_class = pred['class_id']
+            pred_class = 0 if single_class else pred['class_id']
             cm[num_classes, pred_class] += 1
 
         # False Negatives
         for fn in false_negatives:
-            true_class = fn['class_id']
+            true_class = 0 if single_class else fn['class_id']
             cm[true_class, num_classes] += 1
 
         if normalize:
@@ -180,7 +186,7 @@ class BaseEvaluator(ABC):
         if single_class:
             # This block assumes confusion_matrix is a 2x2 matrix for a single class.
             tp = confusion_matrix[0, 0]
-            fp = confusion_matrix[0, 1] + confusion_matrix[1, 0]
+            fp = confusion_matrix[0, 1]
             fn = confusion_matrix[1, 0]
             precision = self.calculate_precision(tp, fp)
             recall = self.calculate_recall(tp, fn)
@@ -240,9 +246,13 @@ class BaseEvaluator(ABC):
         metrics = self.calculate_metrics(confusion_matrix, single_class=single_class)
 
         return {
-            "metrics": metrics,
-            "confusion_matrix": confusion_matrix,
-            "normalized_confusion_matrix": normalized_confusion_matrix
+        'matches': matches,
+        'misclassifications': misclassifications,
+        'false_positives': false_positives,
+        'false_negatives': false_negatives,
+        'metrics': metrics,
+        'confusion_matrix': confusion_matrix, 
+        'normalized_confusion_matrix': normalized_confusion_matrix
         }
         
 
@@ -259,13 +269,15 @@ class BaseEvaluator(ABC):
         Returns:
             dict: A dictionary containing metrics, confusion matrix, and normalized confusion matrix for the entire image.
         """
-        num_classes = self.num_classes
-        global_conf_matrix = np.zeros((num_classes + 1, num_classes + 1), dtype=int)
+        matrix_size = 2 if single_class else (self.num_classes + 1)
+        global_conf_matrix = np.zeros((matrix_size, matrix_size), dtype=int)
+        detailed_results = {}
 
         # Evaluate each patch using evaluate_patch function and aggregate the results
         for patch_key in patches_gt_boxes_dict.keys():
             patch_result = self.evaluate_patch(patches_gt_boxes_dict[patch_key], patches_pred_boxes_dict[patch_key], iou_thresh, single_class)
             global_conf_matrix += patch_result['confusion_matrix']
+            detailed_results[patch_key] = patch_result
 
         # Normalize the global confusion matrix
         normalized_conf_matrix = self.normalize_confusion_matrix(global_conf_matrix)
@@ -274,6 +286,7 @@ class BaseEvaluator(ABC):
         metrics = self.calculate_metrics(global_conf_matrix, single_class=single_class)
 
         return {
+            'patch_results': detailed_results,
             "metrics": metrics,
             "confusion_matrix": global_conf_matrix,
             "normalized_confusion_matrix": normalized_conf_matrix
@@ -295,27 +308,23 @@ class BaseEvaluator(ABC):
         Returns:
             dict: A dictionary containing aggregated metrics, confusion matrix, and normalized confusion matrix for the entire dataset.
         """
-        num_classes = self.num_classes
-        dataset_conf_matrix = np.zeros((num_classes + 1, num_classes + 1), dtype=int)
+        matrix_size = 2 if single_class else (self.num_classes + 1)
+        dataset_conf_matrix = np.zeros((matrix_size, matrix_size), dtype=int)
+        detailed_dataset_results = {}
 
         # Iterate over each image in the dataset
         for image_number in dataset_gt_boxes_dict.keys():
-            patches_gt_boxes_dict = dataset_gt_boxes_dict[image_number]
-            patches_pred_boxes_dict = dataset_pred_boxes_dict[image_number]
 
             # Evaluate each image using the evaluate_image function
-            image_results = self.evaluate_image(patches_gt_boxes_dict, patches_pred_boxes_dict, iou_thresh, single_class)
-
-            # Aggregate the confusion matrices
+            image_results = self.evaluate_image(dataset_gt_boxes_dict[image_number], dataset_pred_boxes_dict[image_number], iou_thresh, single_class)
             dataset_conf_matrix += image_results['confusion_matrix']
+            detailed_dataset_results[image_number] = image_results  # Store results for each image
 
-        # normalize the dataset confusion matrix
         normalized_conf_matrix = self.normalize_confusion_matrix(dataset_conf_matrix)
-
-        # Calculate metrics based on the aggregated dataset confusion matrix
         metrics = self.calculate_metrics(dataset_conf_matrix)
 
         return {
+            "image_results": detailed_dataset_results,  
             "metrics": metrics,
             "confusion_matrix": dataset_conf_matrix,
             "normalized_confusion_matrix": normalized_conf_matrix
@@ -332,6 +341,7 @@ class BaseEvaluator(ABC):
         plt.ylabel('Actual')
         plt.title('Confusion Matrix')
         plt.show()
+
 
     @staticmethod
     def plot_boxes(image, boxes, class_label=None, is_ground_truth=True):
@@ -355,12 +365,8 @@ class BaseEvaluator(ABC):
         # Set class labels (assuming 3 classes as described: clear, cloudy, amber)
         class_labels = {0: 'clear', 1: 'cloudy', 2: 'amber'}
         
-        # Define colors for different classes
-        gt_colors = {0: 'darkgrey', 1: 'lightgrey', 2: 'goldenrod'}
-        pred_colors = {0: 'grey', 1: 'white', 2: 'orange'}
-
         # Select appropriate colors
-        colors = gt_colors if is_ground_truth else pred_colors
+        colors = {0: 'grey', 1: 'white', 2: 'orange'}
         linestyle = 'dashed' if is_ground_truth else 'solid'
 
         # Plot boxes
@@ -368,7 +374,7 @@ class BaseEvaluator(ABC):
             if class_label is None or box['class_id'] == class_label:
                 x_min, y_min, x_max, y_max = box['bbox']
                 cls_id = box['class_id']
-                rect = patches.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, linewidth=1, edgecolor=colors[cls_id], facecolor='none', linestyle=linestyle, label=class_labels[cls_id])
+                rect = patches.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, linewidth=1.5, edgecolor=colors[cls_id], facecolor='none', linestyle=linestyle, label=class_labels[cls_id])
                 ax.add_patch(rect)
 
         # Set legend
