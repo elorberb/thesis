@@ -39,6 +39,7 @@ segmentsai_handler.cpython-39.pyc
 
 # Experiement app creds
 trichome-classification-study.json
+/home/etaylor/code_projects/thesis/src/utils/google_drive_sync/creds
 
 # Ignore data files
 data/
