@@ -95,14 +95,22 @@ def organize_images(service, source_folder_id, dest_folder_id, flower_ids, flowe
 
 
 if __name__ == '__main__':
-    source_folder_id = '1phKcKZPBDDJmYUKY2eoOLlFmTpfMYlAE'  # Source folder ID in Google Drive
-    dest_folder_id = '10NMob9qp0nrIaesL4X-LzgLa5VgYlMiJ'  # Destination folder ID in Google Drive
+    source_folder_id = '1-SsWvKGfEdJ_GXZwkpJQ9wiDd4YRfpMg'  # Source folder ID in Google Drive
+    dest_folder_id = '1s__4c2uvfEOKqaxrJGaRKWymPtEKwaM4'  # Destination folder ID in Google Drive
 
-    flower_ids = [112, 117, 102, 116, 92, 107, 96, 111, 91, 97, 98, 106, 95, 113, 118, 101, 108, 119, 115, 
-                100, 94, 104, 120, 114, 110, 93, 109, 99, 103, 105]
-    image_ids = [6199, 6205, 6212, 6219, 6226, 6234, 6244, 6249, 6256, 6264, 6272, 6282, 6290, 6298, 6306, 6317, 
-                6324, 6341, 6350, 6374, 6385, 6397, 6406, 6416, 6427, 6436, 6449, 6462, 6470, 6480, 6488]
+    flower_ids = [127, 137, 121, 126, 147, 122, 136, 135, 128, 123, 131, 149, 148, 129, 132, 130, 140, 134,
+                125, 138, 150, 124, 133, 139]
+    image_ids = [6814, 6821, 6828, 6839, 6848, 6861, 6873, 6882, 6891, 6898, 6908, 6917, 6929, 6937, 6946, 6955, 6966, 
+                6976, 6984, 6992, 7002, 7012, 7021, 7029]
 
     flower_id_images = [f'IMG_{image_id}.JPG' for image_id in image_ids]
 
     organize_images(service, source_folder_id, dest_folder_id, flower_ids, flower_id_images)
+    
+    # # validate the number of images in each list
+    # print(len(flower_ids))
+    # print(len(image_ids))
+    
+    # # validate that there is no duplicates in flower_ids
+    # print(len(set(flower_ids)))
+    
