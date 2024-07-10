@@ -100,16 +100,16 @@ def delete_empty_folders(path):
         print(f"Error deleting top-level folder {path}: {e}")
 
 if __name__ == '__main__':
-    folder_id = '1cK7Nl2iNKWPWKHftUWQVqI1C9pKBU1gn'  # folder id in google drive
-    local_download_path = '/home/etaylor/images/assessing_cannabis_experiment_images/day_3_2024_06_06'  # images path in the cluster
+    folder_id = '1s__4c2uvfEOKqaxrJGaRKWymPtEKwaM4'  # folder id in google drive
+    local_download_path = '/home/etaylor/images/assessing_cannabis_experiment_images/day_5_2024_06_13/lab'  # images path in the cluster
 
-    # # Ensure the local download directory exists
-    # if not os.path.exists(local_download_path):
-    #     os.makedirs(local_download_path)
+    # Ensure the local download directory exists
+    if not os.path.exists(local_download_path):
+        os.makedirs(local_download_path)
 
-    # overwrite_existing_files = False  # Set to True to overwrite existing files, False to skip them
-    # download_folder(service, folder_id, local_download_path, overwrite_existing_files)
+    overwrite_existing_files = False  # Set to True to overwrite existing files, False to skip them
+    download_folder(service, folder_id, local_download_path, overwrite_existing_files)
     
     # # in order to clean empty folders
-    folder_to_clean = local_download_path
-    delete_empty_folders(folder_to_clean)
+    # folder_to_clean = local_download_path
+    # delete_empty_folders(folder_to_clean)

@@ -15,18 +15,35 @@ GREENHOUSE_IMAGES_PATHS = {
 }
 
 
+pipe_psudo = """
+end to end pipe for predict the trichome dist given an image or a folder of images.
+
+to perform the end to end pipeline, we can choose one of two methods:
+1. use my pre-process pipe for the images and then run rest of the pipe
+2. use sahi package for the cutting and inference.
+
+steps after pre-process:
+1. I should use the detection model (Faster RCNN) for the object detection part.
+2. I should extract the trichomes detected for the classification part
+- better to do this is a temp folder that would be deleted after I perform the classification.
+3. I should use the classification model (Alexnet) for the classification part and save the labels of each trichome.
+4. I should calc the aggregated score for each full image and save it to json.
+5. If using Sahi - I should feedback the trichomes labels to the detected object in order to plot sample of the results.
+
+Improvements:
+- maybe it is possible to perform the classification without saving the trichomes images (just to point for the bbox values of the images patches).
+- Improve the sahi inference by filtering patches that are non relevant for the detection (blurry areas for example).
+- maybe it is possible to use sahi with two models, one for detection and one for the classification, instead of extracting trichomes and then classify them.
 
 
+Next steps:
+- download all the images data to the cluster.
+- create the python env that can run both detectron2 model and fastai model.
+- create a notebook for the end to end pipeline - test weather it is possible to perform it for a single image.
+- extend to a full image
+- extend to a folder of images (which represent a flower)
 
-# end to end pipe for predict the trichome dist given an image or a folder of images
-
-# steps for the pipeline
-# 1. Load the model
-# 2. Load the image
-# 3. Preprocess the image
-# 4. Predict the image
-#   4.1 Images are located in folders of a specific flower, we should predict for each image in the folder and for each patch the dist.
-# 5. Save the results and image predictions
+"""
 
 # load_flower_images
 def load_flower_images():

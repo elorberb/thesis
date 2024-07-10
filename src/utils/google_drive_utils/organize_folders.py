@@ -95,24 +95,28 @@ def organize_images(service, source_folder_id, dest_folder_id, flower_ids, flowe
 
 
 if __name__ == '__main__':
-    source_folder_id = '104rOQXe3se35zDNmoz-ARVBwT3YboADX'  # Source folder ID in Google Drive
-    dest_folder_id = '1FJTRl_hnKDxAnoX2tOsH-vb2wvgk84Ri'  # Destination folder ID in Google Drive
+    source_folder_id = '1sH7jg7hjWo_Z55FQ85m9NmKEHvd9LROq'  # Source folder ID in Google Drive
+    dest_folder_id = '1aRXDDVstxwS8boo9xdlXj6XywSeYDEnQ'  # Destination folder ID in Google Drive
 
-    flower_ids = [203, 200, 191, 205, 188, 195, 186, 187, 190, 201, 
-                192, 196, 181, 206, 208, 197, 207, 184, 185, 210,
-                199, 193, 194, 202, 189, 183, 204, 209, 198, ]
-    image_ids = [8140, 8150, 8160, 8170, 8178, 8189, 8199, 8205, 8217, 8232, 
-                8252, 8260, 8271, 8282, 8290, 8302, 8312, 8322, 8333, 8345,
-                8356, 8369, 8380, 8389, 8398, 8407, 8417, 8427, 8435, ]
+    flower_ids = [256, 257, 246, 266, 241, 251, 261, 262, 242, 247, 
+                260, 268, 267, 263, 245, 270, 252, 255, 265, 243,
+                253, 269, 264, 249, 250, 258, 254, 248, 244, 259, ]
+    image_ids = [8866, 8872, 8879, 8885, 8892, 8898, 8906, 8915, 8922, 8933, 
+                8940, 8949, 8956, 8963, 8972, 8980, 8987, 8995, 9004, 9012, 
+                9021, 9031, 9038, 9050, 9058, 9066, 9075, 9085, 9092, 9100,
+                ]
 
     flower_id_images = [f'IMG_{image_id}.JPG' for image_id in image_ids]
 
     organize_images(service, source_folder_id, dest_folder_id, flower_ids, flower_id_images)
     
-    # validate the number of images in each list
+    # # validate the number of images in each list
     # print(len(flower_ids))
-    # print(len(image_ids))
+    # # print(len(image_ids))
     
     # # validate that there is no duplicates in flower_ids
     # print(len(set(flower_ids)))
+    
+    # # check which number is missing from 241 to 270
+    # print(set(range(241, 271)) - set(flower_ids))
     
