@@ -197,8 +197,8 @@ def main():
         "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml"
     }
     
-    parent_input_folder = "/home/etaylor/images/assessing_cannabis_experiment_images/day_3_2024_06_06/lab"
-    output_base_folder = "/home/etaylor/code_projects/thesis/assessing_cannabis_exp_results/day_3_2024_06_06/lab"
+    parent_input_folder = "/home/etaylor/images/assessing_cannabis_experiment_images/day_4_2024_06_10/lab"
+    output_base_folder = "/home/etaylor/code_projects/thesis/assessing_cannabis_exp_results/day_4_2024_06_10/lab"
 
     # Ensure output base directory exists
     os.makedirs(output_base_folder, exist_ok=True)
