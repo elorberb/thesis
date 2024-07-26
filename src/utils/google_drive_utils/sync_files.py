@@ -1,21 +1,30 @@
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+from google_auth_oauthlib.flow import InstalledAppFlow
 import os
 import io
 
-# Path to the service account key file
-SERVICE_ACCOUNT_FILE = '/home/etaylor/code_projects/thesis/src/app/trichome-classification-study.json'
+# # Path to the service account key file
+# SERVICE_ACCOUNT_FILE = '/home/etaylor/code_projects/thesis/src/app/trichome-classification-study.json'
+
+# # Authenticate using the service account
+# service_account_creds = service_account.Credentials.from_service_account_file(
+#     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+
+# Path to the OAuth2 credentials file
+CLIENT_SECRET_FILE = '/home/etaylor/code_projects/thesis/src/utils/google_drive_utils/creds/client_secret_261183461521-ag57t3cdlmeadm0oqo6tq3qhv477f67o.apps.googleusercontent.com.json'
 
 # Define the scopes
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
-# Authenticate using the service account
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+# Authenticate using OAuth2
+flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+creds = flow.run_console()  # Use console-based authentication flow
 
 # Create the service
-service = build('drive', 'v3', credentials=credentials)
+service = build('drive', 'v3', credentials=creds)
 
 
 def list_files_in_folder(service, folder_id):
@@ -128,17 +137,6 @@ def delete_local_folder(path):
         print(f"Error deleting top-level folder {path}: {e}")
 
 
-def create_folder(service, folder_name, parent_folder_id):
-    """Create a folder in Google Drive."""
-    folder_metadata = {
-        'name': folder_name,
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [parent_folder_id]
-    }
-    folder = service.files().create(body=folder_metadata, fields='id').execute()
-    print(f"Created folder: {folder_name} with ID: {folder.get('id')}")
-    return folder.get('id')
-
 
 def upload_file(service, file_path, folder_id):
     """Upload a file to Google Drive."""
@@ -152,29 +150,51 @@ def upload_file(service, file_path, folder_id):
     print(f"Uploaded file: {file_name} with ID: {file.get('id')}")
 
 
-def upload_folder(service, local_path, parent_folder_id):
-    """Upload all contents of a folder to Google Drive, preserving the folder structure."""
-    for root, dirs, files in os.walk(local_path):
-        relative_path = os.path.relpath(root, local_path)
-        current_folder_id = parent_folder_id
-        if relative_path != '.':
-            path_parts = relative_path.split(os.sep)
-            for part in path_parts:
-                query = f"name='{part}' and '{current_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
-                results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
-                items = results.get('files', [])
-                if items:
-                    current_folder_id = items[0]['id']
-                else:
-                    current_folder_id = create_folder(service, part, current_folder_id)
+def upload_folder_dfs(service, local_path, parent_folder_id):
+    """Upload all contents of a folder to Google Drive using DFS, preserving the folder structure."""
+    stack = [(local_path, parent_folder_id)]
 
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            upload_file(service, file_path, current_folder_id)
+    while stack:
+        current_local_path, current_parent_id = stack.pop()
+        current_folder_id = current_parent_id
 
+        for entry in os.listdir(current_local_path):
+            full_path = os.path.join(current_local_path, entry)
+            if os.path.isdir(full_path):
+                new_folder_id = create_folder(service, entry, current_folder_id)
+                stack.append((full_path, new_folder_id))
+            else:
+                upload_file(service, full_path, current_folder_id)
+
+def create_folder(service, folder_name, parent_folder_id):
+    """Create a folder in Google Drive."""
+    folder_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [parent_folder_id]
+    }
+    folder = service.files().create(body=folder_metadata, fields='id').execute()
+    print(f"Created folder: {folder_name} with ID: {folder.get('id')}")
+    return folder.get('id')
+                
+                
+def check_storage_quota(service):
+    """Check the storage quota for the service account."""
+    about = service.about().get(fields="storageQuota").execute()
+    quota = about.get('storageQuota', {})
+    usage = int(quota.get('usage', 0))
+    limit = int(quota.get('limit', 0))
+    print(f"Storage used: {usage / (1024**3):.2f} GB")
+    print(f"Storage limit: {limit / (1024**3):.2f} GB")
+    if limit > 0:
+        print(f"Storage usage percentage: {usage / limit * 100:.2f}%")
+    else:
+        print("Unlimited storage")
+            
+            
 if __name__ == '__main__':
-    # folder_id = '1s__4c2uvfEOKqaxrJGaRKWymPtEKwaM4'  # folder id in google drive
-    # local_download_path = '/home/etaylor/images/assessing_cannabis_experiment_images/day_5_2024_06_13/lab'  # images path in the cluster
+    # folder_id = '1-cKSnT-qIwW3_nq6KkyhaZHrVCvEcvss'  # folder id in google drive
+    # local_download_path = '/sise/shanigu-group/etaylor/assessing_cannabis_exp/images/day_7_2024_06_20/lab/182'  # images path in the cluster
 
     # # Ensure the local download directory exists
     # if not os.path.exists(local_download_path):
@@ -188,10 +208,11 @@ if __name__ == '__main__':
     # delete_empty_folders(folder_to_clean)
     
     
-    # Upload folder
-    local_upload_path = '/home/etaylor/code_projects/thesis/assessing_cannabis_exp_results/day_1_2024_05_30'  # Specify your local folder path here
-    upload_folder_id = '163pmqj765dCSxBmTvB-G1qN3rECMqdHE'  # Specify the Google Drive folder ID here
-    upload_folder(service, local_upload_path, upload_folder_id)
+    # ---------- Upload folder - for uploading the results to the google drive
+    local_upload_path = '/sise/shanigu-group/etaylor/assessing_cannabis_exp/results'  # Specify your local folder path here
+    upload_folder_id = '1ZXNaFURLpOWG5s-kI5EohK72Xz0EVgbU'  # Specify the Google Drive folder ID here
+    upload_folder_dfs(service, local_upload_path, upload_folder_id)
     
-    # Delete the local folder after upload
-    # delete_local_folder(local_upload_path)
+
+    # ---------- check storage quata -----------------
+    # check_storage_quota(service)

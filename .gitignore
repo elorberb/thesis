@@ -64,3 +64,6 @@ eval_models_on_trichome_dist_images
 # Ignore assesing cannabis maturity experiment results
 assessing_cannabis_exp_results
 testing_end_to_end_pipe
+
+# credentials folders
+creds
