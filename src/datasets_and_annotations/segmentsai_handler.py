@@ -1,6 +1,5 @@
 from segments import SegmentsClient, SegmentsDataset
 from segments.utils import bitmap2file
-
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -38,8 +37,7 @@ class SegmentsAIHandler:
         # Initialize and return the SegmentsDataset
         return SegmentsDataset(release)
 
-        
-        
+
     def create_new_dataset(self, dataset_identifier, dataset_description, task_type, task_attributes):
         """
         Create a new dataset using the Segments AI API.
@@ -64,8 +62,7 @@ class SegmentsAIHandler:
         """
         new_dataset = self.client.add_dataset(dataset_identifier, dataset_description, task_type, task_attributes)
         return new_dataset     
-    
-    
+
     def add_collaborator_to_dataset(self, dataset_id, user, user_role='annotator'):
         """
         Add a collaborator to a dataset on Segments.ai.
@@ -80,7 +77,7 @@ class SegmentsAIHandler:
         """
         return self.client.add_dataset_collaborator(dataset_id, user, user_role)
     
-    import os
+    
 
 
     def upload_single_image(self, dataset_identifier, image_path):
@@ -108,7 +105,6 @@ class SegmentsAIHandler:
         new_sample = self.client.add_sample(dataset_identifier, filename, sample_attributes)
         print(f"Uploaded {filename} and added as sample: {new_sample}")
 
-    
     def upload_images(self, dataset_identifier, images_folder_path):
         """
         Uploads image files from a specified directory to a Segments.ai dataset.
@@ -138,7 +134,6 @@ class SegmentsAIHandler:
             # Add the new sample to the dataset on Segments.ai
             new_sample = self.client.add_sample(dataset_identifier, filename, sample_attributes)
             print(f"Uploaded {filename} and added as sample: {new_sample}")
-            
     
     def visualize_sample(self, *args):
         """
@@ -150,7 +145,6 @@ class SegmentsAIHandler:
             plt.imshow(np.array(image))
         plt.show()
 
-    
     def visualize_dataset(self, dataset_identifier, dataset_release_version="v0.1"):
         """
         Visualize samples in a Segments.ai dataset.
@@ -165,8 +159,7 @@ class SegmentsAIHandler:
                 self.visualize_sample(sample["image"], sample["segmentation_bitmap"])
             except TypeError as error:
                 print(f"Could not visualize sample {sample['name']}: {error}")
-                
-                
+
     def upload_annotation_for_sample(self, sample_uuid, segmentation_bitmap, annotation_data):
         """
         Uploads annotation data for a specific sample to Segments.ai.
@@ -195,8 +188,7 @@ class SegmentsAIHandler:
         self.client.add_label(
             sample_uuid, "ground-truth", label_attributes, label_status="PRELABELED"
         )
-        
-    
+
     def copy_dataset_contents(self, source_dataset_id, destination_dataset_id, label_status='REVIEWED', only_patches=False, verbose=False):
         """
         Copies all samples and their annotations from one dataset to another based on label status.
@@ -212,7 +204,6 @@ class SegmentsAIHandler:
 
         for index, sample in enumerate(source_samples):
             self.copy_sample(sample, destination_dataset_id, label_status, index, only_patches, verbose)
-
 
     def copy_sample(self, sample, destination_dataset_id, label_status, index, only_patches, verbose):
         # Filter out raw images if only copying patches
@@ -232,7 +223,6 @@ class SegmentsAIHandler:
         elif verbose:
             print(f"Skipping sample {sample.name} due to label status mismatch")
 
-
     def copy_sample_and_label(self, sample, label, destination_dataset_id, verbose):
         # Add the sample and its label to the destination dataset
         new_sample = self.client.add_sample(
@@ -245,8 +235,7 @@ class SegmentsAIHandler:
                 print(f"  - Copied sample {sample.name} and its label.")
             else:
                 print(f"  - Failed to copy sample {sample.name}.")
-                
-                
+
     def decrement_label_category_ids(self, dataset_id, labelset_name="ground-truth"):
         samples = self.client.get_samples(dataset_id)
 
@@ -269,8 +258,7 @@ class SegmentsAIHandler:
                 self.client.update_label(sample_uuid=sample.uuid, labelset=labelset_name, attributes=attributes_dict)
 
         print("Label category IDs have been decremented.")
-        
-    
+
     def get_trichome_distribution(self, image_number):
         """
         Fetches samples from a given dataset image number or full dataset identifier and calculates the distribution of trichome annotations.
