@@ -1,4 +1,4 @@
-from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
+from src.datasets_and_annotations.segmentsai_handler import SegmentsAIHandler
 segmentsai_handler = SegmentsAIHandler()
 import config
 

@@ -2,7 +2,7 @@ import numpy as np
 import os
 import shutil
 from segments.utils import export_dataset
-from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
+from src.datasets_and_annotations.segmentsai_handler import SegmentsAIHandler
 
 # YOLO utils
 import random

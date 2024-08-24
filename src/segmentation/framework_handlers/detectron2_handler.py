@@ -8,8 +8,8 @@ from detectron2.utils.visualizer import ColorMode
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
-from src.annotation_handling import annotation_handler
+from src.datasets_and_annotations.segmentsai_handler import SegmentsAIHandler
+from src.datasets_and_annotations import annotation_handler
 import os
 from matplotlib import pyplot as plt
 import cv2
