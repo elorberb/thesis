@@ -8,7 +8,7 @@ Model Assist Label Pipeline Stages:
     Creates a release and uploads predictions as annotations to the dataset.
 """
 
-from src.annotation_handling.segmentsai_handler import SegmentsAIHandler
+from src.datasets_and_annotations.segmentsai_handler import SegmentsAIHandler
 from segments import SegmentsDataset
 import config
 

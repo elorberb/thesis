@@ -57,3 +57,13 @@ settings.json
 # sahi package images results
 sahi_results/
 /home/etaylor/code_projects/thesis/src/segmentation/notebooks/detectron2/sahi_results
+
+# images of the trichome dist classificatoin experiment
+eval_models_on_trichome_dist_images
+
+# Ignore assesing cannabis maturity experiment results
+assessing_cannabis_exp_results
+testing_end_to_end_pipe
+
+# credentials folders
+creds
