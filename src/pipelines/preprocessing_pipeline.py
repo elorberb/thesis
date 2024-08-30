@@ -12,13 +12,15 @@ logging.basicConfig(level=logging.INFO)
 
 def filter_sharp_patches(patches):
     # Filter out blurry patches based on sharpness evaluation
-        sharp_patches = [
-            (patch, coords) for patch, coords in patches
-            if calculate_sharpness(patch) > np.mean([calculate_sharpness(p) for p, _ in patches])
-        ]
-        
-        return sharp_patches
-    
+    sharp_patches = [
+        (patch, coords)
+        for patch, coords in patches
+        if calculate_sharpness(patch)
+        > np.mean([calculate_sharpness(p) for p, _ in patches])
+    ]
+
+    return sharp_patches
+
 
 def preprocess_single_image(image_or_path, image_name, patch_size=512, verbose=False):
     """
@@ -62,42 +64,54 @@ def preprocess_single_image(image_or_path, image_name, patch_size=512, verbose=F
     return sharp_patches
 
 
-
 def preprocessing_pipeline(images_source: str, verbose=False, patch_size=512, **kwargs):
-    """ Process images by cutting them into patches, evaluating sharpness, and filtering out blurry patches. """
+    """Process images by cutting them into patches, evaluating sharpness, and filtering out blurry patches."""
 
     images = read_images(input_path_or_list=images_source, verbose=verbose)
     images_patches = {}
     for image_name, image in images.items():
-        sharp_patches = preprocess_single_image(image, image_name, patch_size=patch_size, verbose=verbose)
-        logging.info(f"Filtered {len(sharp_patches)} sharp patches for {image_name}") if verbose else None
+        sharp_patches = preprocess_single_image(
+            image, image_name, patch_size=patch_size, verbose=verbose
+        )
+        (
+            logging.info(
+                f"Filtered {len(sharp_patches)} sharp patches for {image_name}"
+            )
+            if verbose
+            else None
+        )
 
-        if kwargs.get('saving_dir', None) and kwargs.get('csv_file_path', None):
+        if kwargs.get("saving_dir", None) and kwargs.get("csv_file_path", None):
             # Save the sharp patches to the specified directory and update the CSV file
-            save_patches(image_name, sharp_patches, kwargs.get('saving_dir', None), kwargs.get('csv_file_path', None))
+            save_patches(
+                image_name,
+                sharp_patches,
+                kwargs.get("saving_dir", None),
+                kwargs.get("csv_file_path", None),
+            )
             if verbose:
-                print(f"Saved sharp patches of {image_name} to {kwargs.get('saving_dir', None)}")
-                
+                print(
+                    f"Saved sharp patches of {image_name} to {kwargs.get('saving_dir', None)}"
+                )
+
         images_patches[image_name] = sharp_patches
-        
+
     return images_patches
-                
-                
 
 
 if __name__ == "__main__":
 
-    week = 'week9'
-    zoom_type = '3xr'
+    week = "week9"
+    zoom_type = "3xr"
     patch_size = config.CANNABIS_PATCH_SIZE
     source_images_path = config.get_raw_image_path(week, zoom_type)
     saving_images_path = config.get_processed_cannabis_image_path(week, zoom_type)
     verbose = True
-    csv_file_path = 'metadata/cannabis_patches_metadata.csv'
+    csv_file_path = "metadata/cannabis_patches_metadata.csv"
     preprocessing_pipeline(
-        images_source=source_images_path, 
-        saving_dir=saving_images_path, 
+        images_source=source_images_path,
+        saving_dir=saving_images_path,
         csv_file_path=csv_file_path,
-        verbose=verbose, 
-        patch_size=patch_size
+        verbose=verbose,
+        patch_size=patch_size,
     )

@@ -16,7 +16,7 @@ segmentsai_handler = SegmentsAIHandler()
 
 
 def train_segmentation_model(train_dataset_name):
-    #TODO: implement this based on the best model achieved for the segmentation/detection task
+    # TODO: implement this based on the best model achieved for the segmentation/detection task
     model = None
     return model
 
@@ -30,23 +30,27 @@ def create_new_test_dataset(image_name, week, zoom_type, single_category=True):
     if single_category:
         task_attributes = {
             "format_version": "0.1",
-            "categories": [{"name": "trichome", "id": 0, "color": [65,117,5]}],
+            "categories": [{"name": "trichome", "id": 0, "color": [65, 117, 5]}],
         }
     else:
         task_attributes = {
             "format_version": "0.1",
-            "categories": [{"name": "trichome", "id": 0, "color": [65,117,5]},
-                        {"name": "clear", "id": 1, "color": [155,155,155]},
-                        {"name": "cloudy", "id": 2, "color": [255,255,255]},
-                        {"name": "amber", "id": 3, "color": [245,166,35]}]
+            "categories": [
+                {"name": "trichome", "id": 0, "color": [65, 117, 5]},
+                {"name": "clear", "id": 1, "color": [155, 155, 155]},
+                {"name": "cloudy", "id": 2, "color": [255, 255, 255]},
+                {"name": "amber", "id": 3, "color": [245, 166, 35]},
+            ],
         }
 
     TEST_DATASET = f"etaylor/{dataset_name}"
 
     # Create the dataset:
-    test_dataset_instance = segmentsai_handler.create_new_dataset(dataset_name, description, task_type, task_attributes)
+    test_dataset_instance = segmentsai_handler.create_new_dataset(
+        dataset_name, description, task_type, task_attributes
+    )
     print(test_dataset_instance)
-    
+
     return TEST_DATASET
 
 
@@ -54,33 +58,36 @@ def upload_predictions(release, model):
     print(f"release={release}")
     dataset = SegmentsDataset(release)
 
-
     for sample in dataset:
         # Generate label predictions
         image = sample["image"]
         segmentation_bitmap, annotations = model(image)
-        segmentsai_handler.upload_annotation_for_sample(sample['uuid'], segmentation_bitmap, annotations)
+        segmentsai_handler.upload_annotation_for_sample(
+            sample["uuid"], segmentation_bitmap, annotations
+        )
 
 
 def model_assist_label_pipeline(
     image_name: str, week_key: str, zoom_type_key: str, visualize: bool = False
 ):
-    
+
     train_dataset_name = "etaylor/cannabis_patches_all_images"
 
     if visualize:
         segmentsai_handler.visualize_dataset(train_dataset_name)
 
     model = train_segmentation_model(train_dataset_name)
-    
+
     # Create a new test dataset for the specified image, week, and zoom type
-    test_dataset = create_new_test_dataset(image_name, config.WEEKS_DIR[week_key], config.ZOOM_TYPES_DIR[zoom_type_key])
+    test_dataset = create_new_test_dataset(
+        image_name, config.WEEKS_DIR[week_key], config.ZOOM_TYPES_DIR[zoom_type_key]
+    )
     # Get the absolute path to the processed image
     abs_images_path = f"{config.get_processed_cannabis_image_path(week_key, zoom_type_key)}/{image_name}"
-    
+
     # Upload the images that are not annotated to the dataset
     segmentsai_handler.upload_images(test_dataset, abs_images_path)
-    
+
     release_name = "v0.1"
     description = "upload predictions to dataset."
     segmentsai_handler.client.add_release(test_dataset, release_name, description)
@@ -89,10 +96,11 @@ def model_assist_label_pipeline(
     upload_predictions(test_release, model)
 
 
-
 if __name__ == "__main__":
     # TODO: THIS SCRIPT DOES NOT WORK BECAUSE OF A PROBLEM WITH THE RELEASE OF SEGMENTS.AI - to run this code run it from here: src/annotation_handling/notebooks/model_assisted_labeling.ipynb
     image_name_param = "IMG_2129"
-    week_param = 'week9'
-    zoom_type_param = '3xr'
-    model_assist_label_pipeline(image_name_param, week_param, zoom_type_param, visualize=True)
+    week_param = "week9"
+    zoom_type_param = "3xr"
+    model_assist_label_pipeline(
+        image_name_param, week_param, zoom_type_param, visualize=True
+    )
