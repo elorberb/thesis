@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def load_model(model_config, patch_size=512):
+def load_obj_detection_model(model_config, patch_size=512):
     logger.info("Loading the model.")
     detection_model = AutoDetectionModel.from_pretrained(
         model_type="detectron2",
@@ -28,6 +28,7 @@ def load_model(model_config, patch_size=512):
         image_size=patch_size,
         device="cuda:0",  # or 'cpu'
     )
+
     return detection_model
 
 
@@ -255,7 +256,7 @@ def main():
 
     patch_size = 512
 
-    detection_model = load_model(model_config, patch_size)
+    detection_model = load_obj_detection_model(model_config, patch_size)
     process_all_folders(
         parent_input_folder, detection_model, output_base_folder, patch_size
     )
