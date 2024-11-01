@@ -10,26 +10,14 @@ import numpy as np
 
 import warnings
 
+from src.pipelines.end_to_end.end_to_end_utils import load_obj_detection_model
+
 warnings.filterwarnings(action="ignore")
 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def load_obj_detection_model(model_config, patch_size=512):
-    logger.info("Loading the model.")
-    detection_model = AutoDetectionModel.from_pretrained(
-        model_type="detectron2",
-        model_path=model_config["checkpoint"],
-        config_path=model_config["yaml_file"],
-        confidence_threshold=0.5,
-        image_size=patch_size,
-        device="cuda:0",  # or 'cpu'
-    )
-
-    return detection_model
 
 
 def process_image(image_path, detection_model, patch_size=512):
@@ -74,8 +62,8 @@ def filter_large_objects(predictions, size_threshold_ratio=10):
     return filtered_predictions
 
 
-def export_results(result, image_output_dir, base_file_name):
-    logger.info(f"Exporting results for {base_file_name}")
+def save_visuals(result, image_output_dir, base_file_name):
+    logger.info(f"Exporting visuals for {base_file_name}")
     start_time = time.time()
     result.export_visuals(
         export_dir=image_output_dir,
@@ -88,6 +76,9 @@ def export_results(result, image_output_dir, base_file_name):
     export_time = time.time() - start_time
     logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
 
+
+def save_results(result, image_output_dir, base_file_name):
+    logger.info(f"Saving results for {base_file_name}")
     # Save results to JSON with 'raw' suffix
     json_path = os.path.join(image_output_dir, f"{base_file_name}_raw.json")
     with open(json_path, "w") as json_file:
@@ -172,8 +163,8 @@ def process_images_in_folder(folder_path, detection_model, output_dir, patch_siz
         result.object_prediction_list = filtered_predictions
 
         # Export results with filtered predictions
-        export_results(result, image_output_dir, base_file_name)
-
+        save_visuals(result, image_output_dir, base_file_name)
+        save_results(result, image_output_dir, base_file_name)
         # Compute class label distribution and normalized distribution for the image
         class_distribution = compute_class_distribution(filtered_predictions)
         normalized_class_distribution = compute_normalized_class_distribution(

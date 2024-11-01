@@ -1,9 +1,6 @@
 import os
-from end_to_end_pipe import load_obj_detection_model
 import cv2
 import logging
-from sahi import AutoDetectionModel
-from sahi.predict import get_sliced_prediction
 import numpy as np
 from fastai.vision.all import *
 import matplotlib.pyplot as plt
@@ -13,6 +10,14 @@ import time
 # from PIL import Image as PILImage
 # If needed, import PIL.Image with a different alias
 from PIL import Image as PilImage
+
+from src.pipelines.end_to_end.end_to_end_utils import (
+    load_obj_detection_model,
+    perform_object_detection,
+    filter_large_objects,
+    extend_bounding_box,
+    crop_image,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,72 +41,6 @@ def load_classification_model(classification_model_config):
     return learn
 
 
-def perform_object_detection(image_path, detection_model, patch_size=512):
-    logger.info(f"Performing object detection on image: {os.path.basename(image_path)}")
-    start_time = time.time()
-    result = get_sliced_prediction(
-        image_path,
-        detection_model,
-        slice_height=patch_size,
-        slice_width=patch_size,
-        overlap_height_ratio=0,
-        overlap_width_ratio=0,
-        verbose=True,
-    )
-    detection_time = time.time() - start_time
-    logger.info(
-        f"Time taken for object detection on image {os.path.basename(image_path)}: {detection_time:.2f} seconds"
-    )
-    return result
-
-
-def filter_large_objects(predictions, size_threshold_ratio=10):
-    # Calculate sizes of bounding boxes
-    sizes = [
-        (pred.bbox.maxx - pred.bbox.minx) * (pred.bbox.maxy - pred.bbox.miny)
-        for pred in predictions
-    ]
-
-    if sizes:
-        # Calculate median size
-        median_size = np.median(sizes)
-
-        # Filter predictions based on size threshold
-        filtered_predictions = [
-            pred
-            for pred in predictions
-            if (pred.bbox.maxx - pred.bbox.minx) * (pred.bbox.maxy - pred.bbox.miny)
-            <= median_size * size_threshold_ratio
-        ]
-
-        # Log information
-        logger.info(
-            f"Filtered {len(predictions) - len(filtered_predictions)} large objects"
-        )
-
-        return filtered_predictions
-
-    return predictions
-
-
-def extend_bounding_box(
-    x_min, y_min, x_max, y_max, image_width, image_height, margin=0.25
-):
-    bbox_width = x_max - x_min
-    bbox_height = y_max - y_min
-
-    x_min_extended = max(0, x_min - int(margin * bbox_width))
-    y_min_extended = max(0, y_min - int(margin * bbox_height))
-    x_max_extended = min(image_width, x_max + int(margin * bbox_width))
-    y_max_extended = min(image_height, y_max + int(margin * bbox_height))
-
-    return x_min_extended, y_min_extended, x_max_extended, y_max_extended
-
-
-def crop_image(image, x_min, y_min, x_max, y_max):
-    return image[y_min:y_max, x_min:x_max]
-
-
 def classify_cropped_image(cropped_image, classification_model):
     # Convert the image to a format acceptable by the model
     if isinstance(cropped_image, np.ndarray):
@@ -114,7 +53,12 @@ def classify_cropped_image(cropped_image, classification_model):
 
 
 def plot_classified_object(
-    cropped_image, detection_class_name, classification_class_name, output_dir, index, prefix="classified_object"
+    cropped_image,
+    detection_class_name,
+    classification_class_name,
+    output_dir,
+    index,
+    prefix="classified_object",
 ):
     # Create the classified objects folder if it doesn't exist
     classified_objects_dir = os.path.join(output_dir, "classified_objects")
@@ -278,7 +222,9 @@ def filter_blurry_objects(image_path, predictions, blur_classification_model):
     return filtered_predictions, blurry_trichomes
 
 
-def classify_and_plot_blurry_trichomes(blurry_trichomes, classification_model, output_dir):
+def classify_and_plot_blurry_trichomes(
+    blurry_trichomes, classification_model, output_dir
+):
     logger.info("Classifying and plotting blurry trichomes.")
     # Mapping from classification model class IDs to class names
     classification_class_id_to_name = {0: "amber", 1: "clear", 2: "cloudy"}
@@ -313,7 +259,7 @@ def classify_and_plot_blurry_trichomes(blurry_trichomes, classification_model, o
             classification_class_name,
             output_dir,
             idx,
-            prefix="blurry_trichome"
+            prefix="blurry_trichome",
         )
 
         logger.info(
@@ -352,25 +298,25 @@ def plot_current_detections(
 ):
     # Read the image
     image = cv2.imread(image_path)
-    
+
     # Define color mapping for classes (in BGR format)
     class_color_mapping = {
-        'Clear': (0, 0, 255),        # Red
-        'Cloudy': (0, 165, 255),     # Orange
-        'Amber': (0, 255, 0),        # Green
-        'Unknown': (255, 255, 255)   # White
+        "Clear": (0, 0, 255),  # Red
+        "Cloudy": (0, 165, 255),  # Orange
+        "Amber": (0, 255, 0),  # Green
+        "Unknown": (255, 255, 255),  # White
     }
-    
+
     # Initialize counters for each class to number the bounding boxes
     class_counters = {}
-    
+
     # Iterate over predictions
     for prediction in predictions:
         x_min = int(prediction.bbox.minx)
         y_min = int(prediction.bbox.miny)
         x_max = int(prediction.bbox.maxx)
         y_max = int(prediction.bbox.maxy)
-        
+
         # Get the class name or ID
         label = None
         if prediction.category.name:
@@ -381,17 +327,17 @@ def plot_current_detections(
             label = detection_class_id_to_name.get(prediction.category.id, "Unknown")
         else:
             label = "Unknown"
-        
+
         # Get color for the class
         color = class_color_mapping.get(label, (255, 255, 255))  # Default to white
-        
+
         # Get and increment the counter for the class
         counter = class_counters.get(label, 0) + 1
         class_counters[label] = counter
-        
+
         # Draw rectangle on the image
         cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color, 2)
-        
+
         # Put the class label and counter on the bounding box
         cv2.putText(
             image,
@@ -402,7 +348,7 @@ def plot_current_detections(
             color,
             2,
         )
-    
+
     # Convert the image to RGB for displaying with matplotlib
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     plt.figure(figsize=(12, 8))
