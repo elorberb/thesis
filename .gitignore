@@ -43,6 +43,7 @@ trichome-classification-study.json
 
 # Ignore data files
 data/
+classification_datasets/
 
 # App video tutorial
 exp_tutorial.mp4
