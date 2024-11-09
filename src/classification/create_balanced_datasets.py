@@ -146,50 +146,110 @@ def split_val_to_val_test(balanced_path, dataset_num, split_ratio=0.5):
     print(f"Validation set for dataset {dataset_num} split into new val and test sets.")
 
 
+import os
+import shutil
+import random
+
+
+def create_balanced_test_set(source_dir, dest_dir, num_samples_per_class=26):
+    """
+    Creates a balanced test set by sampling a specified number of images from each class.
+
+    Parameters:
+    - source_dir (str): Path to the original test dataset directory.
+    - dest_dir (str): Path to the destination directory for the balanced test set.
+    - num_samples_per_class (int): Number of images to sample per class. Default is 26.
+    """
+    # Ensure the destination directory exists
+    os.makedirs(dest_dir, exist_ok=True)
+
+    # Iterate over each class directory in the source directory
+    for class_name in os.listdir(source_dir):
+        class_source_path = os.path.join(source_dir, class_name)
+        class_dest_path = os.path.join(dest_dir, class_name)
+
+        # Check if it's a directory
+        if os.path.isdir(class_source_path):
+            # Ensure the class directory exists in the destination
+            os.makedirs(class_dest_path, exist_ok=True)
+
+            # List all image files in the class directory
+            image_files = [
+                f
+                for f in os.listdir(class_source_path)
+                if os.path.isfile(os.path.join(class_source_path, f))
+            ]
+
+            # Check if there are enough images to sample
+            if len(image_files) < num_samples_per_class:
+                print(
+                    f"Warning: Class '{class_name}' has only {len(image_files)} images. All will be copied."
+                )
+                sampled_files = image_files
+            else:
+                # Randomly sample the specified number of images
+                sampled_files = random.sample(image_files, num_samples_per_class)
+
+            # Copy the sampled files to the destination directory
+            for file_name in sampled_files:
+                src_file = os.path.join(class_source_path, file_name)
+                dest_file = os.path.join(class_dest_path, file_name)
+                shutil.copy2(src_file, dest_file)
+
+            print(f"Copied {len(sampled_files)} images for class '{class_name}'.")
+
+
 if __name__ == "__main__":
+    source_test_dir = "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
+    destination_test_dir = "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/balanced_test"  # Replace with your desired destination path
 
-    # ---------------- Create multiple balanced datasets ----------------
-    # Paths for original and balanced datasets
-    original_path = "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/train_test"
-    balanced_path = "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets"
+    create_balanced_test_set(source_test_dir, destination_test_dir)
 
-    # Generate multiple balanced datasets
-    # for dataset_num in range(1, 6):
-    #     create_balanced_split(
-    #         original_path, balanced_path, dataset_num, target_count=200
-    #     )
 
-    # print("Multiple balanced datasets created successfully!")
+# if __name__ == "__main__":
 
-    # # ---------------- Split validation set into new val and test sets ----------------
-    # # Run the split function for each dataset
-    # for dataset_num in range(1, 6):
-    #     split_val_to_val_test(balanced_path, dataset_num, split_ratio=0.5)
+#     # ---------------- Create multiple balanced datasets ----------------
+#     # Paths for original and balanced datasets
+#     original_path = "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/train_test"
+#     balanced_path = "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets"
 
-    # ---------------- Check how many images are in each class ----------------
+#     # Generate multiple balanced datasets
+#     # for dataset_num in range(1, 6):
+#     #     create_balanced_split(
+#     #         original_path, balanced_path, dataset_num, target_count=200
+#     #     )
 
-    for dataset_num in range(1, 6):
-        dataset_path = os.path.join(balanced_path, f"train_set_{dataset_num}")
+#     # print("Multiple balanced datasets created successfully!")
 
-        # get the train, val and test datasets
-        train_path = os.path.join(dataset_path, "train")
-        val_path = os.path.join(dataset_path, "val")
-        test_path = os.path.join(dataset_path, "test")
+#     # # ---------------- Split validation set into new val and test sets ----------------
+#     # # Run the split function for each dataset
+#     # for dataset_num in range(1, 6):
+#     #     split_val_to_val_test(balanced_path, dataset_num, split_ratio=0.5)
 
-        print(f"Dataset {dataset_num}")
-        print_image_distribution(train_path)
-        print_image_distribution(val_path)
-        print_image_distribution(test_path)
-    print_image_distribution(
-        "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
-    )
-    print("Done!")
+#     # ---------------- Check how many images are in each class ----------------
 
-    # # count the files that are not folders in this path /home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
-    # count = 0
-    # for file in os.listdir("/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"):
-    #     if not os.path.isdir(file):
-    #         count += 1
-    # print(count)
+#     for dataset_num in range(1, 6):
+#         dataset_path = os.path.join(balanced_path, f"train_set_{dataset_num}")
 
-    # lets check if the files that are not in the class folders are in the test folder
+#         # get the train, val and test datasets
+#         train_path = os.path.join(dataset_path, "train")
+#         val_path = os.path.join(dataset_path, "val")
+#         test_path = os.path.join(dataset_path, "test")
+
+#         print(f"Dataset {dataset_num}")
+#         print_image_distribution(train_path)
+#         print_image_distribution(val_path)
+#         print_image_distribution(test_path)
+#     print_image_distribution(
+#         "/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
+#     )
+#     print("Done!")
+
+#     # # count the files that are not folders in this path /home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
+#     # count = 0
+#     # for file in os.listdir("/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"):
+#     #     if not os.path.isdir(file):
+#     #         count += 1
+#     # print(count)
+
+#     # lets check if the files that are not in the class folders are in the test folder
