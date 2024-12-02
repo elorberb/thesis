@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import config
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -13,13 +14,12 @@ class SegmentsAIHandler:
     def __init__(self):
         api_key = os.getenv("SEGMENTS_API_KEY")
         self.client = SegmentsClient(api_key)
-        
+
     @staticmethod
     def get_segments_dataset_identifier(image_number, week, zoom_type="3x_regular"):
         return f"etaylor/cannabis_patches_{week}_{zoom_type}_{image_number}"
-        
 
-    def get_dataset_instance(self, dataset_name, version='v0.1'):
+    def get_dataset_instance(self, dataset_name, version="v0.1"):
         """
         Obtain a SegmentsDataset instance.
 
@@ -37,8 +37,9 @@ class SegmentsAIHandler:
         # Initialize and return the SegmentsDataset
         return SegmentsDataset(release)
 
-
-    def create_new_dataset(self, dataset_identifier, dataset_description, task_type, task_attributes):
+    def create_new_dataset(
+        self, dataset_identifier, dataset_description, task_type, task_attributes
+    ):
         """
         Create a new dataset using the Segments AI API.
 
@@ -60,10 +61,12 @@ class SegmentsAIHandler:
             dataset = create_dataset(name, dataset_description, task_type, task_attributes)
             print(dataset)
         """
-        new_dataset = self.client.add_dataset(dataset_identifier, dataset_description, task_type, task_attributes)
-        return new_dataset     
+        new_dataset = self.client.add_dataset(
+            dataset_identifier, dataset_description, task_type, task_attributes
+        )
+        return new_dataset
 
-    def add_collaborator_to_dataset(self, dataset_id, user, user_role='annotator'):
+    def add_collaborator_to_dataset(self, dataset_id, user, user_role="annotator"):
         """
         Add a collaborator to a dataset on Segments.ai.
 
@@ -76,9 +79,6 @@ class SegmentsAIHandler:
         - Response from the Segments.ai API after attempting to add the collaborator
         """
         return self.client.add_dataset_collaborator(dataset_id, user, user_role)
-    
-    
-
 
     def upload_single_image(self, dataset_identifier, image_path):
         """
@@ -102,7 +102,9 @@ class SegmentsAIHandler:
         sample_attributes = {"image": {"url": uploaded_image_url}}
 
         # Add the new sample to the dataset on Segments.ai
-        new_sample = self.client.add_sample(dataset_identifier, filename, sample_attributes)
+        new_sample = self.client.add_sample(
+            dataset_identifier, filename, sample_attributes
+        )
         print(f"Uploaded {filename} and added as sample: {new_sample}")
 
     def upload_images(self, dataset_identifier, images_folder_path):
@@ -112,7 +114,6 @@ class SegmentsAIHandler:
         Parameters:
         - dataset_identifier: The name of the dataset on Segments.ai.
         - images_folder_path: Local system path to the folder containing images.
-        - image_extension: File extension of images to upload (default is .jpg).
         """
         # Retrieve a list of image filenames with the given file extension
         image_filenames = [filename for filename in os.listdir(images_folder_path)]
@@ -132,12 +133,14 @@ class SegmentsAIHandler:
             sample_attributes = {"image": {"url": uploaded_image_url}}
 
             # Add the new sample to the dataset on Segments.ai
-            new_sample = self.client.add_sample(dataset_identifier, filename, sample_attributes)
+            new_sample = self.client.add_sample(
+                dataset_identifier, filename, sample_attributes
+            )
             print(f"Uploaded {filename} and added as sample: {new_sample}")
-    
+
     def visualize_sample(self, *args):
         """
-        Visualizes a single sample with its segmentation bitmap overlay.   
+        Visualizes a single sample with its segmentation bitmap overlay.
         """
         images = args
         for i, image in enumerate(images):
@@ -150,7 +153,9 @@ class SegmentsAIHandler:
         Visualize samples in a Segments.ai dataset.
         """
         # Fetch the specified dataset release
-        dataset_release = self.client.get_release(dataset_identifier, dataset_release_version)
+        dataset_release = self.client.get_release(
+            dataset_identifier, dataset_release_version
+        )
         dataset_samples = SegmentsDataset(dataset_release)
 
         # Iterate and visualize each sample in the dataset
@@ -160,7 +165,9 @@ class SegmentsAIHandler:
             except TypeError as error:
                 print(f"Could not visualize sample {sample['name']}: {error}")
 
-    def upload_annotation_for_sample(self, sample_uuid, segmentation_bitmap, annotation_data):
+    def upload_annotation_for_sample(
+        self, sample_uuid, segmentation_bitmap, annotation_data
+    ):
         """
         Uploads annotation data for a specific sample to Segments.ai.
 
@@ -189,7 +196,14 @@ class SegmentsAIHandler:
             sample_uuid, "ground-truth", label_attributes, label_status="PRELABELED"
         )
 
-    def copy_dataset_contents(self, source_dataset_id, destination_dataset_id, label_status='REVIEWED', only_patches=False, verbose=False):
+    def copy_dataset_contents(
+        self,
+        source_dataset_id,
+        destination_dataset_id,
+        label_status="REVIEWED",
+        only_patches=False,
+        verbose=False,
+    ):
         """
         Copies all samples and their annotations from one dataset to another based on label status.
 
@@ -203,18 +217,27 @@ class SegmentsAIHandler:
         source_samples = self.client.get_samples(source_dataset_id)
 
         for index, sample in enumerate(source_samples):
-            self.copy_sample(sample, destination_dataset_id, label_status, index, only_patches, verbose)
+            self.copy_sample(
+                sample,
+                destination_dataset_id,
+                label_status,
+                index,
+                only_patches,
+                verbose,
+            )
 
-    def copy_sample(self, sample, destination_dataset_id, label_status, index, only_patches, verbose):
+    def copy_sample(
+        self, sample, destination_dataset_id, label_status, index, only_patches, verbose
+    ):
         # Filter out raw images if only copying patches
-        if only_patches and (sample.name.endswith('.JPG') or '_p' not in sample.name):
+        if only_patches and (sample.name.endswith(".JPG") or "_p" not in sample.name):
             if verbose:
                 print(f"Skipping raw image {sample.name}")
             return
 
         # Fetch the label for the sample
         label = self.client.get_label(sample.uuid)
-        
+
         # Check if the label status matches the desired status
         if label and label.label_status == label_status:
             if verbose:
@@ -228,7 +251,12 @@ class SegmentsAIHandler:
         new_sample = self.client.add_sample(
             destination_dataset_id, sample.name, sample.attributes
         )
-        self.client.add_label(new_sample.uuid, "ground-truth", label.attributes, label_status=label.label_status)
+        self.client.add_label(
+            new_sample.uuid,
+            "ground-truth",
+            label.attributes,
+            label_status=label.label_status,
+        )
 
         if verbose:
             if new_sample:
@@ -242,7 +270,7 @@ class SegmentsAIHandler:
         for sample in samples:
             label = self.client.get_label(sample.uuid, labelset_name)
 
-            if label and hasattr(label.attributes, 'annotations'):
+            if label and hasattr(label.attributes, "annotations"):
                 # Convert label.attributes to a dictionary if necessary
                 if not isinstance(label.attributes, dict):
                     attributes_dict = label.attributes.dict()
@@ -250,19 +278,23 @@ class SegmentsAIHandler:
                     attributes_dict = label.attributes
 
                 # Decrement each label category ID by one
-                for annotation in attributes_dict['annotations']:
-                    if 'category_id' in annotation and annotation['category_id'] > 0:
-                        annotation['category_id'] -= 1
+                for annotation in attributes_dict["annotations"]:
+                    if "category_id" in annotation and annotation["category_id"] > 0:
+                        annotation["category_id"] -= 1
 
                 # Update the label
-                self.client.update_label(sample_uuid=sample.uuid, labelset=labelset_name, attributes=attributes_dict)
+                self.client.update_label(
+                    sample_uuid=sample.uuid,
+                    labelset=labelset_name,
+                    attributes=attributes_dict,
+                )
 
         print("Label category IDs have been decremented.")
 
     def get_trichome_distribution(self, image_number):
         """
         Fetches samples from a given dataset image number or full dataset identifier and calculates the distribution of trichome annotations.
-        
+
         Args:
         image_number (str): The Image number we want to get the dataset in SegmentsAI.
 
@@ -274,25 +306,25 @@ class SegmentsAIHandler:
             full_week, full_zoom = config.find_image_details(image_number)
             full_week = full_week.split("_")[0]
             zoom_type = full_zoom.split("_")[0] + "r"
-            dataset_identifier = self.get_segments_dataset_identifier(image_number,
-                                                                    week=config.WEEKS_DIR[full_week],
-                                                                    zoom_type=config.ZOOM_TYPES_DIR[zoom_type])
+            dataset_identifier = self.get_segments_dataset_identifier(
+                image_number,
+                week=config.WEEKS_DIR[full_week],
+                zoom_type=config.ZOOM_TYPES_DIR[zoom_type],
+            )
 
         # Fetch the samples
         samples = self.client.get_samples(dataset_identifier)
 
         # Initialize counters for each trichome type
-        distribution = {
-            'clear': 0,
-            'cloudy': 0,
-            'amber': 0
-        }
+        distribution = {"clear": 0, "cloudy": 0, "amber": 0}
 
         # Fetch labels for each sample and count annotations
         for sample in samples:
             label = self.client.get_label(sample.uuid)
             for annotation in label.attributes.annotations:
-                trichome_type = config.ANNOTATIONS_CLASS_MAPPINGS.get(annotation.category_id, 0)
+                trichome_type = config.ANNOTATIONS_CLASS_MAPPINGS.get(
+                    annotation.category_id, 0
+                )
                 if trichome_type in distribution:
                     distribution[trichome_type] += 1
 
