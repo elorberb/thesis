@@ -187,8 +187,8 @@ def check_storage_quota(service):
         print("Unlimited storage")
 
 if __name__ == '__main__':
-    # folder_id = '1-cKSnT-qIwW3_nq6KkyhaZHrVCvEcvss'  # folder id in google drive
-    # local_download_path = '/sise/shanigu-group/etaylor/assessing_cannabis_exp/images/day_7_2024_06_20/lab/182'  # images path in the cluster
+    # folder_id = '1gqnFIqzEAJzlDjNy3oHZBd41SLwQ7Kj9'  # folder id in google drive
+    # local_download_path = '/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_1_2024_12_05/lab'  # images path in the cluster
 
     # # Ensure the local download directory exists
     # if not os.path.exists(local_download_path):
@@ -207,4 +207,6 @@ if __name__ == '__main__':
     upload_folder_dfs(service, local_upload_path, upload_folder_id)
     print("Upload completed.")
     # ---------- check storage quata -----------------
-    # check_storage_quota(service)
+    check_storage_quota(service)
+    
+

@@ -48,7 +48,7 @@ def classify_cropped_image(cropped_image, classification_model):
     else:
         cropped_pil_image = cropped_image
 
-    pred_class, pred_idx, probs = classification_model.predict(cropped_pil_image)
+    pred_class, _, _ = classification_model.predict(cropped_pil_image)
     return pred_class
 
 

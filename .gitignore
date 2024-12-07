@@ -44,6 +44,7 @@ trichome-classification-study.json
 # Ignore data files
 data/
 classification_datasets/
+uriel_images/
 
 # App video tutorial
 exp_tutorial.mp4
