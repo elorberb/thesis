@@ -67,6 +67,7 @@ eval_models_on_trichome_dist_images
 assessing_cannabis_exp_results
 testing_end_to_end_pipe
 results
+evaluation_results
 
 # credentials folders
 creds
