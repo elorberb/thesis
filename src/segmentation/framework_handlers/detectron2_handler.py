@@ -4,7 +4,7 @@ from detectron2.data.datasets import register_coco_instances
 from detectron2.utils.visualizer import Visualizer
 from detectron2.utils.visualizer import ColorMode
 
-#eval detectron2 imports
+# eval detectron2 imports
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
@@ -18,6 +18,7 @@ import csv
 from skimage.measure import regionprops, label
 import seaborn as sns
 import pandas as pd
+import random
 
 # Global variables
 SEGMENTS_HANDLER = SegmentsAIHandler()
@@ -54,27 +55,37 @@ def print_version_info():
 
 
 def imshow(image):
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)# Plot the image
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Plot the image
     plt.imshow(image_rgb)
     plt.show()
 
 
-def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release_train, release_test):
+def prepare_and_register_datasets(
+    dataset_name_train, dataset_name_test, release_train, release_test
+):
     # Convert segments dataset to coco format for training dataset
-    _, train_export_json_path, train_saved_images_path = annotation_handler.convert_segments_to_coco_format(
-        dataset_name=dataset_name_train, 
-        release_version=release_train, 
+    _, train_export_json_path, train_saved_images_path = (
+        annotation_handler.convert_segments_to_coco_format(
+            dataset_name=dataset_name_train,
+            release_version=release_train,
+        )
     )
 
     # Convert segments dataset to coco format for testing dataset
-    _, test_export_json_path, test_saved_images_path = annotation_handler.convert_segments_to_coco_format(
-        dataset_name=dataset_name_test, 
-        release_version=release_test, 
+    _, test_export_json_path, test_saved_images_path = (
+        annotation_handler.convert_segments_to_coco_format(
+            dataset_name=dataset_name_test,
+            release_version=release_test,
+        )
     )
 
     # Register the coco format datasets
-    register_coco_instances(dataset_name_train, {}, train_export_json_path, train_saved_images_path)
-    register_coco_instances(dataset_name_test, {}, test_export_json_path, test_saved_images_path)
+    register_coco_instances(
+        dataset_name_train, {}, train_export_json_path, train_saved_images_path
+    )
+    register_coco_instances(
+        dataset_name_test, {}, test_export_json_path, test_saved_images_path
+    )
 
     # Get the metadata and dataset dicts
     metadata_train = MetadataCatalog.get(dataset_name_train)
@@ -85,6 +96,65 @@ def prepare_and_register_datasets(dataset_name_train, dataset_name_test, release
     return metadata_train, dataset_dicts_train, metadata_test, dataset_dicts_test
 
 
+def register_dataset(dataset_name, release_version):
+    # Convert segments dataset to coco format
+    _, export_json_path, saved_images_path = (
+        annotation_handler.convert_segments_to_coco_format(
+            dataset_name=dataset_name,
+            release_version=release_version,
+        )
+    )
+
+    # Register the coco format dataset
+    register_coco_instances(dataset_name, {}, export_json_path, saved_images_path)
+
+    # Get the metadata and dataset dicts
+    metadata = MetadataCatalog.get(dataset_name)
+    dataset_dicts = DatasetCatalog.get(dataset_name)
+
+    return metadata, dataset_dicts
+
+
+def register_and_split_dataset(dataset_name, release_version, train_ratio=0.8):
+    """
+    Register a single dataset and split it into training and testing datasets.
+
+    Args:
+        dataset_name (str): Name of the dataset to register.
+        release_version (str): Release version of the dataset.
+        train_ratio (float): Ratio of the dataset to use for training.
+
+    Returns:
+        train_metadata, train_dataset_dicts, test_metadata, test_dataset_dicts
+    """
+    # Convert and register the dataset
+    metadata, dataset_dicts = register_dataset(dataset_name, release_version)
+
+    # Shuffle dataset for random split
+    random.shuffle(dataset_dicts)
+
+    # Split dataset
+    num_samples = len(dataset_dicts)
+    num_train_samples = int(train_ratio * num_samples)
+    train_dataset_dicts = dataset_dicts[:num_train_samples]
+    test_dataset_dicts = dataset_dicts[num_train_samples:]
+
+    # Register the splits
+    train_dataset_name = f"{dataset_name}_train"
+    test_dataset_name = f"{dataset_name}_test"
+
+    DatasetCatalog.register(train_dataset_name, lambda: train_dataset_dicts)
+    MetadataCatalog.get(train_dataset_name).set(thing_classes=metadata.thing_classes)
+
+    DatasetCatalog.register(test_dataset_name, lambda: test_dataset_dicts)
+    MetadataCatalog.get(test_dataset_name).set(thing_classes=metadata.thing_classes)
+
+    train_metadata = MetadataCatalog.get(train_dataset_name)
+    test_metadata = MetadataCatalog.get(test_dataset_name)
+
+    return train_metadata, train_dataset_dicts, test_metadata, test_dataset_dicts
+
+
 def plot_train_samples(dataset_dicts_train, metadata_train, indices=None, scale=0.5):
     """
     Plots samples based on specified indices.
@@ -92,13 +162,17 @@ def plot_train_samples(dataset_dicts_train, metadata_train, indices=None, scale=
     Parameters:
     - indices (list): List of specific indices of samples to plot.
     - scale (float): Scale factor for the visualizer.
-    
+
     Example usage:
     model - Detectron2Handler(...)
     model.plot_samples(indices=[0, 2, 5]) # to plot images at specific indices
     model..plot_samples() # to plot all images
     """
-    selected_samples = dataset_dicts_train if indices is None else [dataset_dicts_train[i] for i in indices]
+    selected_samples = (
+        dataset_dicts_train
+        if indices is None
+        else [dataset_dicts_train[i] for i in indices]
+    )
 
     for d in selected_samples:
         img = cv2.imread(d["file_name"])
@@ -109,15 +183,25 @@ def plot_train_samples(dataset_dicts_train, metadata_train, indices=None, scale=
         plt.show()
 
 
-def plot_test_predictions(dataset_dicts_test, metadata_test, predictor, indices=None, scale=0.5):
-    
-    selected_samples = dataset_dicts_test if indices is None else [dataset_dicts_test[i] for i in indices]
+def plot_test_predictions(
+    dataset_dicts_test, metadata_test, predictor, indices=None, scale=0.5
+):
+
+    selected_samples = (
+        dataset_dicts_test
+        if indices is None
+        else [dataset_dicts_test[i] for i in indices]
+    )
 
     for d in selected_samples:
         im = cv2.imread(d["file_name"])
         outputs = predictor(im)
-        v = Visualizer(im[:, :, ::-1], metadata=metadata_test, scale=scale, 
-                    instance_mode=ColorMode.IMAGE)
+        v = Visualizer(
+            im[:, :, ::-1],
+            metadata=metadata_test,
+            scale=scale,
+            instance_mode=ColorMode.IMAGE,
+        )
         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         image_rgb = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         plt.imshow(image_rgb)
@@ -125,15 +209,28 @@ def plot_test_predictions(dataset_dicts_test, metadata_test, predictor, indices=
 
 
 def evaluate_model_on_dataset(cfg, predictor):
-    evaluator = COCOEvaluator("my_dataset_val", output_dir=os.path.join(cfg.OUTPUT_DIR, "eval_output"))
+    evaluator = COCOEvaluator(
+        "my_dataset_val", output_dir=os.path.join(cfg.OUTPUT_DIR, "eval_output")
+    )
     val_loader = build_detection_test_loader(cfg, "my_dataset_val")
     return inference_on_dataset(predictor.model, val_loader, evaluator)
 
 
-def extract_object_info_to_csv(input_images_directory, output_csv_path, predictor, metadata):
-    with open(output_csv_path, 'w', newline='') as csvfile:
+def extract_object_info_to_csv(
+    input_images_directory, output_csv_path, predictor, metadata
+):
+    with open(output_csv_path, "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(["File Name", "Class Name", "Object Number", "Area", "Centroid", "BoundingBox"])
+        csvwriter.writerow(
+            [
+                "File Name",
+                "Class Name",
+                "Object Number",
+                "Area",
+                "Centroid",
+                "BoundingBox",
+            ]
+        )
 
         for image_filename in os.listdir(input_images_directory):
             image_path = os.path.join(input_images_directory, image_filename)
@@ -149,9 +246,22 @@ def extract_object_info_to_csv(input_images_directory, output_csv_path, predicto
                 area = prop.area
                 centroid = prop.centroid
                 bounding_box = prop.bbox
-                class_label = class_labels[i] if i < len(class_labels) else 'Unknown'
-                class_name = metadata.thing_classes[class_label] if class_label != 'Unknown' else 'Unknown'
-                csvwriter.writerow([image_filename, class_name, object_number, area, centroid, bounding_box])
+                class_label = class_labels[i] if i < len(class_labels) else "Unknown"
+                class_name = (
+                    metadata.thing_classes[class_label]
+                    if class_label != "Unknown"
+                    else "Unknown"
+                )
+                csvwriter.writerow(
+                    [
+                        image_filename,
+                        class_name,
+                        object_number,
+                        area,
+                        centroid,
+                        bounding_box,
+                    ]
+                )
 
     return f"Object-level information saved to CSV file at {output_csv_path}"
 
@@ -164,12 +274,24 @@ def plot_class_statistics(output_csv_path, metadata_train):
     class_names = metadata_train.thing_classes
 
     # Calculate the average number of objects per image for each class
-    avg_objects_per_class = df.groupby(["File Name", "Class Name"])["Object Number"].count().reset_index()
-    avg_objects_per_class = avg_objects_per_class.groupby("Class Name")["Object Number"].mean().reset_index()
+    avg_objects_per_class = (
+        df.groupby(["File Name", "Class Name"])["Object Number"].count().reset_index()
+    )
+    avg_objects_per_class = (
+        avg_objects_per_class.groupby("Class Name")["Object Number"]
+        .mean()
+        .reset_index()
+    )
 
     # Plot: Average number of objects per image for each class
     plt.figure(figsize=(10, 6))
-    sns.barplot(x="Class Name", y="Object Number", data=avg_objects_per_class, ci=None, order=class_names)
+    sns.barplot(
+        x="Class Name",
+        y="Object Number",
+        data=avg_objects_per_class,
+        ci=None,
+        order=class_names,
+    )
     plt.xticks(rotation=45)
     plt.xlabel("Class Name")
     plt.ylabel("Average Number of Objects per Image")
@@ -182,7 +304,9 @@ def plot_class_statistics(output_csv_path, metadata_train):
 
     # Plot: Average area of objects for each class
     plt.figure(figsize=(10, 6))
-    sns.barplot(x="Class Name", y="Area", data=avg_area_per_class, ci=None, order=class_names)
+    sns.barplot(
+        x="Class Name", y="Area", data=avg_area_per_class, ci=None, order=class_names
+    )
     plt.xticks(rotation=45)
     plt.xlabel("Class Name")
     plt.ylabel("Average Area of Objects")

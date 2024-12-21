@@ -1,4 +1,4 @@
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -6,17 +6,26 @@ import os
 import io
 
 # Path to the OAuth2 credentials file
-CLIENT_SECRET_FILE = '/home/etaylor/code_projects/thesis/src/utils/google_drive_utils/creds/client_secret_261183461521-ag57t3cdlmeadm0oqo6tq3qhv477f67o.apps.googleusercontent.com.json'
+CLIENT_SECRET_FILE = "/home/etaylor/code_projects/thesis/src/utils/google_drive_utils/creds/client_secret_261183461521-ag57t3cdlmeadm0oqo6tq3qhv477f67o.apps.googleusercontent.com.json"
+
+TOKEN_PATH = (
+    "/home/etaylor/code_projects/thesis/src/utils/google_drive_utils/creds/token.json"
+)
 
 # Define the scopes
-SCOPES = ['https://www.googleapis.com/auth/drive']
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-# Authenticate using OAuth2
-flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-creds = flow.run_console()  # Use console-based authentication flow
+# Load credentials
+if os.path.exists(TOKEN_PATH):
+    creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+else:
+    # Authenticate using OAuth2
+    flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+    creds = flow.run_console()  # Use console-based authentication flow
 
 # Create the service
-service = build('drive', 'v3', credentials=creds)
+service = build("drive", "v3", credentials=creds)
+
 
 def list_files_in_folder(service, folder_id):
     """List all files and folders in a Google Drive folder."""
@@ -25,15 +34,22 @@ def list_files_in_folder(service, folder_id):
     page_token = None
 
     while True:
-        response = service.files().list(q=query,
-                                        spaces='drive',
-                                        fields='nextPageToken, files(id, name, mimeType)',
-                                        pageToken=page_token).execute()
-        items.extend(response.get('files', []))
-        page_token = response.get('nextPageToken', None)
+        response = (
+            service.files()
+            .list(
+                q=query,
+                spaces="drive",
+                fields="nextPageToken, files(id, name, mimeType)",
+                pageToken=page_token,
+            )
+            .execute()
+        )
+        items.extend(response.get("files", []))
+        page_token = response.get("nextPageToken", None)
         if page_token is None:
             break
     return items
+
 
 def download_file(service, file_id, file_path, overwrite=False):
     """Download a file from Google Drive."""
@@ -42,7 +58,7 @@ def download_file(service, file_id, file_path, overwrite=False):
         return
     print(f"Downloading file: {file_path}")
     request = service.files().get_media(fileId=file_id)
-    fh = io.FileIO(file_path, 'wb')
+    fh = io.FileIO(file_path, "wb")
     downloader = MediaIoBaseDownload(fh, request)
     done = False
     while not done:
@@ -50,33 +66,35 @@ def download_file(service, file_id, file_path, overwrite=False):
         print(f"Download {int(status.progress() * 100)}% for file {file_path}.")
     print(f"Downloaded file to {file_path}")
 
+
 def download_folder(service, folder_id, local_path, overwrite=False):
     """Download all contents of a folder recursively."""
     print(f"Accessing folder: {local_path}")
     items = list_files_in_folder(service, folder_id)
     for item in items:
-        item_name = item['name']
-        item_id = item['id']
-        item_mime_type = item['mimeType']
+        item_name = item["name"]
+        item_id = item["id"]
+        item_mime_type = item["mimeType"]
         local_item_path = os.path.join(local_path, item_name)
 
-        if item_mime_type == 'application/vnd.google-apps.folder':
+        if item_mime_type == "application/vnd.google-apps.folder":
             # Create local folder and download its contents
             if not os.path.exists(local_item_path):
                 os.makedirs(local_item_path)
             download_folder(service, item_id, local_item_path, overwrite)
-        elif item_mime_type.startswith('application/vnd.google-apps.'):
+        elif item_mime_type.startswith("application/vnd.google-apps."):
             # Export Google Docs editors files (skip in this example)
             print(f"Skipping Google Docs editors file: {item_name}")
         else:
             download_file(service, item_id, local_item_path, overwrite)
+
 
 def delete_empty_folders(path):
     """Recursively delete empty folders."""
     if not os.path.isdir(path):
         print(f"Provided path: {path} is not a directory.")
         return
-    
+
     # Check all subfolders
     for root, dirs, files in os.walk(path, topdown=False):
         for dir_name in dirs:
@@ -96,12 +114,13 @@ def delete_empty_folders(path):
     except Exception as e:
         print(f"Error deleting top-level folder {path}: {e}")
 
+
 def delete_local_folder(path):
     """Delete a folder and its contents."""
     if not os.path.isdir(path):
         print(f"Provided path: {path} is not a directory.")
         return
-    
+
     for root, dirs, files in os.walk(path, topdown=False):
         for file_name in files:
             file_path = os.path.join(root, file_name)
@@ -123,39 +142,51 @@ def delete_local_folder(path):
     except Exception as e:
         print(f"Error deleting top-level folder {path}: {e}")
 
+
 def upload_file(service, file_path, folder_id):
     """Upload a file to Google Drive."""
     file_name = os.path.basename(file_path)
     query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
-    response = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
-    if response.get('files', []):
+    response = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id, name)")
+        .execute()
+    )
+    if response.get("files", []):
         print(f"File already exists: {file_name}. Skipping upload.")
         return
 
     media = MediaFileUpload(file_path, resumable=True)
-    file_metadata = {
-        'name': file_name,
-        'parents': [folder_id]
-    }
-    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    file_metadata = {"name": file_name, "parents": [folder_id]}
+    file = (
+        service.files()
+        .create(body=file_metadata, media_body=media, fields="id")
+        .execute()
+    )
     print(f"Uploaded file: {file_name} with ID: {file.get('id')}")
+
 
 def create_folder(service, folder_name, parent_folder_id):
     """Create a folder in Google Drive."""
     query = f"name='{folder_name}' and '{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
-    response = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
-    if response.get('files', []):
+    response = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id, name)")
+        .execute()
+    )
+    if response.get("files", []):
         print(f"Folder already exists: {folder_name}. Using existing folder.")
-        return response['files'][0]['id']
+        return response["files"][0]["id"]
 
     folder_metadata = {
-        'name': folder_name,
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [parent_folder_id]
+        "name": folder_name,
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [parent_folder_id],
     }
-    folder = service.files().create(body=folder_metadata, fields='id').execute()
+    folder = service.files().create(body=folder_metadata, fields="id").execute()
     print(f"Created folder: {folder_name} with ID: {folder.get('id')}")
-    return folder.get('id')
+    return folder.get("id")
+
 
 def upload_folder_dfs(service, local_path, parent_folder_id):
     """Upload all contents of a folder to Google Drive using DFS, preserving the folder structure."""
@@ -173,12 +204,13 @@ def upload_folder_dfs(service, local_path, parent_folder_id):
             else:
                 upload_file(service, full_path, current_folder_id)
 
+
 def check_storage_quota(service):
     """Check the storage quota for the service account."""
     about = service.about().get(fields="storageQuota").execute()
-    quota = about.get('storageQuota', {})
-    usage = int(quota.get('usage', 0))
-    limit = int(quota.get('limit', 0))
+    quota = about.get("storageQuota", {})
+    usage = int(quota.get("usage", 0))
+    limit = int(quota.get("limit", 0))
     print(f"Storage used: {usage / (1024**3):.2f} GB")
     print(f"Storage limit: {limit / (1024**3):.2f} GB")
     if limit > 0:
@@ -186,27 +218,31 @@ def check_storage_quota(service):
     else:
         print("Unlimited storage")
 
-if __name__ == '__main__':
-    # folder_id = '1gqnFIqzEAJzlDjNy3oHZBd41SLwQ7Kj9'  # folder id in google drive
-    # local_download_path = '/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_1_2024_12_05/lab'  # images path in the cluster
 
-    # # Ensure the local download directory exists
-    # if not os.path.exists(local_download_path):
-    #     os.makedirs(local_download_path)
+if __name__ == "__main__":
+    folder_id = "1VhI_XDiq4rHlYJj73uPeb0DglN7T1Vm1"  # folder id in google drive
+    local_download_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_4_2024_12_17/lab"  # images path in the cluster
 
-    # overwrite_existing_files = False  # Set to True to overwrite existing files, False to skip them
-    # download_folder(service, folder_id, local_download_path, overwrite_existing_files)
-    
-    # # in order to clean empty folders
+    # Ensure the local download directory exists
+    if not os.path.exists(local_download_path):
+        os.makedirs(local_download_path)
+
+    overwrite_existing_files = (
+        False  # Set to True to overwrite existing files, False to skip them
+    )
+    download_folder(service, folder_id, local_download_path, overwrite_existing_files)
+
+    # in order to clean empty folders
     # folder_to_clean = local_download_path
     # delete_empty_folders(folder_to_clean)
-    
-    # ---------- Upload folder - for uploading the results to the google drive
-    local_upload_path = '/sise/shanigu-group/etaylor/assessing_cannabis_exp/results/day_1_2024_05_30'  # Specify your local folder path here
-    upload_folder_id = '1TVEFWNU1Mt9T5epE9_7Ta-kLTBByty-9'  # Specify the Google Drive folder ID here
-    upload_folder_dfs(service, local_upload_path, upload_folder_id)
-    print("Upload completed.")
-    # ---------- check storage quata -----------------
-    check_storage_quota(service)
-    
 
+    # ---------- Upload folder - for uploading the results to the google drive
+    # local_upload_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/results/faster_rcnn/day_2_2024_12_09"  # Specify your local folder path here
+    # upload_folder_id = (
+    #     "1zWc-c4i1M_A2FtKcZnj-HOP7iA-iE_nj"  # Specify the Google Drive folder ID here
+    # )
+    # upload_folder_dfs(service, local_upload_path, upload_folder_id)
+    # # print("Upload completed.")
+
+    # ---------- check storage quata -----------------
+    # check_storage_quota(service)

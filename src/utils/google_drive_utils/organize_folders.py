@@ -1,8 +1,7 @@
-from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 import os
 from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2.credentials import Credentials
 
 # Path to the OAuth2 credentials file
 CLIENT_SECRET_FILE = "/home/etaylor/code_projects/thesis/src/utils/google_drive_utils/creds/client_secret_261183461521-ag57t3cdlmeadm0oqo6tq3qhv477f67o.apps.googleusercontent.com.json"
@@ -10,9 +9,20 @@ CLIENT_SECRET_FILE = "/home/etaylor/code_projects/thesis/src/utils/google_drive_
 # Define the scopes
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-# Authenticate using OAuth2
-flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-creds = flow.run_console()  # Use console-based authentication flow
+TOKEN_PATH = (
+    "/home/etaylor/code_projects/thesis/src/utils/google_drive_utils/creds/token.json"
+)
+
+# Define the scopes
+SCOPES = ["https://www.googleapis.com/auth/drive"]
+
+# Load credentials
+if os.path.exists(TOKEN_PATH):
+    creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+else:
+    # Authenticate using OAuth2
+    flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+    creds = flow.run_console()  # Use console-based authentication flow
 
 # Create the service
 service = build("drive", "v3", credentials=creds)
@@ -176,33 +186,48 @@ def check_how_many_jpg_files_in_folder(folder_path):
 if __name__ == "__main__":
 
     # ------------------- Code for Organize the images to folders -------------------
-    # source_folder_id = (
-    #     "1nyoeHHR_LWFndlgXaDtkrKRAYLO6RRTU"  # Source folder ID in Google Drive
-    # )
-    # dest_folder_id = (
-    #     "1gqnFIqzEAJzlDjNy3oHZBd41SLwQ7Kj9"  # Destination folder ID in Google Drive
-    # )
+    source_folder_id = (
+        "1-I7ozD6RwoaXz9I3vK9bbj97JuJxfc8j"  # Source folder ID in Google Drive
+    )
+    dest_folder_id = (
+        "1VhI_XDiq4rHlYJj73uPeb0DglN7T1Vm1"  # Destination folder ID in Google Drive
+    )
 
-    # flower_ids = [6, 2, 1, 7, 13, 4, 10, 8, 12, 11, 15, 9, 3, 14, 5]
-    # image_ids = [601, 627, 647, 668, 693, 724, 752, 778, 801, 822, 847, 871, 904, 927, 951]
+    # list from 31 to 45
+    flower_ids = list(range(46, 61))
+    image_ids = [
+        2288,
+        2316,
+        2336,
+        2365,
+        2391,
+        2413,
+        2443,
+        2468,
+        2504,
+        2534,
+        2564,
+        2590,
+        2618,
+        2656,
+        2680,
+    ]
 
-    # flower_id_images = [f"IMG_0{image_id}.JPG" for image_id in image_ids]
+    flower_id_images = [f"IMG_{image_id}.JPG" for image_id in image_ids]
 
-    # print(flower_id_images)
+    print(flower_id_images)
 
-    # organize_images(
-    #     service, source_folder_id, dest_folder_id, flower_ids, flower_id_images
-    # )
+    organize_images(
+        service, source_folder_id, dest_folder_id, flower_ids, flower_id_images
+    )
 
     # ------------------- Code for Create main and subfolders -------------------
-    parent_folder_id = (
-        "1sCNQ_PBeFqA9fHgXEPG41CUZczUKnG3X"  # experiment_2 folder ID in Google Drive
-    )
-    main_folder_name = "day_3_2024_12_12"  # Name of the main folder to create
-    create_main_and_subfolders(service, parent_folder_id, main_folder_name)
-    
-    
-    
+    # parent_folder_id = (
+    #     "1sCNQ_PBeFqA9fHgXEPG41CUZczUKnG3X"  # experiment_2 images folder ID in Google Drive
+    # )
+    # main_folder_name = "day_4_2024_12_17"  # Name of the main folder to create
+    # create_main_and_subfolders(service, parent_folder_id, main_folder_name)
+
     # ---------------------- Code for check how many JPG files in a folder -------------------
     # folder_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_1_2024_12_05/lab"
     # check_how_many_jpg_files_in_folder(folder_path)

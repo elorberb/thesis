@@ -32,7 +32,7 @@ def load_obj_detection_model(model_config, patch_size=512):
     return detection_model
 
 
-def perform_object_detection(image_path, detection_model, patch_size=512):
+def perform_trichome_detection(image_path, detection_model, patch_size=512):
     logger.info(f"Performing object detection on image: {os.path.basename(image_path)}")
     start_time = time.time()
     result = get_sliced_prediction(
@@ -111,3 +111,44 @@ def save_visuals(result, image_output_dir, base_file_name):
     )
     export_time = time.time() - start_time
     logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
+
+
+def non_max_suppression(predictions, iou_threshold=0.7):
+    if len(predictions) == 0:
+        return predictions
+
+    # Sort predictions by confidence score in descending order
+    predictions = sorted(predictions, key=lambda x: x.score.value, reverse=True)
+
+    keep = []
+    while len(predictions) > 0:
+        # Pick the highest confidence detection and remove it from the list
+        highest = predictions.pop(0)
+        keep.append(highest)
+
+        # Compare IoU with remaining predictions
+        predictions = [
+            pred
+            for pred in predictions
+            if compute_iou(highest.bbox, pred.bbox) < iou_threshold
+        ]
+
+    return keep
+
+
+def compute_iou(box1, box2):
+    # Calculate intersection area
+    x1 = max(box1.minx, box2.minx)
+    y1 = max(box1.miny, box2.miny)
+    x2 = min(box1.maxx, box2.maxx)
+    y2 = min(box1.maxy, box2.maxy)
+
+    intersection = max(0, x2 - x1) * max(0, y2 - y1)
+
+    # Calculate areas
+    area1 = (box1.maxx - box1.minx) * (box1.maxy - box1.miny)
+    area2 = (box2.maxx - box2.minx) * (box2.maxy - box2.miny)
+
+    # Calculate IoU
+    union = area1 + area2 - intersection
+    return intersection / union if union > 0 else 0

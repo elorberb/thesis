@@ -3,7 +3,7 @@ import logging
 import cv2
 from src.pipelines.end_to_end.end_to_end_utils import (
     load_obj_detection_model,
-    perform_object_detection,
+    perform_trichome_detection,
     filter_large_objects,
     extend_bounding_box,
     crop_image,
@@ -15,7 +15,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def save_detection_results(image_path, predictions, image_identifier_folder, margin=0.25):
+def save_detection_results(
+    image_path, predictions, image_identifier_folder, margin=0.25
+):
     """
     Save the detected objects into images in the specified results path.
 
@@ -25,7 +27,7 @@ def save_detection_results(image_path, predictions, image_identifier_folder, mar
         image_identifier_folder (str): Directory to save the result images.
         margin (float): Margin to extend the bounding boxes.
     """
-    
+
     # get image identifier
     image_identifier = os.path.splitext(os.path.basename(image_path))[0]
 
@@ -67,7 +69,9 @@ def save_detection_results(image_path, predictions, image_identifier_folder, mar
         logger.info(f"Saved detected object to {result_path}")
 
 
-def extract_trichomes_from_image(image_path, detection_model, patch_size=512, save_results_path="results"):
+def extract_trichomes_from_image(
+    image_path, detection_model, patch_size=512, save_results_path="results"
+):
     """
     Extract trichomes from the input image using the provided object detection model.
 
@@ -92,7 +96,9 @@ def extract_trichomes_from_image(image_path, detection_model, patch_size=512, sa
     os.makedirs(image_identifier_folder, exist_ok=True)
 
     # Perform object detection
-    detection_result = perform_object_detection(image_path, detection_model, patch_size)
+    detection_result = perform_trichome_detection(
+        image_path, detection_model, patch_size
+    )
 
     # Filter large objects
     filtered_predictions = filter_large_objects(detection_result.object_prediction_list)
@@ -102,7 +108,7 @@ def extract_trichomes_from_image(image_path, detection_model, patch_size=512, sa
 
     # Save the full image results using save_visuals function
     save_visuals(detection_result, image_identifier_folder, image_identifier)
-    
+
 
 def main():
     # Set the paths and configurations
@@ -111,15 +117,18 @@ def main():
         "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/model_final.pth",
         "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml",
     }
-    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/images/day_9_2024_06_27/greenhouse/264/IMG_8755.JPG"
     save_results_path = "/home/etaylor/code_projects/thesis/src/pipelines/end_to_end/results/extracted_trichomes_images"
     patch_size = 512  # Adjust if necessary
-    
+
     # Load the object detection model
     detection_model = load_obj_detection_model(detection_model_config, patch_size)
 
+    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_6_2024_06_17/greenhouse/169/IMG_7351.JPG"
+
     # Extract trichomes from the input image
-    extract_trichomes_from_image(image_path, detection_model, patch_size, save_results_path)
+    extract_trichomes_from_image(
+        image_path, detection_model, patch_size, save_results_path
+    )
 
 
 if __name__ == "__main__":
