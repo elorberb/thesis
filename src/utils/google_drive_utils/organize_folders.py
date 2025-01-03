@@ -88,10 +88,22 @@ def copy_file(service, file_id, new_folder_id, new_name=None):
     return copied_file.get("id")
 
 
+def extract_image_number(file_name):
+    try:
+        return int(file_name.split("_")[1].split(".")[0])
+    except (IndexError, ValueError):
+        return None
+
+
 def organize_images(
     service, source_folder_id, dest_folder_id, flower_ids, flower_id_images
 ):
     items = list_files_in_folder(service, source_folder_id)
+
+    # Extract numeric parts of image names and determine the range
+    image_numbers = [int(name.split("_")[1].split(".")[0]) for name in flower_id_images]
+    min_image_num = min(image_numbers)
+    max_image_num = max(image_numbers)
 
     current_flower_index = 0
     current_flower_id = flower_ids[current_flower_index]
@@ -101,25 +113,28 @@ def organize_images(
         file_id = item["id"]
         file_name = item["name"]
 
-        if file_name == flower_id_images[current_flower_index]:
-            current_flower_id = flower_ids[current_flower_index]
-            if current_flower_id not in flower_folders:
-                flower_folder_id = create_folder(
-                    service, dest_folder_id, str(current_flower_id)
-                )
-                flower_folders[current_flower_id] = flower_folder_id
+        image_number = extract_image_number(file_name)
+        if image_number is not None and min_image_num <= image_number <= max_image_num:
+            if file_name == flower_id_images[current_flower_index]:
+                current_flower_id = flower_ids[current_flower_index]
+                if current_flower_id not in flower_folders:
+                    flower_folder_id = create_folder(
+                        service, dest_folder_id, str(current_flower_id)
+                    )
+                    flower_folders[current_flower_id] = flower_folder_id
 
-            # Copy the image representing the flower ID to the flower's folder
-            flower_folder_id = flower_folders[current_flower_id]
-            copy_file(service, file_id, flower_folder_id)
-            print(f"Copied flower ID image {file_name} to folder {current_flower_id}")
-            current_flower_index += 1
-            if current_flower_index >= len(flower_ids):
-                break
-        else:
-            flower_folder_id = flower_folders[current_flower_id]
-            copy_file(service, file_id, flower_folder_id)
-            print(f"Copied {file_name} to folder {current_flower_id}")
+                flower_folder_id = flower_folders[current_flower_id]
+                copy_file(service, file_id, flower_folder_id)
+                print(
+                    f"Copied flower ID image {file_name} to folder {current_flower_id}"
+                )
+                current_flower_index += 1
+                if current_flower_index >= len(flower_ids):
+                    break
+            else:
+                flower_folder_id = flower_folders[current_flower_id]
+                copy_file(service, file_id, flower_folder_id)
+                print(f"Copied {file_name} to folder {current_flower_id}")
 
 
 def create_main_and_subfolders(service, parent_folder_id, main_folder_name):
@@ -187,31 +202,15 @@ if __name__ == "__main__":
 
     # ------------------- Code for Organize the images to folders -------------------
     source_folder_id = (
-        "1-I7ozD6RwoaXz9I3vK9bbj97JuJxfc8j"  # Source folder ID in Google Drive
+        "16APnTyfFGst_kIgHAAM1JbxQO8rEGKKh"  # Source folder ID in Google Drive
     )
     dest_folder_id = (
-        "1VhI_XDiq4rHlYJj73uPeb0DglN7T1Vm1"  # Destination folder ID in Google Drive
+        "1dN5vL-xlK7qToC8_FkPKp6CuDSbfF4C5"  # Destination folder ID in Google Drive
     )
 
     # list from 31 to 45
-    flower_ids = list(range(46, 61))
-    image_ids = [
-        2288,
-        2316,
-        2336,
-        2365,
-        2391,
-        2413,
-        2443,
-        2468,
-        2504,
-        2534,
-        2564,
-        2590,
-        2618,
-        2656,
-        2680,
-    ]
+    flower_ids = list(range(61, 72))
+    image_ids = [9560, 9634, 9667, 9713, 9744, 9773, 9807, 9836, 9882, 9933, 9985]
 
     flower_id_images = [f"IMG_{image_id}.JPG" for image_id in image_ids]
 

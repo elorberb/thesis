@@ -389,7 +389,7 @@ def classify_image(image_path):
 
     classification_models_config = {
         "trichome_classification": {
-            "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/trichome_image_classification/yolo/YOLOv11/Nano_dataset_0.pt"
+            "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/trichome_image_classification/yolo/balanced_good_quality/YOLOv8/Medium.pt"
         },
         "blur_classification": {
             "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/blur_image_classification/yolo/after_tuning/YOLOv8/Nano_dataset_0.pt"
@@ -525,5 +525,5 @@ def classify_image(image_path):
 
 
 if __name__ == "__main__":
-    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_9_2024_06_27/greenhouse/268/IMG_8593.JPG"
+    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_7_2024_06_20/greenhouse/196/IMG_7822.JPG"
     classify_image(image_path)

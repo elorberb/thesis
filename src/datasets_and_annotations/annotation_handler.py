@@ -202,7 +202,7 @@ def convert_coco_to_yolo_format_from_single_dataset(
     convert_coco(
         labels_dir=annotations_dir,
         save_dir=output_dir,
-        use_segments=False,
+        use_segments=True,
     )
 
     # Split data into training and validation sets

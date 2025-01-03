@@ -117,13 +117,13 @@ def main():
         "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/model_final.pth",
         "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml",
     }
-    save_results_path = "/home/etaylor/code_projects/thesis/src/pipelines/end_to_end/results/extracted_trichomes_images"
+    save_results_path = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/extracted_trichomes_images/images_datasets"
     patch_size = 512  # Adjust if necessary
 
     # Load the object detection model
     detection_model = load_obj_detection_model(detection_model_config, patch_size)
 
-    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_6_2024_06_17/greenhouse/169/IMG_7351.JPG"
+    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_4_2024_06_10/greenhouse/100/IMG_6182.JPG"
 
     # Extract trichomes from the input image
     extract_trichomes_from_image(
@@ -131,5 +131,17 @@ def main():
     )
 
 
+def print_good_quality_trichomes_count(trichomes_dataset_path):
+    # Recursively iterate over each subdirectory and count the number of files
+    for root, dirs, files in os.walk(trichomes_dataset_path):
+        file_count = len(files)
+        print(f"Number of files in {root}: {file_count}")
+
+
 if __name__ == "__main__":
     main()
+    print_images_count = True
+    if print_images_count is True:
+
+        trichomes_dataset_path = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/extracted_trichomes_images/good_quality"
+        print_good_quality_trichomes_count(trichomes_dataset_path)
