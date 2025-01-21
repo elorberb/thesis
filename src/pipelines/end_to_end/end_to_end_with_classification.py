@@ -7,9 +7,6 @@ import matplotlib.pyplot as plt
 import time
 from ultralytics import YOLO
 
-# Remove conflicting import
-# from PIL import Image as PILImage
-# If needed, import PIL.Image with a different alias
 from PIL import Image as PilImage
 
 from src.pipelines.end_to_end.end_to_end_utils import (
@@ -399,8 +396,9 @@ def classify_image(image_path):
     # define patch_size
     patch_size = 512
     model_type = "yolo"
+    perform_blur_classification_flag = False
     classify_blurry_flag = False
-
+    
     # load detection model
     detection_model = load_obj_detection_model(detection_model_config, patch_size)
 
@@ -442,20 +440,21 @@ def classify_image(image_path):
     filtered_predictions = non_max_suppression(filtered_predictions, iou_threshold=0.7)
     object_detection_results.object_prediction_list = filtered_predictions
 
-    # Start time measurement
-    start_time = time.time()
+    if perform_blur_classification_flag is True:
+        # Start time measurement
+        start_time = time.time()
 
-    # Filter blurry objects
-    filtered_predictions, blurry_trichomes = perform_blur_classification(
-        image_path,
-        object_detection_results.object_prediction_list,
-        blur_classification_model,
-        model_type,
-    )
-    object_detection_results.object_prediction_list = filtered_predictions
+        # Filter blurry objects
+        filtered_predictions, blurry_trichomes = perform_blur_classification(
+            image_path,
+            object_detection_results.object_prediction_list,
+            blur_classification_model,
+            model_type,
+        )
+        object_detection_results.object_prediction_list = filtered_predictions
 
-    # End time measurement
-    filter_blurry_objects_time = time.time() - start_time
+        # End time measurement
+        filter_blurry_objects_time = time.time() - start_time
 
     if classify_blurry_flag is True:
         # Process and plot blurry trichomes

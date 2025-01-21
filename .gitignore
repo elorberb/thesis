@@ -71,3 +71,6 @@ evaluation_results
 
 # credentials folders
 creds
+
+# stigmas images
+extracted_stigmas

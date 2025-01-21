@@ -233,12 +233,12 @@ def process_all_folders(
 def main():
     model_config = {
         "model_name": "faster_rcnn_R_50_C4_1x",
-        "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/model_final.pth",
-        "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml",
+        "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/trichomes_detection/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/model_final.pth",
+        "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/trichomes_detection/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml",
     }
 
-    parent_input_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_5_2024_12_24/lab"
-    output_base_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/results/faster_rcnn/day_5_2024_12_24/lab"
+    parent_input_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_9_2025_01_16/lab"
+    output_base_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/results/faster_rcnn/day_9_2025_01_16/lab"
 
     # Ensure output base directory exists
     os.makedirs(output_base_folder, exist_ok=True)

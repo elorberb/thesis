@@ -1,23 +1,24 @@
-from src.classification.utils import available_models
+from src.classification.utils import image_classification_models
+
 
 def train_model_across_dataloaders(dataloaders_dict, model_name):
     from fastai.metrics import Precision, Recall, RocAucMulti
     from fastai.vision.all import vision_learner
 
     # Define the model architecture and metrics
-    precision_macro = Precision(average='macro')
-    recall_macro = Recall(average='macro')
+    precision_macro = Precision(average="macro")
+    recall_macro = Recall(average="macro")
 
     results = {}
     models = {}
-    
+
     for name, dls in dataloaders_dict.items():
         print(f"Training with configuration: {name}")
 
         model = vision_learner(
             dls=dls,
-            arch=available_models[model_name],
-            metrics=[error_rate, precision_macro, recall_macro]
+            arch=image_classification_models[model_name],
+            metrics=[error_rate, precision_macro, recall_macro],
         )
 
         # Train the model

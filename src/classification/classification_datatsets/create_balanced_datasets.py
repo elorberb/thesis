@@ -38,9 +38,9 @@ def create_balanced_train_test_split(
     """
     train_path = os.path.join(original_path, "train")
     balanced_train_path = os.path.join(
-        balanced_path, f"train_set_{dataset_num}", "train"
+        balanced_path, f"balanced_{dataset_num}", "train"
     )
-    test_path = os.path.join(balanced_path, f"train_set_{dataset_num}", "test")
+    test_path = os.path.join(balanced_path, f"balanced_{dataset_num}", "val")
 
     # Ensure the balanced dataset directories exist
     os.makedirs(balanced_train_path, exist_ok=True)
@@ -261,27 +261,191 @@ def create_balanced_test_set(source_dir, dest_dir, num_samples_per_class=26):
             print(f"Copied {len(sampled_files)} images for class '{class_name}'.")
 
 
+def split_images_by_ratio(
+    source_class_path,
+    target_train_path,
+    target_test_path,
+    train_ratio=0.75,
+    random_split=True,
+):
+    """
+    Splits images from `source_class_path` into train and test folders,
+    using `train_ratio` proportion for training and (1 - train_ratio) for testing.
+    This split is done PER CLASS folder (so each class has the same ratio).
+
+    :param source_class_path: Path to the folder containing images for a single class
+    :param target_train_path: Path to the 'train/class_name' folder for the training images
+    :param target_test_path:  Path to the 'test/class_name' folder for the testing images
+    :param train_ratio:       Proportion of images to use for the training set (0 to 1).
+    :param random_split:      If True, shuffles the images for random splitting.
+    """
+
+    # Get all files (only actual files) in the class folder.
+    images = [
+        f
+        for f in os.listdir(source_class_path)
+        if os.path.isfile(os.path.join(source_class_path, f))
+    ]
+
+    # Shuffle the list of images if random_split is True
+    if random_split:
+        random.shuffle(images)
+
+    # Compute the split index for train vs test
+    split_index = int(len(images) * train_ratio)
+
+    # Train images are up to the split_index, test images are after that
+    train_images = images[:split_index]
+    test_images = images[split_index:]
+
+    # Ensure target directories exist
+    os.makedirs(target_train_path, exist_ok=True)
+    os.makedirs(target_test_path, exist_ok=True)
+
+    # Copy images to the train directory
+    for i, img_name in enumerate(train_images):
+        src_img_path = os.path.join(source_class_path, img_name)
+        dest_img_path = os.path.join(target_train_path, f"{i}_{img_name}")
+        shutil.copy2(src_img_path, dest_img_path)
+
+    # Copy images to the test directory
+    for i, img_name in enumerate(test_images):
+        src_img_path = os.path.join(source_class_path, img_name)
+        dest_img_path = os.path.join(target_test_path, f"{i}_{img_name}")
+        shutil.copy2(src_img_path, dest_img_path)
+
+
+def create_train_test_split_by_ratio(
+    dataset_path, split_dataset_path, train_ratio=0.8, random_split=True
+):
+    """
+    Iterates through each class folder in `dataset_path` and splits images
+    into train/test subfolders under `split_dataset_path`,
+    respecting the chosen train:test ratio for each class independently.
+
+    :param dataset_path:       Path to the folder that contains subfolders for each class
+    :param split_dataset_path: Path to the folder where the train/test split will be created
+    :param train_ratio:        Proportion of images that will go into the train set (0 to 1)
+    """
+
+    # Create the output folder if it doesn't exist
+    os.makedirs(split_dataset_path, exist_ok=True)
+
+    # The new train/test dirs:
+    train_root = os.path.join(split_dataset_path, "train")
+    test_root = os.path.join(split_dataset_path, "val")
+    os.makedirs(train_root, exist_ok=True)
+    os.makedirs(test_root, exist_ok=True)
+
+    # Iterate over each class folder in the dataset
+    for class_name in os.listdir(dataset_path):
+        class_path = os.path.join(dataset_path, class_name)
+
+        # Skip if it's not a directory, or if it's 'train'/'test' already in the source
+        if not os.path.isdir(class_path):
+            continue
+        if class_name.lower() in ["train", "val"]:
+            # Skip if you already have train/test in the original folder
+            # (Remove this check if you want to handle them differently)
+            continue
+
+        # Create class subfolders in the new train and test directories
+        target_train_path = os.path.join(train_root, class_name)
+        target_test_path = os.path.join(test_root, class_name)
+        os.makedirs(target_train_path, exist_ok=True)
+        os.makedirs(target_test_path, exist_ok=True)
+
+        print(
+            f"Splitting class '{class_name}' images with ratio {train_ratio*100:.0f}% / {100 - train_ratio*100:.0f}% ..."
+        )
+
+        # Perform the ratio-based split for this class
+        split_images_by_ratio(
+            source_class_path=class_path,
+            target_train_path=target_train_path,
+            target_test_path=target_test_path,
+            train_ratio=train_ratio,
+            random_split=True,
+        )
+
+    print("\nDone! Train/test split created at:", split_dataset_path)
+
+
+def print_dataset_stats(split_dataset_path):
+    """
+    Prints the number of images in each class under train/ and test/ folders,
+    and shows totals for train and test sets.
+    """
+    train_path = os.path.join(split_dataset_path, "train")
+    test_path = os.path.join(split_dataset_path, "val")
+
+    # Check if train/test directories exist
+    if not os.path.isdir(train_path):
+        print(f"Train directory does not exist: {train_path}")
+        return
+    if not os.path.isdir(test_path):
+        print(f"Test directory does not exist: {test_path}")
+        return
+
+    print("===== TRAIN FOLDER STATS =====")
+    train_total = 0
+    for class_name in os.listdir(train_path):
+        class_dir = os.path.join(train_path, class_name)
+        if not os.path.isdir(class_dir):
+            continue
+
+        # Count how many files are in this class directory
+        images = [
+            f
+            for f in os.listdir(class_dir)
+            if os.path.isfile(os.path.join(class_dir, f))
+        ]
+        n_images = len(images)
+        train_total += n_images
+        print(f"  Class '{class_name}': {n_images} images")
+
+    print(f"Total images in train folder: {train_total}\n")
+
+    print("===== TEST FOLDER STATS =====")
+    test_total = 0
+    for class_name in os.listdir(test_path):
+        class_dir = os.path.join(test_path, class_name)
+        if not os.path.isdir(class_dir):
+            continue
+
+        images = [
+            f
+            for f in os.listdir(class_dir)
+            if os.path.isfile(os.path.join(class_dir, f))
+        ]
+        n_images = len(images)
+        test_total += n_images
+        print(f"  Class '{class_name}': {n_images} images")
+
+    print(f"Total images in test folder: {test_total}")
+
+
 if __name__ == "__main__":
 
-    # ---------------- Create multiple balanced datasets ----------------
+    # ---------------- Create multiple balanced datasets from train and test folders ----------------
     # Paths for original and balanced datasets
-    # original_path = "/home/etaylor/code_projects/thesis/classification_datasets/blur_classification/blur_classification_datasets/all_classes"
-    balanced_path = "/home/etaylor/code_projects/thesis/classification_datasets/blur_classification/blur_classification_datasets/all_classes/balanced_datasets"
+    # original_path = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/good_quality"
+    # balanced_path = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/balanced_datasets"
 
     # # Generate multiple balanced datasets
-    # for dataset_num in range(1, 6):
+    # for dataset_num in range(2, 6):
     #     create_balanced_train_test_split(
-    #         original_path, balanced_path, dataset_num, target_count=400
-    #     )
+    #         original_path, balanced_path, dataset_num, target_count=200
+    # )
 
     # print("Multiple balanced datasets created successfully!")
 
-#     # # ---------------- Split validation set into new val and test sets ----------------
-#     # # Run the split function for each dataset
-#     # for dataset_num in range(1, 6):
-#     #     split_val_to_val_test(balanced_path, dataset_num, split_ratio=0.5)
+    #     # # ---------------- Split validation set into new val and test sets ----------------
+    #     # # Run the split function for each dataset
+    #     # for dataset_num in range(1, 6):
+    #     #     split_val_to_val_test(balanced_path, dataset_num, split_ratio=0.5)
 
-#     # ---------------- Check how many images are in each class ----------------
+    #     # ---------------- Check how many images are in each class ----------------
 
     # for dataset_num in range(1, 6):
     #     dataset_path = os.path.join(balanced_path, f"train_set_{dataset_num}")
@@ -294,25 +458,52 @@ if __name__ == "__main__":
     #     print_image_distribution(train_path)
     #     print_image_distribution(test_path)
 
-#     print("Done!")
+    #     print("Done!")
 
-#     # # count the files that are not folders in this path /home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
-#     # count = 0
-#     # for file in os.listdir("/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"):
-#     #     if not os.path.isdir(file):
-#     #         count += 1
-#     # print(count)
+    #     # # count the files that are not folders in this path /home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"
+    #     # count = 0
+    #     # for file in os.listdir("/home/etaylor/code_projects/thesis/segments/etaylor_cannabis_patches_train_26-04-2024_15-44-44/ground_truth_trichomes_datasets/trichome_dataset_125_good_quality/balanced_datasets/train_set_1/test"):
+    #     #     if not os.path.isdir(file):
+    #     #         count += 1
+    #     # print(count)
 
-#     # lets check if the files that are not in the class folders are in the test folder
+    #     # lets check if the files that are not in the class folders are in the test folder
+    # ---------------- Create balanced test set ----------------
+    # for dataset_num in range(1, 6):
+    #     dataset_path = os.path.join(balanced_path, f"train_set_{dataset_num}")
 
+    #     # get the train, val and test datasets
+    #     test_balanced_path = os.path.join(dataset_path, "test_balanced")
+    #     test_path = os.path.join(dataset_path, "test")
 
-# ---------------- Create balanced test set ----------------
-    for dataset_num in range(1, 6):
-        dataset_path = os.path.join(balanced_path, f"train_set_{dataset_num}")
+    #     create_balanced_test_set(
+    #         test_path, test_balanced_path, num_samples_per_class=196
+    #     )
+    #     print_image_distribution(test_balanced_path)
 
-        # get the train, val and test datasets
-        test_balanced_path = os.path.join(dataset_path, "test_balanced")
-        test_path = os.path.join(dataset_path, "test")
-        
-        create_balanced_test_set(test_path, test_balanced_path, num_samples_per_class=196)
-        print_image_distribution(test_balanced_path)
+    # ---------------- Create single balanced datasets by ratio ----------------
+    # dataset_path = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/extracted_trichomes_images/good_quality"
+    # balanced_dataset = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/extracted_trichomes_images/balanced_good_quality"
+    # train_ratio = 0.75
+    # # Adjust target_count as needed
+    # create_train_test_split_by_ratio(
+    #     dataset_path=dataset_path,
+    #     split_dataset_path=balanced_dataset,
+    #     train_ratio=train_ratio,
+    # )
+
+    # ---------------- Create multiple balanced datasets by ratio ----------------
+    dataset_path = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/good_quality"
+    balanced_datasets_folder = "/home/etaylor/code_projects/thesis/classification_datasets/trichome_classification/balanced_datasets"
+    train_ratio = 0.75
+    num_datasets = 6
+    for run in range(1, num_datasets):
+
+        create_train_test_split_by_ratio(
+            dataset_path=dataset_path,
+            split_dataset_path=os.path.join(
+                balanced_datasets_folder, f"balanced_{run}"
+            ),
+            train_ratio=train_ratio,
+            random_split=True,
+        )

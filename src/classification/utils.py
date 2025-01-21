@@ -3,7 +3,7 @@ from fastai.vision import *
 import PIL
 
 # models to compare
-available_models = {
+image_classification_models = {
     "alexnet": models.alexnet,
     "resnet34": models.resnet34,
     "resnet50": models.resnet50,

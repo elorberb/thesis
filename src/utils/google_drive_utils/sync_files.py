@@ -220,8 +220,8 @@ def check_storage_quota(service):
 
 
 if __name__ == "__main__":
-    folder_id = "1dN5vL-xlK7qToC8_FkPKp6CuDSbfF4C5"  # folder id in google drive
-    local_download_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_5_2024_12_24/lab"  # images path in the cluster
+    folder_id = "1Kfgw-L-R-aDS2rNi20Kfh8UqY1Vtk1_1"  # folder id in google drive
+    local_download_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_9_2025_01_16/lab"  # images path in the cluster
 
     # Ensure the local download directory exists
     if not os.path.exists(local_download_path):

@@ -95,7 +95,7 @@ def extract_image_number(file_name):
         return None
 
 
-def organize_images(
+def organize_images_deprecated(
     service, source_folder_id, dest_folder_id, flower_ids, flower_id_images
 ):
     items = list_files_in_folder(service, source_folder_id)
@@ -135,6 +135,45 @@ def organize_images(
                 flower_folder_id = flower_folders[current_flower_id]
                 copy_file(service, file_id, flower_folder_id)
                 print(f"Copied {file_name} to folder {current_flower_id}")
+
+
+def organize_images(
+    service, source_folder_id, dest_folder_id, flower_ids, flower_id_images
+):
+    items_sorted = sorted(
+        list_files_in_folder(service, source_folder_id), key=lambda x: x["name"]
+    )
+    flower_folders = {}
+
+    image_numbers = [extract_image_number(name) for name in flower_id_images]
+
+    for index, flower_id in enumerate(flower_ids):
+        # Determine the image range for the current flower
+        start_num = image_numbers[index]
+        end_num = (
+            image_numbers[index + 1] - 1
+            if index + 1 < len(image_numbers)
+            else extract_image_number(items_sorted[-1]["name"])
+        )
+
+        # Create folder if it doesn't exist
+        flower_folder_id = flower_folders.get(flower_id)
+        if not flower_folder_id:
+            flower_folder_id = create_folder(service, dest_folder_id, str(flower_id))
+            flower_folders[flower_id] = flower_folder_id
+
+        # Copy images within the determined range to the flower folder
+        copy_images_in_range(
+            service, items_sorted, start_num, end_num, flower_folder_id, str(flower_id)
+        )
+
+
+def copy_images_in_range(service, items, start_num, end_num, folder_id, flower_id: str):
+    for item in items:
+        image_number = extract_image_number(item["name"])
+        if image_number is not None and start_num <= image_number <= end_num:
+            copy_file(service, item["id"], folder_id)
+            print(f"Copied {item['name']} to folder {folder_id} ({flower_id})")
 
 
 def create_main_and_subfolders(service, parent_folder_id, main_folder_name):
@@ -202,15 +241,30 @@ if __name__ == "__main__":
 
     # ------------------- Code for Organize the images to folders -------------------
     source_folder_id = (
-        "16APnTyfFGst_kIgHAAM1JbxQO8rEGKKh"  # Source folder ID in Google Drive
+        "1jXGDvVvqlLQQSHUFnl3WSAB02y-q2MBz"  # Source folder ID in Google Drive
     )
     dest_folder_id = (
-        "1dN5vL-xlK7qToC8_FkPKp6CuDSbfF4C5"  # Destination folder ID in Google Drive
+        "1Kfgw-L-R-aDS2rNi20Kfh8UqY1Vtk1_1"  # Destination folder ID in Google Drive
     )
 
-    # list from 31 to 45
-    flower_ids = list(range(61, 72))
-    image_ids = [9560, 9634, 9667, 9713, 9744, 9773, 9807, 9836, 9882, 9933, 9985]
+    flower_ids = list(range(136, 151))
+    image_ids = [
+        4576,
+        4604,
+        4630,
+        4658,
+        4684,
+        4719,
+        4747,
+        4783,
+        4813,
+        4837,
+        4867,
+        4894,
+        4920,
+        4951,
+        4977,
+    ]
 
     flower_id_images = [f"IMG_{image_id}.JPG" for image_id in image_ids]
 
