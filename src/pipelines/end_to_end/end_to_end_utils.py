@@ -52,32 +52,26 @@ def perform_trichome_detection(image_path, detection_model, patch_size=512):
 
 
 def filter_large_objects(predictions, size_threshold_ratio=10):
-    # Calculate sizes of bounding boxes
+    # Calculate the size of each detected object
     sizes = [
         (pred.bbox.maxx - pred.bbox.minx) * (pred.bbox.maxy - pred.bbox.miny)
         for pred in predictions
     ]
+    if not sizes:
+        return predictions  # No detections to filter
 
-    if sizes:
-        # Calculate median size
-        median_size = np.median(sizes)
+    # Calculate the median size
+    median_size = np.median(sizes)
 
-        # Filter predictions based on size threshold
-        filtered_predictions = [
-            pred
-            for pred in predictions
-            if (pred.bbox.maxx - pred.bbox.minx) * (pred.bbox.maxy - pred.bbox.miny)
-            <= median_size * size_threshold_ratio
-        ]
+    # Filter out objects that are larger than the threshold ratio of the median size
+    filtered_predictions = [
+        pred
+        for pred in predictions
+        if (pred.bbox.maxx - pred.bbox.minx) * (pred.bbox.maxy - pred.bbox.miny)
+        <= median_size * size_threshold_ratio
+    ]
 
-        # Log information
-        logger.info(
-            f"Filtered {len(predictions) - len(filtered_predictions)} large objects"
-        )
-
-        return filtered_predictions
-
-    return predictions
+    return filtered_predictions
 
 
 def extend_bounding_box(
@@ -113,6 +107,15 @@ def save_visuals(result, image_output_dir, base_file_name):
     logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
 
 
+def save_results(result, image_output_dir, base_file_name):
+    logger.info(f"Saving results for {base_file_name}")
+    # Save results to JSON with 'raw' suffix
+    json_path = os.path.join(image_output_dir, f"{base_file_name}_raw.json")
+    with open(json_path, "w") as json_file:
+        json.dump(result.to_coco_predictions(), json_file)
+    logger.info(f"Results saved to JSON: {json_path}")
+
+
 def non_max_suppression(predictions, iou_threshold=0.7):
     if len(predictions) == 0:
         return predictions
@@ -134,6 +137,57 @@ def non_max_suppression(predictions, iou_threshold=0.7):
         ]
 
     return keep
+
+
+def compute_aggregated_class_distribution(aggregated_results, output_dir):
+    logger.info("Computing aggregated class label distribution.")
+    aggregated_class_counts = Counter()
+    for prediction in aggregated_results:
+        class_label = prediction.category.id
+        aggregated_class_counts[class_label] += 1
+
+    # Compute normalized aggregated class label distribution
+    normalized_aggregated_class_distribution = compute_normalized_class_distribution(
+        aggregated_class_counts
+    )
+
+    # Save combined distributions to JSON
+    aggregated_class_distribution_json_path = os.path.join(
+        output_dir, "class_distribution.json"
+    )
+    save_class_distribution(
+        aggregated_class_counts,
+        normalized_aggregated_class_distribution,
+        aggregated_class_distribution_json_path,
+    )
+
+
+def compute_class_distribution(predictions):
+    class_counts = Counter()
+    for prediction in predictions:
+        class_label = prediction.category.id
+        class_counts[class_label] += 1
+    return class_counts
+
+
+def compute_normalized_class_distribution(class_counts):
+    total_count = sum(class_counts.values())
+    normalized_distribution = {k: v / total_count for k, v in class_counts.items()}
+    return normalized_distribution
+
+
+def save_class_distribution(
+    class_distribution, normalized_class_distribution, output_path
+):
+    combined_distribution = {
+        "class_distribution": class_distribution,
+        "normalized_class_distribution": normalized_class_distribution,
+    }
+    with open(output_path, "w") as json_file:
+        json.dump(combined_distribution, json_file)
+    logger.info(
+        f"Class and normalized class distributions saved to JSON: {output_path}"
+    )
 
 
 def compute_iou(box1, box2):

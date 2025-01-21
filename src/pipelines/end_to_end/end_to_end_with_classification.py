@@ -16,6 +16,12 @@ from src.pipelines.end_to_end.end_to_end_utils import (
     extend_bounding_box,
     crop_image,
     non_max_suppression,
+    save_visuals,
+    save_results,
+    compute_class_distribution,
+    compute_normalized_class_distribution,
+    save_class_distribution,
+    compute_aggregated_class_distribution,
 )
 
 # Configure logging
@@ -34,14 +40,7 @@ class RGB2HSV(Transform):
         return rgb2hsv(img)
 
 
-# Utility Functions
-
-
-def configure_output_directory(image_path, base_output_dir):
-    file_name = os.path.splitext(os.path.basename(image_path))[0]
-    output_dir = os.path.join(base_output_dir, file_name)
-    os.makedirs(output_dir, exist_ok=True)
-    return output_dir
+# ------- Utility Functions -------
 
 
 def save_high_res_plot(output_path):
@@ -77,53 +76,23 @@ def classify_bbox_image(cropped_image, classification_model, model_type):
         raise ValueError(f"Unsupported model type: {model_type}")
 
 
-def plot_classified_bbox(
-    cropped_image,
-    detection_class_name,
-    classification_class_name,
-    output_dir,
-    index,
-    prefix="classified_object",
-):
-    # Create the classified objects folder if it doesn't exist
-    classified_objects_dir = os.path.join(output_dir, "classified_objects")
-    os.makedirs(classified_objects_dir, exist_ok=True)
-
-    plt.figure()
-    plt.title(
-        f"Detected Class: {detection_class_name}\nPredicted Class: {classification_class_name}"
-    )
-    plt.imshow(cropped_image)
-    plt.axis("off")
-
-    # Save the figure in the classified objects folder
-    output_path = os.path.join(classified_objects_dir, f"{prefix}_{index}.png")
-    save_high_res_plot(output_path)
-
-
-def classify_trichomes(
-    image_path, result, classification_model, output_dir, model_type
-):
+def classify_trichomes(image_path, result, classification_model, model_type):
     logger.info("Classifying good quality detected trichomes.")
     image = cv2.imread(image_path)
     image_height, image_width, _ = image.shape
-    start_classification = time.time()
 
     # Mapping from classification model class IDs to detection model class IDs
     classification_to_detection_id_mapping = {
-        0: 3,  # 'amber' maps to 'Amber'
-        1: 1,  # 'clear' maps to 'Clear'
-        2: 2,  # 'cloudy' maps to 'Cloudy'
+        0: 3,
+        1: 1,
+        2: 2,
     }
 
     # Mapping from class IDs to class names for both models
     detection_class_id_to_name = {1: "Clear", 2: "Cloudy", 3: "Amber"}
     classification_class_id_to_name = {0: "amber", 1: "clear", 2: "cloudy"}
 
-    for idx, prediction in enumerate(result.object_prediction_list):
-
-        # Save the original class id for the detection model
-        detection_model_pred_class_id = prediction.category.id
+    for _, prediction in enumerate(result.object_prediction_list):
 
         # Get the original bounding box coordinates
         x_min = int(prediction.bbox.minx)
@@ -140,10 +109,10 @@ def classify_trichomes(
         cropped_image = crop_image(image, x_min_ext, y_min_ext, x_max_ext, y_max_ext)
 
         # Convert to PIL Image
-        if isinstance(cropped_image, np.ndarray):
-            cropped_pil_image = PILImage.create(cropped_image)
-        else:
-            cropped_pil_image = cropped_image
+        # if isinstance(cropped_image, np.ndarray):
+        #     cropped_pil_image = PILImage.create(cropped_image)
+        # else:
+        #     cropped_pil_image = cropped_image
 
         # Classify the cropped image using the classification model
         classification_model_pred = classify_bbox_image(
@@ -175,33 +144,6 @@ def classify_trichomes(
         prediction.category.name = detection_class_id_to_name.get(
             detection_model_class_id, "Unknown"
         )
-
-        # Get class names for logging and plotting
-        faster_rcnn_class_name = detection_class_id_to_name.get(
-            detection_model_pred_class_id, "Unknown"
-        )
-        classification_class_name = classification_class_id_to_name.get(
-            classification_model_pred_class_id, "Unknown"
-        )
-
-        # Plot the classified object
-        plot_classified_bbox(
-            cropped_pil_image,
-            faster_rcnn_class_name,
-            classification_class_name,
-            output_dir,
-            idx,
-        )
-
-        # logger.info(
-        #     f"Detected Class (Faster R-CNN): {detection_model_pred_class_id} {faster_rcnn_class_name}"
-        # )
-        # logger.info(
-        #     f"Predicted Class (Classification Model): {classification_model_pred_class_id} {classification_class_name}"
-        # )
-
-    end_classification = time.time() - start_classification
-    # logger.info(f"Time taken for classification: {end_classification:.2f} seconds")
 
 
 def perform_blur_classification(
@@ -247,93 +189,11 @@ def perform_blur_classification(
     return filtered_predictions, blurry_trichomes
 
 
-def classify_blurry_trichomes(
-    blurry_trichomes, trichome_classification_model, output_dir, model_type
-):
-
-    logger.info("Classifying and plotting blurry trichomes.")
-    # Mapping from classification model class IDs to class names
-    classification_class_id_to_name = {0: "amber", 1: "clear", 2: "cloudy"}
-
-    for idx, (prediction, cropped_image) in enumerate(blurry_trichomes):
-        # Classify the cropped image using the classification model
-        classification_model_pred = classify_bbox_image(
-            cropped_image, trichome_classification_model, model_type
-        )
-
-        # Convert class name to class ID in the classification model
-        if model_type == "fastai":
-            classification_model_pred_class_name_lower = (
-                classification_model_pred.lower()
-            )
-            classification_model_pred_class_id = list(
-                classification_class_id_to_name.keys()
-            )[
-                list(classification_class_id_to_name.values()).index(
-                    classification_model_pred_class_name_lower
-                )
-            ]
-        else:
-            classification_model_pred_class_id = classification_model_pred
-
-        # Get class names for logging and plotting
-        classification_class_name = classification_class_id_to_name.get(
-            classification_model_pred_class_id, "Unknown"
-        )
-
-        # Plot the classified object
-        plot_classified_bbox(
-            cropped_image,
-            "Blurry",
-            classification_class_name,
-            output_dir,
-            idx,
-            prefix="blurry_trichome",
-        )
-
-        logger.info(
-            f"Blurry Trichome Predicted Class (Classification Model): {classification_model_pred_class_id} {classification_class_name}"
-        )
-
-
-def calc_trichome_distribution(predictions):
-    logger.info("Calculating trichome distribution.")
-    class_counts = {}
-    total = len(predictions)
-
-    for prediction in predictions:
-        class_id = prediction.category.id
-        class_counts[class_id] = class_counts.get(class_id, 0) + 1
-
-    # Calculate percentages
-    distribution = {
-        class_id: (count / total) * 100 for class_id, count in class_counts.items()
-    }
-
-    # Calculate normalized distribution
-    normalized_distribution = {
-        class_id: count / total for class_id, count in class_counts.items()
-    }
-
-    # Correct class IDs to class names mapping
-    labels = {1: "Clear", 2: "Cloudy", 3: "Amber"}
-    distribution_named = {labels.get(k, "Unknown"): v for k, v in distribution.items()}
-    normalized_distribution_named = {
-        labels.get(k, "Unknown"): v for k, v in normalized_distribution.items()
-    }
-
-    logger.info(f"Trichome Distribution (Percentage): {distribution_named}")
-    logger.info(f"Normalized Trichome Distribution: {normalized_distribution_named}")
-
-    return {
-        "percentage_distribution": distribution_named,
-        "normalized_distribution": normalized_distribution_named,
-    }
-
-
-def plot_image(image_path, predictions, output_dir, title, filename):
+def save_image(image_path, predictions, output_dir, title, filename):
     # Read the image
     image = cv2.imread(image_path)
+
+    image_name = os.path.basename(image_path).split("/")[-1]
 
     # Define color mapping for classes (in BGR format)
     class_color_mapping = {
@@ -362,7 +222,7 @@ def plot_image(image_path, predictions, output_dir, title, filename):
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     plt.figure(figsize=(12, 8))
     plt.imshow(image_rgb)
-    plt.title(title)
+    plt.title(title + f" for image {image_name}")
     plt.axis("off")
 
     # Save the figure
@@ -370,35 +230,156 @@ def plot_image(image_path, predictions, output_dir, title, filename):
     save_high_res_plot(output_path)
 
 
-def classify_image(image_path):
+def process_image(
+    image_path,
+    detection_model,
+    classification_models,
+    model_type,
+    patch_size,
+    perform_blur_classification_flag=False,
+):
 
-    base_output_dir = (
-        "/home/etaylor/code_projects/thesis/src/pipelines/end_to_end/results"
+    # run object detection model on the image
+    results = perform_trichome_detection(image_path, detection_model, patch_size)
+
+    print(results.object_prediction_list[0])
+    # filter large objects
+    filtered_predictions = filter_large_objects(results.object_prediction_list)
+
+    # After performing trichome detection, apply NMS to remove redundant detections
+    filtered_predictions = non_max_suppression(filtered_predictions, iou_threshold=0.7)
+    results.object_prediction_list = filtered_predictions
+
+    if perform_blur_classification_flag is True:
+
+        # Filter blurry objects
+        filtered_predictions, _ = perform_blur_classification(
+            image_path,
+            results.object_prediction_list,
+            classification_models["blur_classification"],
+            model_type,
+        )
+        results.object_prediction_list = filtered_predictions
+
+    # run classification model on predictions and modify classes in memory
+    classify_trichomes(
+        image_path,
+        results,
+        classification_models["trichome_classification"],
+        model_type,
     )
-    output_dir = configure_output_directory(image_path, base_output_dir)
+
+    return results
+
+
+def process_images_in_folder(
+    folder_path,
+    detection_model,
+    classification_models,
+    output_dir,
+    patch_size,
+    model_type,
+    blur_classification_flag,
+):
+    logger.info(f"Processing images in folder: {os.path.basename(folder_path)}")
+
+    # Extract the folder number
+    folder_number = os.path.basename(folder_path)
+
+    # Create the directory for saving results
+    result_dir = os.path.join(output_dir, folder_number)
+    os.makedirs(result_dir, exist_ok=True)
+
+    # Regex to extract numerical part from filenames like IMG_4915.JPG
+    def extract_number(filename):
+        match = re.search(r"\d+", filename)
+        return int(match.group()) if match else -1
+
+    # Get all image files in the folder
+    image_files = [
+        f
+        for f in os.listdir(folder_path)
+        if os.path.isfile(os.path.join(folder_path, f))
+        and f.lower().endswith((".png", ".jpg", ".jpeg"))
+    ]
+
+    # Sort files based on the numerical part
+    image_files.sort(key=extract_number)
+
+    aggregated_results = []
+
+    # Start timing the processing
+    start_time = time.time()
+
+    # Skip the first image
+    for image_file in image_files[1:]:
+        image_path = os.path.join(folder_path, image_file)
+        base_file_name = os.path.splitext(image_file)[0]
+
+        # Create a directory for each image inside the result folder
+        image_output_dir = os.path.join(result_dir, base_file_name)
+        os.makedirs(image_output_dir, exist_ok=True)
+
+        results = process_image(
+            image_path,
+            detection_model,
+            classification_models,
+            model_type,
+            patch_size,
+            perform_blur_classification_flag=blur_classification_flag,
+        )
+
+        # Export results with filtered predictions
+        save_visuals(results, image_output_dir, base_file_name)
+        save_results(results, image_output_dir, base_file_name)
+
+        # Compute class label distribution and normalized distribution for the image
+        class_distribution = compute_class_distribution(results.object_prediction_list)
+        normalized_class_distribution = compute_normalized_class_distribution(
+            class_distribution
+        )
+
+        # Save combined distributions to JSON
+        distribution_json_path = os.path.join(
+            image_output_dir, f"{base_file_name}_class_distribution.json"
+        )
+        save_class_distribution(
+            class_distribution, normalized_class_distribution, distribution_json_path
+        )
+
+        aggregated_results.extend(results.object_prediction_list)
+
+        # Calculate total processing time
+    total_time = time.time() - start_time
+    logger.info(f"Total time taken to process the folder: {total_time:.2f} seconds")
+
+    # Compute and save aggregated class label distribution for all images
+    compute_aggregated_class_distribution(aggregated_results, result_dir)
+
+
+if __name__ == "__main__":
 
     # define configs for models
     detection_model_config = {
         "model_name": "faster_rcnn_R_50_C4_1x",
-        "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/model_final.pth",
-        "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml",
+        "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/trichomes_detection/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/model_final.pth",
+        "yaml_file": "/home/etaylor/code_projects/thesis/checkpoints/trichomes_detection/detectron2/COCO-Detection/faster_rcnn_R_50_C4_1x/29-04-2024_16-09-41/config.yaml",
     }
 
     classification_models_config = {
         "trichome_classification": {
-            "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/trichome_image_classification/yolo/balanced_good_quality/YOLOv8/Medium.pt"
+            "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/trichome_image_classification/yolo/fine_tuned/YOLOv8/Medium_dataset_0.pt"
         },
         "blur_classification": {
-            "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/blur_image_classification/yolo/after_tuning/YOLOv8/Nano_dataset_0.pt"
+            "checkpoint": "/home/etaylor/code_projects/thesis/checkpoints/blur_image_classification/yolo/fine_tuned/YOLOv8/Nano_dataset_0.pt"
         },
     }
 
     # define patch_size
     patch_size = 512
     model_type = "yolo"
-    perform_blur_classification_flag = False
-    classify_blurry_flag = False
-    
+    perform_blur_classification_flag = True
+
     # load detection model
     detection_model = load_obj_detection_model(detection_model_config, patch_size)
 
@@ -413,116 +394,47 @@ def classify_image(image_path):
         model_type=model_type,
     )
 
-    # Start time measurement
-    start_time = time.time()
+    classification_models = {
+        "trichome_classification": trichome_classification_model,
+        "blur_classification": blur_classification_model,
+    }
 
-    # run object detection model on the image
-    object_detection_results = perform_trichome_detection(image_path, detection_model)
+    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_7_2024_06_20/greenhouse/202/IMG_7745.JPG"
+    folder_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_7_2024_06_20/greenhouse/186"
 
-    # End time measurement
-    object_detection_time = time.time() - start_time
+    folder_name = os.path.basename(folder_path)
+    output_dir = "/home/etaylor/code_projects/thesis/src/pipelines/end_to_end/results"
 
-    # Plot current detections after object detection
-    plot_image(
-        image_path,
-        object_detection_results.object_prediction_list,
-        output_dir,
-        title="After Object Detection",
-        filename="detections_after_object_detection.png",
+    # process folder
+    process_images_in_folder(
+        folder_path=folder_path,
+        detection_model=detection_model,
+        classification_models=classification_models,
+        output_dir=output_dir,
+        patch_size=patch_size,
+        model_type=model_type,
+        blur_classification_flag=perform_blur_classification_flag,
     )
 
-    # filter large objects
-    filtered_predictions = filter_large_objects(
-        object_detection_results.object_prediction_list
-    )
+    # results = process_image(
+    #     image_path=image_path,
+    #     detection_model=detection_model,
+    #     classification_models=classification_models,
+    #     model_type=model_type,
+    #     patch_size=patch_size,
+    #     perform_blur_classification_flag=perform_blur_classification_flag,
+    # )
 
-    # After performing trichome detection, apply NMS to remove redundant detections
-    filtered_predictions = non_max_suppression(filtered_predictions, iou_threshold=0.7)
-    object_detection_results.object_prediction_list = filtered_predictions
+    # # Compute class label distribution and normalized distribution for the image
+    # class_distribution = compute_class_distribution(results.object_prediction_list)
+    # normalized_class_distribution = compute_normalized_class_distribution(
+    #     class_distribution
+    # )
 
-    if perform_blur_classification_flag is True:
-        # Start time measurement
-        start_time = time.time()
+    # # Save combined distributions to JSON
+    # distribution_json_path = os.path.join(output_dir, "class_distribution.json")
+    # save_class_distribution(
+    #     class_distribution, normalized_class_distribution, distribution_json_path
+    # )
 
-        # Filter blurry objects
-        filtered_predictions, blurry_trichomes = perform_blur_classification(
-            image_path,
-            object_detection_results.object_prediction_list,
-            blur_classification_model,
-            model_type,
-        )
-        object_detection_results.object_prediction_list = filtered_predictions
-
-        # End time measurement
-        filter_blurry_objects_time = time.time() - start_time
-
-    if classify_blurry_flag is True:
-        # Process and plot blurry trichomes
-        classify_blurry_trichomes(
-            blurry_trichomes,
-            trichome_classification_model,
-            output_dir,
-            model_type=model_type,
-        )
-
-        # Plot blurry detections on the full image
-        plot_image(
-            image_path,
-            blurry_trichomes,
-            output_dir,
-            title="Blurry Trichomes Filtered Out",
-            filename="blurry_trichomes_filtered_out.png",
-        )
-
-    # Plot current detections after filtering blurry objects
-    plot_image(
-        image_path,
-        object_detection_results.object_prediction_list,
-        output_dir,
-        title="After Filtering Blurry Trichomes",
-        filename="detections_after_filtering_blurry_trichomes.png",
-    )
-
-    # Start time measurement
-    start_time = time.time()
-
-    # run classification model on the filtered predictions
-    classify_trichomes(
-        image_path,
-        object_detection_results,
-        trichome_classification_model,
-        output_dir,
-        model_type,
-    )
-
-    # End time measurement
-    classify_objects_time = time.time() - start_time
-
-    # Plot current detections after classification
-    plot_image(
-        image_path,
-        object_detection_results.object_prediction_list,
-        output_dir,
-        title="With Trichome Classification",
-        filename="detections_with_classification.png",
-    )
-
-    # calc distribution of the trichome
-    trichome_distributions = calc_trichome_distribution(
-        object_detection_results.object_prediction_list
-    )
-
-    # Log the time measurements
-    print("Object Detection Time:", object_detection_time)
-    print("Filter Blurry Objects Time:", filter_blurry_objects_time)
-    print("Classify Objects Time:", classify_objects_time)
-    print(
-        f"Total Time: {object_detection_time + filter_blurry_objects_time + classify_objects_time}"
-    )
-
-    print("Trichome distribution:\n", trichome_distributions)
-
-
-if __name__ == "__main__":
-    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_7_2024_06_20/greenhouse/196/IMG_7822.JPG"
-    classify_image(image_path)
+    # save_visuals(results, output_dir, "test")

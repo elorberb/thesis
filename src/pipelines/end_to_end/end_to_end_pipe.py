@@ -10,7 +10,13 @@ import numpy as np
 
 import warnings
 
-from src.pipelines.end_to_end.end_to_end_utils import load_obj_detection_model
+from src.pipelines.end_to_end.end_to_end_utils import (
+    load_obj_detection_model,
+    save_results,
+    save_visuals,
+    compute_aggregated_class_distribution,
+    filter_large_objects,
+)
 
 warnings.filterwarnings(action="ignore")
 
@@ -60,30 +66,6 @@ def filter_large_objects(predictions, size_threshold_ratio=10):
     ]
 
     return filtered_predictions
-
-
-def save_visuals(result, image_output_dir, base_file_name):
-    logger.info(f"Exporting visuals for {base_file_name}")
-    start_time = time.time()
-    result.export_visuals(
-        export_dir=image_output_dir,
-        text_size=1,
-        rect_th=2,
-        hide_labels=True,
-        hide_conf=True,
-        file_name=base_file_name,
-    )
-    export_time = time.time() - start_time
-    logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
-
-
-def save_results(result, image_output_dir, base_file_name):
-    logger.info(f"Saving results for {base_file_name}")
-    # Save results to JSON with 'raw' suffix
-    json_path = os.path.join(image_output_dir, f"{base_file_name}_raw.json")
-    with open(json_path, "w") as json_file:
-        json.dump(result.to_coco_predictions(), json_file)
-    logger.info(f"Results saved to JSON: {json_path}")
 
 
 def compute_class_distribution(predictions):
