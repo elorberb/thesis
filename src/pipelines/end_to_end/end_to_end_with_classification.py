@@ -108,12 +108,6 @@ def classify_trichomes(image_path, result, classification_model, model_type):
         # Crop the extended bounding box from the original image
         cropped_image = crop_image(image, x_min_ext, y_min_ext, x_max_ext, y_max_ext)
 
-        # Convert to PIL Image
-        # if isinstance(cropped_image, np.ndarray):
-        #     cropped_pil_image = PILImage.create(cropped_image)
-        # else:
-        #     cropped_pil_image = cropped_image
-
         # Classify the cropped image using the classification model
         classification_model_pred = classify_bbox_image(
             cropped_image, classification_model, model_type
@@ -357,6 +351,30 @@ def process_images_in_folder(
     compute_aggregated_class_distribution(aggregated_results, result_dir)
 
 
+def process_all_folders(
+    parent_folder_path, detection_model, classification_models, output_dir, patch_size, model_type, perform_blur_classification_flag
+):
+
+    start_time = time.time()  # Start timer
+    # Get all subfolders in the parent folder
+    subfolders = [f.path for f in os.scandir(parent_folder_path) if f.is_dir()]
+
+    for folder_path in subfolders:
+        logger.info(f"Processing folder: {folder_path}")
+        process_images_in_folder(
+            folder_path=folder_path,
+            detection_model=detection_model,
+            classification_models=classification_models,
+            output_dir=output_dir,
+            patch_size=patch_size,
+            model_type=model_type,
+            blur_classification_flag=perform_blur_classification_flag,
+        )
+
+    total_time = time.time() - start_time  # End timer
+    logger.info(f"Total time taken to process all folders: {total_time:.2f} seconds")
+
+
 if __name__ == "__main__":
 
     # define configs for models
@@ -378,7 +396,7 @@ if __name__ == "__main__":
     # define patch_size
     patch_size = 512
     model_type = "yolo"
-    perform_blur_classification_flag = True
+    perform_blur_classification_flag = False
 
     # load detection model
     detection_model = load_obj_detection_model(detection_model_config, patch_size)
@@ -404,17 +422,35 @@ if __name__ == "__main__":
 
     folder_name = os.path.basename(folder_path)
     output_dir = "/home/etaylor/code_projects/thesis/src/pipelines/end_to_end/results"
+    
+    parent_input_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_9_2025_01_16/lab"
+    output_base_folder = output_dir
 
-    # process folder
-    process_images_in_folder(
-        folder_path=folder_path,
+    # Ensure output base directory exists
+    os.makedirs(output_base_folder, exist_ok=True)
+    
+    # process all folders
+    process_all_folders(
+        parent_folder_path=parent_input_folder,
         detection_model=detection_model,
         classification_models=classification_models,
-        output_dir=output_dir,
+        output_dir=output_base_folder,
         patch_size=patch_size,
         model_type=model_type,
-        blur_classification_flag=perform_blur_classification_flag,
+        perform_blur_classification_flag=perform_blur_classification_flag,
     )
+
+    # process a flower folder
+    # process_images_in_folder(
+    #     folder_path=folder_path,
+    #     detection_model=detection_model,
+    #     classification_models=classification_models,
+    #     output_dir=output_dir,
+    #     patch_size=patch_size,
+    #     model_type=model_type,
+    #     blur_classification_flag=perform_blur_classification_flag,
+    # )
+
 
     # results = process_image(
     #     image_path=image_path,
