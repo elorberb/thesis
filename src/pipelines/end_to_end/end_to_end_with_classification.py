@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import time
 from ultralytics import YOLO
 
-from PIL import Image as PilImage
-
 from src.pipelines.end_to_end.end_to_end_utils import (
     load_obj_detection_model,
     perform_trichome_detection,
@@ -23,6 +21,9 @@ from src.pipelines.end_to_end.end_to_end_utils import (
     save_class_distribution,
     compute_aggregated_class_distribution,
 )
+
+import sys
+import argparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -236,7 +237,6 @@ def process_image(
     # run object detection model on the image
     results = perform_trichome_detection(image_path, detection_model, patch_size)
 
-    print(results.object_prediction_list[0])
     # filter large objects
     filtered_predictions = filter_large_objects(results.object_prediction_list)
 
@@ -352,7 +352,13 @@ def process_images_in_folder(
 
 
 def process_all_folders(
-    parent_folder_path, detection_model, classification_models, output_dir, patch_size, model_type, perform_blur_classification_flag
+    parent_folder_path,
+    detection_model,
+    classification_models,
+    output_dir,
+    patch_size,
+    model_type,
+    perform_blur_classification_flag,
 ):
 
     start_time = time.time()  # Start timer
@@ -417,18 +423,26 @@ if __name__ == "__main__":
         "blur_classification": blur_classification_model,
     }
 
-    image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_7_2024_06_20/greenhouse/202/IMG_7745.JPG"
-    folder_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_7_2024_06_20/greenhouse/186"
+    # define cli arguments
+    parser = argparse.ArgumentParser(
+        description="End to End pipeline with classification"
+    )
+    parser.add_argument(
+        "--parent_input_folder",
+        type=str,
+        help="Parent folder path containing subfolders of images",
+    )
+    parser.add_argument(
+        "--output_base_folder", type=str, help="Output base folder path"
+    )
+    args = parser.parse_args()
 
-    folder_name = os.path.basename(folder_path)
-    output_dir = "/home/etaylor/code_projects/thesis/src/pipelines/end_to_end/results"
-    
-    parent_input_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/images/day_9_2025_01_16/lab"
-    output_base_folder = output_dir
+    parent_input_folder = args.parent_input_folder
+    output_base_folder = args.output_base_folder
 
     # Ensure output base directory exists
     os.makedirs(output_base_folder, exist_ok=True)
-    
+
     # process all folders
     process_all_folders(
         parent_folder_path=parent_input_folder,
@@ -439,38 +453,3 @@ if __name__ == "__main__":
         model_type=model_type,
         perform_blur_classification_flag=perform_blur_classification_flag,
     )
-
-    # process a flower folder
-    # process_images_in_folder(
-    #     folder_path=folder_path,
-    #     detection_model=detection_model,
-    #     classification_models=classification_models,
-    #     output_dir=output_dir,
-    #     patch_size=patch_size,
-    #     model_type=model_type,
-    #     blur_classification_flag=perform_blur_classification_flag,
-    # )
-
-
-    # results = process_image(
-    #     image_path=image_path,
-    #     detection_model=detection_model,
-    #     classification_models=classification_models,
-    #     model_type=model_type,
-    #     patch_size=patch_size,
-    #     perform_blur_classification_flag=perform_blur_classification_flag,
-    # )
-
-    # # Compute class label distribution and normalized distribution for the image
-    # class_distribution = compute_class_distribution(results.object_prediction_list)
-    # normalized_class_distribution = compute_normalized_class_distribution(
-    #     class_distribution
-    # )
-
-    # # Save combined distributions to JSON
-    # distribution_json_path = os.path.join(output_dir, "class_distribution.json")
-    # save_class_distribution(
-    #     class_distribution, normalized_class_distribution, distribution_json_path
-    # )
-
-    # save_visuals(results, output_dir, "test")

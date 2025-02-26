@@ -52,6 +52,8 @@ exp_tutorial.mp4
 # YOLO runs
 runs/
 yaml_files/
+color_segmentation_runs/
+stigas_segmentation_runs/
 
 # added files
 settings.json

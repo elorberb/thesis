@@ -1,0 +1,11 @@
+path: /home/etaylor/code_projects/thesis/segments/etaylor_stigmas_color_dataset/yolo_formatted  # Root directory
+train: images/train  # Path to training images
+val: images/val  # Path to validation images
+
+# Number of classes
+nc: 2  
+
+# Class names
+names:
+  0: green
+  1: orange
