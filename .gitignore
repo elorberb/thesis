@@ -61,6 +61,7 @@ settings.json
 # sahi package images results
 sahi_results/
 /home/etaylor/code_projects/thesis/src/segmentation/notebooks/detectron2/sahi_results
+output_results/
 
 # images of the trichome dist classificatoin experiment
 eval_models_on_trichome_dist_images

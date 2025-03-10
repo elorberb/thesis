@@ -134,7 +134,7 @@ def validate_image_folders(base_path, day_folders):
 if __name__ == "__main__":
     # detect missing folders in the assessing cannabis maturity experiment
     # base_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/images"
-    day_folders = [
+    exp_2_day_folders = [
         "day_1_2024_12_05",
         "day_2_2024_12_09",
         "day_3_2024_12_12",
@@ -146,12 +146,24 @@ if __name__ == "__main__":
         "day_9_2025_01_16",
     ]
 
+    exp_1_day_folders = [
+        "day_1_2024_05_30",
+        "day_3_2024_06_06",
+        "day_4_2024_06_10",
+        "day_5_2024_06_13",
+        "day_6_2024_06_17",
+        "day_7_2024_06_20",
+        "day_9_2024_06_27",
+    ]
+
     # validate_image_folders(base_path, day_folders)
 
-    base_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/results/faster_rcnn_with_yolo"
-    output_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/results/faster_rcnn_with_yolo/csv_results"
+    base_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/results/faster_rcnn_with_yolo"
+    output_folder = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/results/faster_rcnn_with_yolo/csv_results"
     os.makedirs(output_folder, exist_ok=True)
-    data_per_image, data_per_folder = collect_data_from_json(base_path, day_folders)
+    data_per_image, data_per_folder = collect_data_from_json(
+        base_path, exp_1_day_folders
+    )
     save_data_to_csv(
         data_per_image,
         os.path.join(output_folder, "collected_class_distribution_per_image.csv"),
