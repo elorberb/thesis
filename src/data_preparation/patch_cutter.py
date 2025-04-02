@@ -1,20 +1,20 @@
 import os
 import cv2
 import pandas as pd
-from deprecated import deprecated
+# from deprecated import deprecated
 
-@deprecated(reason="Use pad_and_cut_images function instead")
-def cut_images(image, patch_height=512, patch_width=512):
-    patches_with_coords = []
-    height, width, _ = image.shape
+# @deprecated(reason="Use pad_and_cut_images function instead")
+# def cut_images(image, patch_height=512, patch_width=512):
+#     patches_with_coords = []
+#     height, width, _ = image.shape
 
-    for i in range(0, height - patch_height + 1, patch_height):
-        for j in range(0, width - patch_width + 1, patch_width):
-            patch = image[i: i + patch_height, j: j + patch_width]
-            if patch.shape[0] == patch_height and patch.shape[1] == patch_width:
-                patches_with_coords.append((patch, (i, j)))  # Append (patch, (i, j))
+#     for i in range(0, height - patch_height + 1, patch_height):
+#         for j in range(0, width - patch_width + 1, patch_width):
+#             patch = image[i: i + patch_height, j: j + patch_width]
+#             if patch.shape[0] == patch_height and patch.shape[1] == patch_width:
+#                 patches_with_coords.append((patch, (i, j)))  # Append (patch, (i, j))
 
-    return patches_with_coords
+#     return patches_with_coords
 
 
 def cut_images(image, patch_size=512):

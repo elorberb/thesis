@@ -7,7 +7,7 @@ import re
 import json
 from collections import Counter
 import numpy as np
-
+from PIL import ImageDraw
 import warnings
 
 warnings.filterwarnings(action="ignore")
@@ -103,6 +103,75 @@ def save_visuals(result, image_output_dir, base_file_name):
         hide_conf=True,
         file_name=base_file_name,
     )
+    export_time = time.time() - start_time
+    logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
+
+
+def save_visuals(result, image_output_dir, base_file_name, box_color=(0, 255, 0)):
+    """
+    Exports visualization with bounding boxes in the specified color.
+
+    Parameters:
+        result: The prediction result object from SAHI.
+        image_output_dir (str): Directory to save the output image.
+        base_file_name (str): Base name for the saved image file.
+        box_color (tuple): BGR color tuple for bounding boxes (default is green: (0, 255, 0)).
+    """
+    logger.info(f"Exporting visuals for {base_file_name}")
+    start_time = time.time()
+
+    # Convert box_color from BGR to RGB as SAHI expects RGB
+    # box_color_rgb = box_color[::-1]
+
+    result.export_visuals(
+        export_dir=image_output_dir,
+        text_size=1,
+        rect_th=2,
+        hide_labels=True,
+        hide_conf=True,
+        file_name=base_file_name
+    )
+
+    export_time = time.time() - start_time
+    logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
+
+
+def save_visuals_single_color(result, image_output_dir, base_file_name, box_color=(0, 255, 0)):
+    """
+    Draws all detection boxes on the PIL image from results in the same color and saves it.
+
+    Parameters:
+        result: SAHI result object containing `image` (PIL Image) and `object_prediction_list`.
+        image_output_dir (str): Directory to save the output image.
+        base_file_name (str): Base name used for saving the output image.
+        box_color (tuple): RGB color tuple for all bounding boxes (default is green).
+    """
+    logger.info(f"Exporting visuals for {base_file_name} with uniform colored boxes.")
+    start_time = time.time()
+
+    # Get the PIL image directly from result
+    image = result.image.copy()
+
+    # Initialize drawing context
+    draw = ImageDraw.Draw(image)
+
+    # Iterate over predictions and draw bounding boxes
+    for prediction in result.object_prediction_list:
+        x_min = int(prediction.bbox.minx)
+        y_min = int(prediction.bbox.miny)
+        x_max = int(prediction.bbox.maxx)
+        y_max = int(prediction.bbox.maxy)
+
+        # Draw rectangle on the image (outline only)
+        draw.rectangle([(x_min, y_min), (x_max, y_max)], outline=box_color, width=2)
+
+    # Ensure output directory exists
+    os.makedirs(image_output_dir, exist_ok=True)
+
+    # Save the image
+    output_path = os.path.join(image_output_dir, f"{base_file_name}_visuals.jpg")
+    image.save(output_path)
+
     export_time = time.time() - start_time
     logger.info(f"Time taken to export visuals: {export_time:.2f} seconds")
 

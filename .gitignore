@@ -71,9 +71,14 @@ assessing_cannabis_exp_results
 testing_end_to_end_pipe
 results
 evaluation_results
+pistils_pipe_results
 
 # credentials folders
 creds
 
 # stigmas images
 extracted_stigmas
+
+# document segmentation folders
+document_segmentation
+document_segmentation_old

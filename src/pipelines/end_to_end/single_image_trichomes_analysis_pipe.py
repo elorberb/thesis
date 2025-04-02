@@ -42,7 +42,7 @@ model_type = "yolo"
 perform_blur_classification_flag = False
 
 # Paths for the single image and output directory
-image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_9_2024_06_27/greenhouse/243/IMG_8720.JPG"
+image_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/images/day_3_2024_06_06/greenhouse/81/IMG_5296.JPG"
 output_dir = "/home/etaylor/code_projects/thesis/src/pipelines/output_results"
 
 # --- Model Loading ---
