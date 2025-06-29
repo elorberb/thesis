@@ -165,18 +165,16 @@ def save_data_to_csv(data, output_file):
 if __name__ == "__main__":
     # List the day folders in your experiment (modify as needed)
     exp_2_day_folders = [
-        "day_1_2024_12_05",
-        "day_2_2024_12_09",
-        "day_3_2024_12_12",
-        "day_4_2024_12_17",
-        "day_5_2024_12_24",
-        "day_6_2024_12_30",
-        "day_7_2025_01_06",
-        "day_8_2025_01_09",
-        "day_9_2025_01_16",
+        "day_1_2024_05_30",
+        "day_3_2024_06_06",
+        "day_4_2024_06_10",
+        "day_5_2024_06_13",
+        "day_6_2024_06_17",
+        "day_7_2024_06_20",
+        "day_9_2024_06_27",
     ]
     # Base path where pistils analysis results are stored
-    base_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_2/results/faster_rcnn_with_yolo"
+    base_path = "/sise/shanigu-group/etaylor/assessing_cannabis_exp/experiment_1/results/faster_rcnn_with_yolo"
     # Output folder for CSV results
     output_folder = os.path.join(base_path, "csv_results")
     os.makedirs(output_folder, exist_ok=True)
