@@ -1,4 +1,4 @@
-# 🍀 Automated Phenotyping of Cannabis Flower Maturity: A Machine Learning Approach
+# 🍀 Estimating Cannabis Flower Maturity in Greenhouse Conditions using Computer Vision
 
 This research introduces a novel method combining machine learning and computer vision to accurately determine the maturity of cannabis flowers. This is achieved by analyzing trichomes, small hair-like structures on the flowers that are rich in cannabinoids, key ingredients in medical cannabis. The method focuses on the density and appearance of trichomes to gauge flower maturity, which is vital for optimal THC production. The goal is to refine harvest timing, enhance product quality, ensure stable medicinal properties, and reduce cultivation risks. The hypothesis suggests that this approach will greatly improve the efficiency and accuracy of maturity assessment, leading to more consistent and high-quality cannabis products. This research could significantly impact and potentially transform current practices in cannabis cultivation.
 
