@@ -9,10 +9,12 @@ import { MaturityBadge } from "../components/MaturityBadge";
 import { ApiClient } from "../api/client";
 import { AnalysisListItem } from "../api/types";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { Colors, Gradients } = useTheme();
+  const { user } = useAuth();
   const [recentAnalyses, setRecentAnalyses] = useState<AnalysisListItem[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
 
@@ -40,8 +42,11 @@ export default function HomeScreen() {
               <Ionicons name="leaf" size={18} color={Colors.accent} />
               <Text style={styles.brandName}>AGRIVISION</Text>
             </View>
-            <Pressable style={styles.settingsButton} onPress={() => router.push("/settings")}>
-              <Ionicons name="settings-outline" size={20} color={Colors.textSecondary} />
+            <Pressable style={styles.profileButton} onPress={() => router.push("/profile")}>
+              <Text style={styles.profileInitial}>
+                {(user?.user_metadata?.full_name as string | undefined)?.[0]?.toUpperCase() ??
+                  user?.email?.[0]?.toUpperCase() ?? "?"}
+              </Text>
             </Pressable>
           </View>
 
@@ -89,7 +94,7 @@ export default function HomeScreen() {
                 <View style={[styles.navIconBox, { backgroundColor: "rgba(122,251,183,0.12)" }]}>
                   <Ionicons name="folder" size={20} color={Colors.accent} />
                 </View>
-                <Text style={styles.navRowTitle}>My Analyses</Text>
+                <Text style={styles.navRowTitle}>My Plants</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
             </Pressable>
@@ -208,15 +213,20 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     color: Colors.accent,
     letterSpacing: 3,
   },
-  settingsButton: {
+  profileButton: {
     width: 38,
     height: 38,
-    borderRadius: 10,
-    backgroundColor: Colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderRadius: 19,
+    backgroundColor: Colors.accentSurface,
+    borderWidth: 1.5,
+    borderColor: Colors.accent,
     alignItems: "center",
     justifyContent: "center",
+  },
+  profileInitial: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: Colors.accent,
   },
   heroCard: {
     flexDirection: "row",

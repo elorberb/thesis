@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { View, Text, Image, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,20 +7,25 @@ import { AnalysisResultStore } from "../store/analysisResult";
 import { useTheme } from "../contexts/ThemeContext";
 import { TrichomeType } from "../api/types";
 import { MOCK_RESULT } from "./results";
+import { ZoomableImage } from "../components/ZoomableImage";
 
-const TYPE_COLORS: Record<TrichomeType, string> = {
+type ExtendedTrichomeType = TrichomeType | "not_a_trichome";
+
+const TYPE_COLORS: Record<ExtendedTrichomeType, string> = {
   clear: "#6f758b",
   cloudy: "#dfe4fe",
   amber: "#d97706",
+  not_a_trichome: "#4b5563",
 };
 
-const TYPE_LABELS: Record<TrichomeType, string> = {
+const TYPE_LABELS: Record<ExtendedTrichomeType, string> = {
   clear: "Clear",
   cloudy: "Cloudy",
   amber: "Amber",
+  not_a_trichome: "Not a trichome",
 };
 
-const CYCLE_ORDER: TrichomeType[] = ["clear", "cloudy", "amber"];
+const CYCLE_ORDER: ExtendedTrichomeType[] = ["clear", "cloudy", "amber", "not_a_trichome"];
 
 export default function TrichomeSamplesScreen() {
   const router = useRouter();
@@ -38,9 +43,9 @@ export default function TrichomeSamplesScreen() {
     cropB64: crops?.[idx] ?? null,
   }));
 
-  const [overrides, setOverrides] = useState<Record<number, TrichomeType>>({});
+  const [overrides, setOverrides] = useState<Record<number, ExtendedTrichomeType>>({});
 
-  const cycleType = (originalIndex: number, currentType: TrichomeType) => {
+  const cycleType = (originalIndex: number, currentType: ExtendedTrichomeType) => {
     const nextType = CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentType) + 1) % CYCLE_ORDER.length];
     setOverrides((prev) => ({ ...prev, [originalIndex]: nextType }));
   };
@@ -49,14 +54,17 @@ export default function TrichomeSamplesScreen() {
     .filter((s) => s.trichome_type === focusedType)
     .map((s) => ({
       ...s,
-      effectiveType: overrides[s.index] ?? s.trichome_type,
+      effectiveType: (overrides[s.index] ?? s.trichome_type) as ExtendedTrichomeType,
     }));
 
   const total = effectiveSamples.length;
+  const validSamples = effectiveSamples.filter((s) => s.effectiveType !== "not_a_trichome");
+  const excludedCount = total - validSamples.length;
   const liveCounts = { clear: 0, cloudy: 0, amber: 0 };
-  effectiveSamples.forEach((s) => liveCounts[s.effectiveType]++);
+  validSamples.forEach((s) => liveCounts[s.effectiveType as TrichomeType]++);
+  const validTotal = validSamples.length;
   const livePct = (t: TrichomeType) =>
-    total > 0 ? Math.round((liveCounts[t] / total) * 100) : 0;
+    validTotal > 0 ? Math.round((liveCounts[t] / validTotal) * 100) : 0;
 
   const hasOverrides = Object.keys(overrides).length > 0;
   const styles = createStyles(Colors);
@@ -65,10 +73,16 @@ export default function TrichomeSamplesScreen() {
     if (hasOverrides) {
       const stored = AnalysisResultStore.get();
       if (stored) {
-        const updatedDetections = stored.trichome_result.detections.map((det, idx) => ({
-          ...det,
-          trichome_type: overrides[idx] ?? det.trichome_type,
-        }));
+        const updatedDetections = stored.trichome_result.detections
+          .map((det, idx) => ({
+            ...det,
+            effectiveType: (overrides[idx] ?? det.trichome_type) as ExtendedTrichomeType,
+          }))
+          .filter((d) => d.effectiveType !== "not_a_trichome")
+          .map(({ effectiveType, ...det }) => ({
+            ...det,
+            trichome_type: effectiveType as TrichomeType,
+          }));
         const newDist = { clear: 0, cloudy: 0, amber: 0 };
         updatedDetections.forEach((d) => newDist[d.trichome_type]++);
         AnalysisResultStore.set({
@@ -77,6 +91,7 @@ export default function TrichomeSamplesScreen() {
             ...stored.trichome_result,
             detections: updatedDetections,
             distribution: newDist,
+            total_count: updatedDetections.length,
           },
         });
       }
@@ -141,8 +156,13 @@ export default function TrichomeSamplesScreen() {
           </View>
 
           <View style={styles.totalRow}>
-            <Text style={styles.totalText}>{total} detections shown</Text>
-            {hasOverrides && (
+            <Text style={styles.totalText}>{validTotal} valid · {total} shown</Text>
+            {excludedCount > 0 && (
+              <Text style={styles.excludedText}>
+                {excludedCount} excluded
+              </Text>
+            )}
+            {hasOverrides && excludedCount === 0 && (
               <Text style={styles.overriddenText}>
                 {Object.keys(overrides).length} reclassified
               </Text>
@@ -154,7 +174,7 @@ export default function TrichomeSamplesScreen() {
         <View style={styles.hintRow}>
           <Ionicons name="finger-print-outline" size={14} color={Colors.textMuted} />
           <Text style={styles.hintText}>
-            Tap any sample to cycle: clear → cloudy → amber → clear
+            Tap any sample to cycle: clear → cloudy → amber → not a trichome → clear
           </Text>
         </View>
 
@@ -172,31 +192,37 @@ export default function TrichomeSamplesScreen() {
         ) : (
           <View style={styles.cropGrid}>
             {effectiveSamples.map((sample, i) => {
+              const isExcluded = sample.effectiveType === "not_a_trichome";
               const borderColor = TYPE_COLORS[sample.effectiveType];
               const isOverridden = overrides[sample.index] !== undefined;
               const conf = Math.round(sample.confidence * 100);
               const isFocused = sample.effectiveType === focusedType;
 
               return (
-                <Pressable
+                <View
                   key={i}
                   style={[
                     styles.cropCard,
                     { borderColor },
                     isFocused && styles.cropCardFocused,
+                    isExcluded && styles.cropCardExcluded,
                   ]}
-                  onPress={() => cycleType(sample.index, sample.effectiveType)}
                 >
                   {sample.cropB64 ? (
-                    <Image
-                      source={{ uri: `data:image/jpeg;base64,${sample.cropB64}` }}
-                      style={styles.cropImage}
+                    <ZoomableImage
+                      uri={`data:image/jpeg;base64,${sample.cropB64}`}
+                      style={[styles.cropImage, isExcluded && styles.cropImageExcluded]}
+                      imageStyle={[styles.cropImage, isExcluded && styles.cropImageExcluded]}
                       resizeMode="cover"
+                      onSingleTap={() => cycleType(sample.index, sample.effectiveType)}
                     />
                   ) : (
-                    <View style={[styles.cropImagePlaceholder, { borderBottomColor: borderColor }]}>
-                      <Ionicons name="leaf-outline" size={28} color={borderColor} />
-                    </View>
+                    <Pressable
+                      style={[styles.cropImagePlaceholder, { borderBottomColor: borderColor }]}
+                      onPress={() => cycleType(sample.index, sample.effectiveType)}
+                    >
+                      <Ionicons name={isExcluded ? "close-circle-outline" : "leaf-outline"} size={28} color={borderColor} />
+                    </Pressable>
                   )}
 
                   {isOverridden && (
@@ -205,7 +231,10 @@ export default function TrichomeSamplesScreen() {
                     </View>
                   )}
 
-                  <View style={styles.cropInfo}>
+                  <Pressable
+                    style={styles.cropInfo}
+                    onPress={() => cycleType(sample.index, sample.effectiveType)}
+                  >
                     <View style={styles.cropInfoRow}>
                       <Text style={styles.cropSampleLabel}>#{i + 1}</Text>
                       <View
@@ -217,9 +246,9 @@ export default function TrichomeSamplesScreen() {
                         </Text>
                       </View>
                     </View>
-                    <Text style={styles.cropConf}>{conf}% confidence</Text>
-                  </View>
-                </Pressable>
+                    {!isExcluded && <Text style={styles.cropConf}>{conf}% confidence</Text>}
+                  </Pressable>
+                </View>
               );
             })}
           </View>
@@ -352,6 +381,11 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     color: Colors.warning,
     fontWeight: "600",
   },
+  excludedText: {
+    fontSize: 11,
+    color: Colors.danger,
+    fontWeight: "600",
+  },
   hintRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -395,6 +429,12 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   },
   cropCardFocused: {
     borderWidth: 3,
+  },
+  cropCardExcluded: {
+    opacity: 0.45,
+  },
+  cropImageExcluded: {
+    opacity: 0.5,
   },
   cropImage: {
     width: "100%",

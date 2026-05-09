@@ -54,12 +54,14 @@ export default function SaveFlowerScreen() {
   };
 
   const linkAndNavigate = async (existingPlantId: string) => {
-    const analysis = AnalysisResultStore.get();
-    if (!analysis) {
+    const session = AnalysisResultStore.getSession();
+    if (session.length === 0) {
       Alert.alert("No scan found", "Please complete a scan before saving.");
       return;
     }
-    await ApiClient.linkAnalysisToPlant(analysis.id, existingPlantId);
+    await Promise.all(
+      session.map((analysis) => ApiClient.linkAnalysisToPlant(analysis.id, existingPlantId))
+    );
     router.replace("/home");
   };
 
@@ -132,7 +134,7 @@ export default function SaveFlowerScreen() {
         >
           <Text style={styles.pageTitle}>Save Flower</Text>
           <Text style={styles.pageSubtitle}>
-            Enter a plant ID to track this scan. If the ID already exists, the scan is added to that plant's history.
+            Enter a plant ID to track {AnalysisResultStore.getSession().length > 1 ? `these ${AnalysisResultStore.getSession().length} scans` : "this scan"}. If the ID already exists, the scan is added to that plant's history.
           </Text>
 
           <View style={styles.section}>

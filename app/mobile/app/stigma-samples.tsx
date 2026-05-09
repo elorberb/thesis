@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { View, Text, Image, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AnalysisResultStore } from "../store/analysisResult";
 import { useTheme } from "../contexts/ThemeContext";
 import { MOCK_RESULT } from "./results";
+import { ZoomableImage } from "../components/ZoomableImage";
 
 type StigmaColor = "green" | "orange";
 type StigmaFilter = StigmaColor | "all";
@@ -146,29 +147,29 @@ export default function StigmaSamplesScreen() {
               const orangePct = Math.round(sample.orange_ratio * 100);
 
               return (
-                <Pressable
+                <View
                   key={sample.index}
                   style={[styles.cropCard, { borderColor: accentColor }]}
-                  onPress={() => toggleColor(sample.index, color)}
                 >
                   <View style={styles.cropImageContainer}>
                     {sample.cropB64 ? (
-                      <Image
-                        source={{ uri: `data:image/jpeg;base64,${sample.cropB64}` }}
-                        style={styles.cropImage}
+                      <ZoomableImage
+                        uri={`data:image/jpeg;base64,${sample.cropB64}`}
+                        style={StyleSheet.absoluteFill}
+                        imageStyle={styles.cropImage}
                         resizeMode="cover"
-                      />
+                        onSingleTap={() => toggleColor(sample.index, color)}
+                      >
+                        <View style={[styles.colorOverlay, { backgroundColor: overlayColor }]} />
+                        <View style={[styles.imageLabel, { backgroundColor: accentColor + "dd" }]}>
+                          <Text style={styles.imageLabelText}>{color.toUpperCase()}</Text>
+                        </View>
+                      </ZoomableImage>
                     ) : (
-                      <View style={styles.cropImagePlaceholder}>
+                      <Pressable style={styles.cropImagePlaceholder} onPress={() => toggleColor(sample.index, color)}>
                         <Ionicons name="flower-outline" size={28} color={accentColor} />
-                      </View>
+                      </Pressable>
                     )}
-                    {/* Color overlay tint */}
-                    <View style={[styles.colorOverlay, { backgroundColor: overlayColor }]} />
-                    {/* Color label on image */}
-                    <View style={[styles.imageLabel, { backgroundColor: accentColor + "dd" }]}>
-                      <Text style={styles.imageLabelText}>{color.toUpperCase()}</Text>
-                    </View>
                   </View>
 
                   {isOverridden && (
@@ -177,7 +178,10 @@ export default function StigmaSamplesScreen() {
                     </View>
                   )}
 
-                  <View style={styles.cropInfo}>
+                  <Pressable
+                    style={styles.cropInfo}
+                    onPress={() => toggleColor(sample.index, color)}
+                  >
                     <View style={styles.cropInfoRow}>
                       <Text style={styles.cropSampleLabel}>Sample {i + 1}</Text>
                       <View style={[styles.colorDot, { backgroundColor: accentColor }]} />
@@ -185,8 +189,8 @@ export default function StigmaSamplesScreen() {
                     <Text style={styles.cropRatios}>
                       Green {greenPct}% · Orange {orangePct}%
                     </Text>
-                  </View>
-                </Pressable>
+                  </Pressable>
+                </View>
               );
             })}
           </View>

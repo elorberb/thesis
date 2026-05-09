@@ -1,25 +1,25 @@
 export type ColorScheme = "dark" | "light";
 
 const DarkColors = {
-  background: "#070d1f",
-  surface: "#0c1326",
-  surfaceElevated: "#171f36",
-  surfaceHighest: "#1c253e",
-  border: "#41475b",
-  borderSubtle: "rgba(65,71,91,0.15)",
-  textPrimary: "#dfe4fe",
-  textSecondary: "#a5aac2",
-  textMuted: "#6f758b",
-  accent: "#6bff8f",
-  accentDark: "#0abc56",
-  accentSurface: "rgba(107,255,143,0.10)",
-  accentText: "#004a1d",
-  danger: "#ff7351",
-  dangerSurface: "#b92902",
-  warning: "#d97706",
-  warningSurface: "rgba(120,53,15,0.20)",
-  tertiary: "#7de9ff",
-  tertiarySurface: "rgba(0,224,253,0.10)",
+  background: "#111213",
+  surface: "#1a1b1e",
+  surfaceElevated: "#222428",
+  surfaceHighest: "#2a2d32",
+  border: "#34373d",
+  borderSubtle: "rgba(60,65,75,0.20)",
+  textPrimary: "#e2e5ea",
+  textSecondary: "#9aa0ac",
+  textMuted: "#646b74",
+  accent: "#52c97a",
+  accentDark: "#2d8c4e",
+  accentSurface: "rgba(82,201,122,0.10)",
+  accentText: "#082318",
+  danger: "#f07068",
+  dangerSurface: "rgba(170,35,25,0.15)",
+  warning: "#e09a3c",
+  warningSurface: "rgba(130,70,10,0.18)",
+  tertiary: "#5ec4d8",
+  tertiarySurface: "rgba(0,180,210,0.10)",
 };
 
 const LightColors = {
@@ -52,22 +52,22 @@ export const ThemeColors: Record<ColorScheme, typeof DarkColors> = {
 };
 
 export const Gradients = {
-  vitality: ["#6bff8f", "#0abc56"] as [string, string],
+  vitality: ["#52c97a", "#2d8c4e"] as [string, string],
 };
 
 export const GradientsByTheme: Record<ColorScheme, { vitality: [string, string] }> = {
-  dark: { vitality: ["#6bff8f", "#0abc56"] },
+  dark: { vitality: ["#52c97a", "#2d8c4e"] },
   light: { vitality: ["#16a34a", "#15803d"] },
 };
 
 export type MaturityStage = "early" | "developing" | "peak" | "mature" | "late";
 
 export const MaturityColors: Record<MaturityStage, { background: string; text: string; label: string }> = {
-  early: { background: "#1e3a5f", text: "#60a5fa", label: "Early" },
-  developing: { background: "#2e1065", text: "#a78bfa", label: "Developing" },
-  peak: { background: "#052e16", text: "#6bff8f", label: "Peak" },
-  mature: { background: "#451a03", text: "#fbbf24", label: "Mature" },
-  late: { background: "#450a0a", text: "#f87171", label: "Late" },
+  early: { background: "#162a45", text: "#78b4f8", label: "Early" },
+  developing: { background: "#23104e", text: "#b29af8", label: "Developing" },
+  peak: { background: "#0d2a17", text: "#52c97a", label: "Peak" },
+  mature: { background: "#331508", text: "#f5c04a", label: "Mature" },
+  late: { background: "#35100c", text: "#f07d75", label: "Late" },
 };
 
 export const MaturityColorsByTheme: Record<ColorScheme, Record<MaturityStage, { background: string; text: string; label: string }>> = {

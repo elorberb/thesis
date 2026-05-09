@@ -71,37 +71,41 @@ export default function HistoryScreen() {
       day: "numeric",
       year: "numeric",
     });
-
-    const statusColor =
-      item.status === "active"
-        ? Colors.accent
-        : item.status === "harvested"
-          ? Colors.warning
-          : Colors.textMuted;
+    const metaCount = Object.keys(item.metadata || {}).length;
+    const isHarvested = item.status === "harvested";
 
     return (
       <Pressable
-        style={({ pressed }) => [styles.plantCard, pressed && { opacity: 0.8 }]}
+        style={({ pressed }) => [styles.plantCard, pressed && styles.plantCardPressed]}
         onPress={() => router.push({ pathname: "/plant-detail", params: { plantId: item.id, plantName: item.name } })}
       >
-        <View style={styles.plantCardLeft}>
-          <View style={styles.plantIconContainer}>
-            <Ionicons name="leaf" size={22} color={Colors.accent} />
-          </View>
+        <View style={[styles.cardAccent, isHarvested && styles.cardAccentHarvested]} />
+        <View style={styles.plantIconContainer}>
+          <Ionicons name="leaf" size={18} color={isHarvested ? Colors.warning : Colors.accent} />
         </View>
-        <View style={styles.plantCardCenter}>
+        <View style={styles.plantCardContent}>
           <Text style={styles.plantName} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.plantDate}>{createdDate}</Text>
-        </View>
-        <View style={styles.plantCardRight}>
-          <View style={[styles.statusBadge, { borderColor: statusColor }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>
-              {item.status}
-            </Text>
+          <View style={styles.plantMeta}>
+            <Text style={styles.plantDate}>{createdDate}</Text>
+            {metaCount > 0 && (
+              <>
+                <View style={styles.metaDot} />
+                <Text style={styles.plantDate}>{metaCount} tag{metaCount !== 1 ? "s" : ""}</Text>
+              </>
+            )}
+            {isHarvested && (
+              <>
+                <View style={styles.metaDot} />
+                <Text style={[styles.plantDate, { color: Colors.warning }]}>harvested</Text>
+              </>
+            )}
           </View>
-          <Pressable style={styles.deleteButton} onPress={() => handleDeletePlant(item)} hitSlop={8}>
-            <Ionicons name="trash-outline" size={16} color={Colors.danger} />
+        </View>
+        <View style={styles.plantCardActions}>
+          <Pressable style={styles.deleteButton} onPress={() => handleDeletePlant(item)} hitSlop={12}>
+            <Ionicons name="trash-outline" size={14} color={Colors.textMuted} />
           </Pressable>
+          <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
         </View>
       </Pressable>
     );
@@ -133,13 +137,16 @@ export default function HistoryScreen() {
       {!loading && !error && plants.length === 0 && (
         <View style={styles.centeredState}>
           <View style={styles.emptyIconContainer}>
-            <Ionicons name="leaf-outline" size={36} color={Colors.textMuted} />
+            <View style={styles.emptyIconInner}>
+              <Ionicons name="leaf-outline" size={32} color={Colors.accent} />
+            </View>
           </View>
           <Text style={styles.emptyTitle}>No plants yet</Text>
           <Text style={styles.emptySub}>
-            Complete a scan and save the result to start tracking a plant.
+            Complete a scan and save it to a plant ID to start tracking its maturity over time.
           </Text>
           <Pressable style={styles.ctaButton} onPress={() => router.push("/camera")}>
+            <Ionicons name="camera-outline" size={16} color={Colors.accentText} />
             <Text style={styles.ctaButtonText}>Start First Scan</Text>
           </Pressable>
         </View>
@@ -168,13 +175,11 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 10,
     paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
     color: Colors.textPrimary,
     letterSpacing: -0.5,
@@ -212,15 +217,15 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     color: Colors.textPrimary,
   },
   emptyIconContainer: {
+    marginBottom: 8,
+  },
+  emptyIconInner: {
     width: 80,
     height: 80,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderRadius: 24,
+    backgroundColor: Colors.accentSurface,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 8,
   },
   emptyTitle: {
     fontSize: 19,
@@ -232,84 +237,99 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     fontSize: 14,
     color: Colors.textMuted,
     textAlign: "center",
-    lineHeight: 21,
+    lineHeight: 22,
   },
   ctaButton: {
     marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     backgroundColor: Colors.accent,
-    paddingHorizontal: 28,
-    paddingVertical: 13,
-    borderRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
   },
   ctaButtonText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "700",
     color: Colors.accentText,
     letterSpacing: 0.2,
   },
   listContent: {
-    padding: 16,
-    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 16,
   },
   listHeader: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
     color: Colors.textMuted,
-    marginBottom: 10,
+    marginBottom: 12,
     textTransform: "uppercase",
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
   },
   plantCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.surface,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: 14,
-    gap: 12,
-    marginBottom: 10,
+    borderRadius: 14,
+    marginBottom: 8,
+    overflow: "hidden",
   },
-  plantCardLeft: {},
+  plantCardPressed: {
+    opacity: 0.75,
+  },
+  cardAccent: {
+    width: 3,
+    alignSelf: "stretch",
+    backgroundColor: Colors.accent,
+  },
+  cardAccentHarvested: {
+    backgroundColor: Colors.warning,
+  },
   plantIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: Colors.accentSurface,
     alignItems: "center",
     justifyContent: "center",
+    marginLeft: 12,
   },
-  plantCardCenter: {
+  plantCardContent: {
     flex: 1,
-    gap: 2,
+    paddingVertical: 14,
+    paddingLeft: 12,
+    gap: 4,
   },
   plantName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
     color: Colors.textPrimary,
+  },
+  plantMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   plantDate: {
     fontSize: 12,
     color: Colors.textMuted,
-    marginTop: 2,
   },
-  plantCardRight: {
-    alignItems: "flex-end",
-    gap: 8,
+  metaDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: Colors.textMuted,
+    opacity: 0.5,
+  },
+  plantCardActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingRight: 12,
   },
   deleteButton: {
-    padding: 4,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
+    padding: 6,
   },
 }); }

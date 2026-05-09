@@ -8,16 +8,40 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Colors } from "../constants/theme";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { signUp } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignUp = async () => {
+    if (!name.trim() || !email.trim() || !password) {
+      Alert.alert("Missing fields", "Please fill in all fields.");
+      return;
+    }
+    if (password.length < 8) {
+      Alert.alert("Weak password", "Password must be at least 8 characters.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await signUp(name.trim(), email.trim(), password);
+    } catch (err) {
+      Alert.alert("Registration failed", err instanceof Error ? err.message : "Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -30,7 +54,7 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable style={styles.backButton} onPress={() => router.back()} disabled={loading}>
             <Text style={styles.backText}>← Sign In</Text>
           </Pressable>
 
@@ -51,6 +75,7 @@ export default function RegisterScreen() {
               onChangeText={setName}
               autoCapitalize="words"
               returnKeyType="next"
+              editable={!loading}
             />
 
             <Text style={styles.label}>Email</Text>
@@ -63,6 +88,7 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
               returnKeyType="next"
+              editable={!loading}
             />
 
             <Text style={styles.label}>Password</Text>
@@ -74,13 +100,20 @@ export default function RegisterScreen() {
               onChangeText={setPassword}
               secureTextEntry
               returnKeyType="done"
+              onSubmitEditing={handleSignUp}
+              editable={!loading}
             />
 
             <Pressable
-              style={styles.primaryButton}
-              onPress={() => router.replace("/home")}
+              style={[styles.primaryButton, loading && styles.disabledButton]}
+              onPress={handleSignUp}
+              disabled={loading}
             >
-              <Text style={styles.primaryButtonText}>Create Account</Text>
+              {loading ? (
+                <ActivityIndicator color={Colors.accentText} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Create Account</Text>
+              )}
             </Pressable>
           </View>
 
@@ -163,13 +196,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: Colors.accent,
     alignItems: "center",
+    justifyContent: "center",
     marginTop: 4,
+    minHeight: 52,
   },
   primaryButtonText: {
     fontSize: 15,
     fontWeight: "700",
     color: Colors.accentText,
     letterSpacing: 0.2,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   legal: {
     fontSize: 12,

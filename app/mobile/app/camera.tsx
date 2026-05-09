@@ -27,6 +27,8 @@ export default function CameraScreen() {
   const router = useRouter();
   const [images, setImages] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  const [currentAnalyzingUri, setCurrentAnalyzingUri] = useState<string | null>(null);
 
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -73,14 +75,20 @@ export default function CameraScreen() {
   const analyze = async () => {
     if (images.length === 0) return;
     setAnalyzing(true);
+    const results = [];
     try {
-      const resized = await ImageManipulator.manipulateAsync(
-        images[0],
-        [{ resize: { width: 1200 } }],
-        { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG }
-      );
-      const result = await ApiClient.analyzeImage(resized.uri, "local-dev");
-      AnalysisResultStore.set(result);
+      for (let i = 0; i < images.length; i++) {
+        setCurrentAnalyzingUri(images[i]);
+        setProgress({ current: i + 1, total: images.length });
+        const resized = await ImageManipulator.manipulateAsync(
+          images[i],
+          [{ resize: { width: 1200 } }],
+          { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        const result = await ApiClient.analyzeImage(resized.uri, "local-dev");
+        results.push(result);
+      }
+      AnalysisResultStore.setSession(results);
       router.push("/results");
     } catch (error) {
       Alert.alert(
@@ -89,6 +97,8 @@ export default function CameraScreen() {
       );
     } finally {
       setAnalyzing(false);
+      setProgress(null);
+      setCurrentAnalyzingUri(null);
     }
   };
 
@@ -162,20 +172,49 @@ export default function CameraScreen() {
           disabled={images.length === 0 || analyzing}
           onPress={analyze}
         >
-          {analyzing ? (
-            <ActivityIndicator color={Colors.accentText} />
-          ) : (
-            <Text
-              style={[
-                styles.analyzeButtonText,
-                images.length === 0 && styles.analyzeButtonTextDisabled,
-              ]}
-            >
-              {analyzeLabel}
-            </Text>
-          )}
+          <Text
+            style={[
+              styles.analyzeButtonText,
+              (images.length === 0 || analyzing) && styles.analyzeButtonTextDisabled,
+            ]}
+          >
+            {analyzing ? "Analyzing…" : analyzeLabel}
+          </Text>
         </Pressable>
       </View>
+
+      {analyzing && (
+        <View style={styles.analyzingOverlay}>
+          <View style={styles.analyzingCard}>
+            {currentAnalyzingUri && (
+              <Image
+                source={{ uri: currentAnalyzingUri }}
+                style={styles.analyzingThumb}
+                resizeMode="cover"
+              />
+            )}
+            <Text style={styles.analyzingCounter}>
+              {progress ? `${progress.current} / ${progress.total}` : "…"}
+            </Text>
+            <Text style={styles.analyzingSubtitle}>
+              {progress
+                ? `Analyzing photo ${progress.current} of ${progress.total}`
+                : "Preparing…"}
+            </Text>
+            {progress && (
+              <View style={styles.analyzingTrack}>
+                <View
+                  style={[
+                    styles.analyzingFill,
+                    { width: `${Math.round((progress.current / progress.total) * 100)}%` },
+                  ]}
+                />
+              </View>
+            )}
+            <Text style={styles.analyzingHint}>This may take a moment per photo</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -348,5 +387,61 @@ const styles = StyleSheet.create({
   },
   analyzeButtonTextDisabled: {
     color: Colors.textMuted,
+  },
+  analyzingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  analyzingCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    padding: 28,
+    width: "78%",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  analyzingThumb: {
+    width: 110,
+    height: 110,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  analyzingCounter: {
+    fontSize: 38,
+    fontWeight: "800",
+    color: Colors.textPrimary,
+    letterSpacing: -0.5,
+  },
+  analyzingSubtitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.textSecondary,
+    textAlign: "center",
+  },
+  analyzingTrack: {
+    height: 6,
+    width: "100%",
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginTop: 4,
+  },
+  analyzingFill: {
+    height: 6,
+    backgroundColor: Colors.accent,
+    borderRadius: 3,
+  },
+  analyzingHint: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    textAlign: "center",
   },
 });
