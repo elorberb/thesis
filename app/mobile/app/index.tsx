@@ -8,20 +8,54 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors, Gradients } from "../constants/theme";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [loadingEmail, setLoadingEmail] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) {
+      Alert.alert("Missing fields", "Please enter your email and password.");
+      return;
+    }
+    setLoadingEmail(true);
+    try {
+      await signIn(email.trim(), password);
+    } catch (err) {
+      Alert.alert("Sign in failed", err instanceof Error ? err.message : "Please check your credentials.");
+    } finally {
+      setLoadingEmail(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setLoadingGoogle(true);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      Alert.alert("Google sign in failed", err instanceof Error ? err.message : "Please try again.");
+    } finally {
+      setLoadingGoogle(false);
+    }
+  };
+
+  const isLoading = loadingEmail || loadingGoogle;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -75,6 +109,7 @@ export default function LoginScreen() {
                   autoCapitalize="none"
                   keyboardType="email-address"
                   returnKeyType="next"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -82,9 +117,6 @@ export default function LoginScreen() {
             <View style={styles.fieldGroup}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>PASSWORD</Text>
-                <Pressable>
-                  <Text style={styles.forgotText}>Forgot password?</Text>
-                </Pressable>
               </View>
               <View style={[styles.inputWrapper, passwordFocused && styles.inputWrapperFocused]}>
                 <Ionicons name="lock-closed-outline" size={18} color={Colors.accent} style={styles.inputIcon} />
@@ -98,6 +130,8 @@ export default function LoginScreen() {
                   onBlur={() => setPasswordFocused(false)}
                   secureTextEntry={!passwordVisible}
                   returnKeyType="done"
+                  onSubmitEditing={handleSignIn}
+                  editable={!isLoading}
                 />
                 <Pressable onPress={() => setPasswordVisible(!passwordVisible)} style={styles.eyeButton}>
                   <Ionicons name={passwordVisible ? "eye-outline" : "eye-off-outline"} size={18} color={Colors.textMuted} />
@@ -105,7 +139,11 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            <Pressable style={styles.primaryButtonWrapper} onPress={() => router.replace("/home")}>
+            <Pressable
+              style={[styles.primaryButtonWrapper, isLoading && styles.disabledButton]}
+              onPress={handleSignIn}
+              disabled={isLoading}
+            >
               {({ pressed }) => (
                 <LinearGradient
                   colors={Gradients.vitality}
@@ -113,8 +151,14 @@ export default function LoginScreen() {
                   end={{ x: 1, y: 1 }}
                   style={[styles.primaryButton, pressed && styles.pressed]}
                 >
-                  <Text style={styles.primaryButtonText}>Sign In</Text>
-                  <Ionicons name="arrow-forward" size={16} color={Colors.accentText} />
+                  {loadingEmail ? (
+                    <ActivityIndicator color={Colors.accentText} />
+                  ) : (
+                    <>
+                      <Text style={styles.primaryButtonText}>Sign In</Text>
+                      <Ionicons name="arrow-forward" size={16} color={Colors.accentText} />
+                    </>
+                  )}
                 </LinearGradient>
               )}
             </Pressable>
@@ -126,30 +170,29 @@ export default function LoginScreen() {
             </View>
 
             <Pressable
-              style={styles.googleButton}
-              onPress={() => router.replace("/home")}
+              style={[styles.googleButton, loadingGoogle && styles.disabledButton]}
+              onPress={handleGoogle}
+              disabled={isLoading}
             >
-              <View style={styles.googleSvgBox}>
-                <Text style={styles.googleG}>G</Text>
-              </View>
-              <Text style={styles.googleText}>Continue with Google</Text>
+              {loadingGoogle ? (
+                <ActivityIndicator color="#1f1f1f" />
+              ) : (
+                <>
+                  <View style={styles.googleSvgBox}>
+                    <Text style={styles.googleG}>G</Text>
+                  </View>
+                  <Text style={styles.googleText}>Continue with Google</Text>
+                </>
+              )}
             </Pressable>
           </View>
 
           <View style={styles.footer}>
-            <Pressable onPress={() => router.push("/register")}>
+            <Pressable onPress={() => router.push("/register")} disabled={isLoading}>
               <Text style={styles.footerLink}>
                 Don't have an account?{" "}
                 <Text style={styles.footerLinkAccent}>Create one</Text>
               </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.skipButton}
-              onPress={() => router.replace("/home")}
-            >
-              <Text style={styles.skipText}>Continue without account</Text>
-              <Ionicons name="chevron-forward" size={12} color={Colors.textMuted} />
             </Pressable>
           </View>
         </ScrollView>
@@ -287,13 +330,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  forgotText: {
-    fontSize: 10,
-    color: Colors.accent,
-    fontWeight: "700",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -330,9 +366,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 999,
     gap: 8,
+    minHeight: 54,
   },
   pressed: {
     opacity: 0.88,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   primaryButtonText: {
     fontSize: 15,
@@ -368,6 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#ffffff",
     gap: 12,
+    minHeight: 52,
   },
   googleSvgBox: {
     width: 20,
@@ -400,18 +441,5 @@ const styles = StyleSheet.create({
   footerLinkAccent: {
     color: Colors.accent,
     fontWeight: "700",
-  },
-  skipButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingVertical: 6,
-  },
-  skipText: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
   },
 });

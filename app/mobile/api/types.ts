@@ -105,6 +105,13 @@ export type PlantAnalysisHistory = {
   total: number;
 };
 
+export type AnalysisPatch = {
+  maturity_stage?: MaturityStage;
+  recommendation?: string;
+  trichome_distribution?: Record<TrichomeType, number>;
+  stigma_ratios?: { green: number; orange: number };
+};
+
 export type HealthResponse = {
   status: string;
 };

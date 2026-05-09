@@ -1,6 +1,7 @@
 import {
   AnalyzeResponse,
   AnalysisListResponse,
+  AnalysisPatch,
   HealthResponse,
   PlantCreate,
   PlantResponse,
@@ -86,6 +87,14 @@ export const ApiClient = {
   async linkAnalysisToPlant(analysisId: string, plantId: string): Promise<void> {
     await request<unknown>(`/api/v1/analyses/${encodeURIComponent(analysisId)}/plant?plant_id=${encodeURIComponent(plantId)}`, {
       method: "PATCH",
+    });
+  },
+
+  async patchAnalysis(analysisId: string, patch: AnalysisPatch): Promise<AnalyzeResponse> {
+    return request<AnalyzeResponse>(`/api/v1/analyses/${encodeURIComponent(analysisId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
     });
   },
 
