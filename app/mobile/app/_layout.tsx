@@ -2,16 +2,16 @@ import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { ThemeProvider } from "../contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { BottomNav } from "../components/BottomNav";
-import { Colors } from "../constants/theme";
 
-const HIDE_NAV_ROUTES = ["/", "/register", "/review", "/trichome-samples", "/stigma-samples", "/save-flower", "/profile"];
+const HIDE_NAV_ROUTES = ["/", "/register", "/trichome-samples", "/stigma-samples", "/save-flower", "/profile"];
 const AUTH_ROUTES = ["/", "/register"];
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
+  const { Colors } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -52,8 +52,8 @@ function AppShell() {
           <Stack.Screen name="trichome-samples" />
           <Stack.Screen name="stigma-samples" />
           <Stack.Screen name="save-flower" />
-          <Stack.Screen name="review" />
           <Stack.Screen name="history" />
+          <Stack.Screen name="my-plants" />
           <Stack.Screen name="plant-detail" />
           <Stack.Screen name="how-it-works" />
           <Stack.Screen name="settings" />

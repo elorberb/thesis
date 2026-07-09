@@ -5,14 +5,14 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import FastAPI
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
 from routes import analysis
 from services.local_inference_service import LocalInferenceService
 from services.modal_client import ModalClient
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 @asynccontextmanager
@@ -50,5 +50,6 @@ app.include_router(analysis.router, prefix="/api/v1")
 
 
 @app.get("/health")
+@app.get("/api/v1/health")
 def health_check() -> dict:
     return {"status": "ok"}

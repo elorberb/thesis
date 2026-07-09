@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ApiClient } from "../api/client";
 import { useTheme } from "../contexts/ThemeContext";
 import { AnalysisResultStore } from "../store/analysisResult";
+import { ScreenHeader } from "../components/ScreenHeader";
 
 type Tag = {
   id: string;
@@ -118,14 +119,7 @@ export default function SaveFlowerScreen() {
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={20} color={Colors.textPrimary} />
-            <Text style={styles.backLabel}>Back</Text>
-          </Pressable>
-          <Text style={styles.headerTitle}>Save Flower</Text>
-          <View style={{ width: 60 }} />
-        </View>
+        <ScreenHeader title="Save Flower" onBack={() => router.back()} />
 
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -228,32 +222,6 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   },
   flex: {
     flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  backLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: Colors.textPrimary,
   },
   scroll: {
     padding: 24,

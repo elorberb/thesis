@@ -1,15 +1,16 @@
 import { useState, useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView, Image, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { MaturityBadge } from "../components/MaturityBadge";
 import { ApiClient } from "../api/client";
 import { AnalysisListItem } from "../api/types";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { AnalysisCard } from "../components/AnalysisCard";
+import { AppButton } from "../components/AppButton";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -39,10 +40,25 @@ export default function HomeScreen() {
         >
           <View style={styles.header}>
             <View style={styles.brandGroup}>
-              <Ionicons name="leaf" size={18} color={Colors.accent} />
-              <Text style={styles.brandName}>AGRIVISION</Text>
+              <LinearGradient
+                colors={Gradients.vitality}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.brandIcon}
+              >
+                <Ionicons name="search" size={16} color={Colors.accentText} />
+              </LinearGradient>
+              <View style={styles.brandTextGroup}>
+                <Text style={styles.brandName}>LOUPELAB</Text>
+                <Text style={styles.brandTagline}>Maturity Intelligence</Text>
+              </View>
             </View>
-            <Pressable style={styles.profileButton} onPress={() => router.push("/profile")}>
+            <Pressable
+              style={styles.profileButton}
+              onPress={() => router.push("/profile")}
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+            >
               <Text style={styles.profileInitial}>
                 {(user?.user_metadata?.full_name as string | undefined)?.[0]?.toUpperCase() ??
                   user?.email?.[0]?.toUpperCase() ?? "?"}
@@ -51,47 +67,32 @@ export default function HomeScreen() {
           </View>
 
           <Pressable style={styles.heroCard} onPress={() => router.push("/camera")}>
-            <View style={styles.heroBlobBg} />
             <View style={styles.heroContent}>
               <View style={styles.heroBadge}>
                 <Text style={styles.heroBadgeText}>NEW ANALYSIS</Text>
               </View>
               <Text style={styles.heroTitle}>Analyze Your Flower</Text>
               <Text style={styles.heroSubtitle}>
-                Get instant insights on cannabinoid maturity and harvest timing.
+                Get instant insights on flower maturity and suggested review timing.
               </Text>
-              <Pressable onPress={() => router.push("/camera")}>
-                {({ pressed }) => (
-                  <LinearGradient
-                    colors={Gradients.vitality}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={[styles.heroButton, pressed && styles.pressed]}
-                  >
-                    <Ionicons name="camera" size={16} color={Colors.accentText} />
-                    <Text style={styles.heroButtonText}>Start Scan</Text>
-                  </LinearGradient>
-                )}
-              </Pressable>
             </View>
             <View style={styles.heroIconArea}>
-              <View style={styles.heroIconRing}>
-                <LinearGradient
-                  colors={Gradients.vitality}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.heroIconCircle}
-                >
-                  <Ionicons name="camera" size={28} color={Colors.accentText} />
-                </LinearGradient>
-              </View>
+              <Text style={styles.heroIconLabel}>Start Scan</Text>
+              <LinearGradient
+                colors={Gradients.vitality}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.heroIconCircle}
+              >
+                <Ionicons name="camera" size={28} color={Colors.accentText} />
+              </LinearGradient>
             </View>
           </Pressable>
 
           <View style={styles.navCard}>
-            <Pressable style={styles.navRow} onPress={() => router.push("/history")}>
+            <Pressable style={styles.navRow} onPress={() => router.push("/my-plants")}>
               <View style={styles.navRowLeft}>
-                <View style={[styles.navIconBox, { backgroundColor: "rgba(122,251,183,0.12)" }]}>
+                <View style={[styles.navIconBox, { backgroundColor: Colors.accentSurface }]}>
                   <Ionicons name="folder" size={20} color={Colors.accent} />
                 </View>
                 <Text style={styles.navRowTitle}>My Plants</Text>
@@ -103,7 +104,7 @@ export default function HomeScreen() {
 
             <Pressable style={styles.navRow} onPress={() => router.push("/how-it-works")}>
               <View style={styles.navRowLeft}>
-                <View style={[styles.navIconBox, { backgroundColor: "rgba(125,233,255,0.10)" }]}>
+                <View style={[styles.navIconBox, { backgroundColor: Colors.tertiarySurface }]}>
                   <Ionicons name="information-circle" size={20} color={Colors.tertiary} />
                 </View>
                 <Text style={styles.navRowTitle}>How It Works</Text>
@@ -130,51 +131,23 @@ export default function HomeScreen() {
               </View>
               <Text style={styles.emptyTitle}>No analyses yet</Text>
               <Text style={styles.emptySub}>Start your first scan to see results here.</Text>
-              <Pressable onPress={() => router.push("/camera")}>
-                {({ pressed }) => (
-                  <LinearGradient
-                    colors={Gradients.vitality}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={[styles.emptyAction, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.emptyActionText}>Start First Scan</Text>
-                  </LinearGradient>
-                )}
-              </Pressable>
+              <View style={styles.emptyAction}>
+                <AppButton
+                  label="Start First Scan"
+                  icon="camera-outline"
+                  onPress={() => router.push("/camera")}
+                  fullWidth={false}
+                />
+              </View>
             </View>
           ) : (
-            recentAnalyses.map((item) => {
-              const date = new Date(item.created_at).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              });
-              return (
-                <Pressable
-                  key={item.id}
-                  style={styles.recentCard}
-                  onPress={() => router.push({ pathname: "/results", params: { id: item.id } })}
-                >
-                  {item.annotated_image_url ? (
-                    <Image source={{ uri: item.annotated_image_url }} style={styles.recentThumbnail} resizeMode="cover" />
-                  ) : (
-                    <View style={styles.recentThumbnailPlaceholder}>
-                      <Ionicons name="leaf-outline" size={22} color={Colors.textMuted} />
-                    </View>
-                  )}
-                  <View style={styles.recentContent}>
-                    <View style={styles.recentTopRow}>
-                      <Text style={styles.recentDate}>{date}</Text>
-                      <MaturityBadge stage={item.maturity_stage} size="sm" />
-                    </View>
-                    <Text style={styles.recentRec} numberOfLines={2}>
-                      {item.recommendation}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
-                </Pressable>
-              );
-            })
+            recentAnalyses.map((item) => (
+              <AnalysisCard
+                key={item.id}
+                analysis={item}
+                onPress={() => router.push({ pathname: "/results", params: { id: item.id } })}
+              />
+            ))
           )}
         </ScrollView>
 
@@ -205,13 +178,30 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   brandGroup: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
+  },
+  brandIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandTextGroup: {
+    gap: 1,
   },
   brandName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "800",
     color: Colors.accent,
-    letterSpacing: 3,
+    letterSpacing: 2.5,
+  },
+  brandTagline: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: Colors.textMuted,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
   },
   profileButton: {
     width: 38,
@@ -238,16 +228,6 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     overflow: "hidden",
     marginBottom: 16,
     padding: 22,
-  },
-  heroBlobBg: {
-    position: "absolute",
-    right: -30,
-    top: -30,
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: Colors.accent,
-    opacity: 0.04,
   },
   heroContent: {
     flex: 1,
@@ -279,41 +259,25 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     lineHeight: 18,
     maxWidth: "80%",
   },
-  heroButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 999,
-    gap: 6,
-  },
   pressed: {
     opacity: 0.88,
   },
-  heroButtonText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: Colors.accentText,
-    letterSpacing: 0.3,
-  },
   heroIconArea: {
     paddingLeft: 12,
-  },
-  heroIconRing: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    borderWidth: 1,
-    borderColor: "rgba(107,255,143,0.2)",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(23,31,54,0.5)",
+    gap: 8,
+  },
+  heroIconLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: Colors.accent,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
   },
   heroIconCircle: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -400,57 +364,5 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   },
   emptyAction: {
     marginTop: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 999,
-  },
-  emptyActionText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: Colors.accentText,
-  },
-  recentCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-    gap: 14,
-  },
-  recentThumbnail: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: Colors.surfaceHighest,
-  },
-  recentThumbnailPlaceholder: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: Colors.surfaceHighest,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  recentContent: {
-    flex: 1,
-    gap: 6,
-  },
-  recentTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  recentDate: {
-    fontSize: 10,
-    color: Colors.textMuted,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  recentRec: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    lineHeight: 17,
   },
 }); }

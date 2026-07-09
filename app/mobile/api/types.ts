@@ -37,7 +37,7 @@ export type StigmaResult = {
 export type AnalyzeResponse = {
   id: string;
   created_at: string;
-  device_id: string;
+  user_id: string;
   plant_id: string | null;
   image_url: string;
   annotated_image_url: string | null;
@@ -52,7 +52,7 @@ export type AnalyzeResponse = {
 export type AnalysisListItem = {
   id: string;
   created_at: string;
-  device_id: string;
+  user_id: string;
   plant_id: string | null;
   image_url: string;
   annotated_image_url: string | null;
@@ -89,7 +89,7 @@ export type PlantListResponse = {
 export type PlantAnalysisItem = {
   id: string;
   created_at: string;
-  device_id: string;
+  user_id: string;
   plant_id: string | null;
   image_url: string;
   annotated_image_url: string | null;
@@ -110,6 +110,16 @@ export type AnalysisPatch = {
   recommendation?: string;
   trichome_distribution?: Record<TrichomeType, number>;
   stigma_ratios?: { green: number; orange: number };
+  created_at?: string;
+};
+
+export type CorrectionsUpdate = {
+  trichome_distribution?: Record<TrichomeType, number>;
+  stigma_ratios?: { green: number; orange: number };
+  detections?: {
+    trichomes?: Detection[];
+    stigmas?: StigmaDetection[];
+  };
 };
 
 export type HealthResponse = {

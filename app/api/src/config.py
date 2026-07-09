@@ -8,6 +8,7 @@ class Settings(BaseSettings):
 
     supabase_url: str = ""
     supabase_service_key: str = ""
+    supabase_anon_key: str = ""
     supabase_storage_bucket: str = "images"
 
     inference_mode: Literal["local", "modal"] = "local"

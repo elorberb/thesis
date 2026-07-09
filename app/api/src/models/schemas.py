@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class AnalyzeResponse(BaseModel):
     id: str
     created_at: datetime
-    device_id: str
+    user_id: str
     plant_id: str | None
     image_url: str
     annotated_image_url: str | None
@@ -24,7 +24,7 @@ class AnalyzeResponse(BaseModel):
 class AnalysisListItem(BaseModel):
     id: str
     created_at: datetime
-    device_id: str
+    user_id: str
     plant_id: str | None
     image_url: str
     annotated_image_url: str | None
@@ -61,7 +61,7 @@ class PlantListResponse(BaseModel):
 class PlantAnalysisItem(BaseModel):
     id: str
     created_at: datetime
-    device_id: str
+    user_id: str
     plant_id: str | None
     image_url: str
     annotated_image_url: str | None
@@ -75,3 +75,17 @@ class PlantAnalysisHistory(BaseModel):
     plant_id: str
     items: list[PlantAnalysisItem]
     total: int
+
+
+class AnalysisPatch(BaseModel):
+    maturity_stage: MaturityStage | None = None
+    recommendation: str | None = None
+    trichome_distribution: dict | None = None
+    stigma_ratios: dict | None = None
+    created_at: datetime | None = None
+
+
+class CorrectionsUpdate(BaseModel):
+    trichome_distribution: dict | None = None
+    stigma_ratios: dict | None = None
+    detections: dict | None = None

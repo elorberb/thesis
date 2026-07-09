@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cannabis Maturity — State Machines</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --border:#2a323d;
+    --text:#e6edf3; --muted:#9aa7b4; --accent:#5db075; --accent2:#4a9edb;
+    --amber:#d9a441; --purple:#a371f7; --pink:#db61a2; --danger:#f07068;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent2);text-decoration:none}a:hover{text-decoration:underline}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
+  .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+    background:var(--panel);border-right:1px solid var(--border);padding:24px 18px}
+  aside h1{font-size:16px;margin:0 0 4px}
+  aside .sub{color:var(--muted);font-size:12px;margin-bottom:20px}
+  nav a{display:block;color:var(--muted);padding:7px 10px;border-radius:8px;font-size:14px}
+  nav a:hover{background:var(--panel2);color:var(--text);text-decoration:none}
+  main{padding:40px 48px;max-width:1100px}
+  section{margin-bottom:56px;scroll-margin-top:20px}
+  h2{font-size:24px;margin:0 0 6px;border-bottom:1px solid var(--border);padding-bottom:10px}
+  p.lead{color:var(--muted);margin-top:0}
+  .mermaid{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px;overflow:auto;text-align:center;margin:16px 0}
+  .note{border-left:3px solid var(--accent);background:var(--panel2);padding:10px 16px;
+    border-radius:0 8px 8px 0;color:var(--muted);font-size:13.5px;margin:14px 0}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);
+    border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .d-a{background:var(--accent)}.d-b{background:var(--accent2)}.d-c{background:var(--amber)}
+  .d-d{background:var(--purple)}.d-e{background:var(--danger)}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <h1>🌿 State Machines</h1>
+    <div class="sub">Runtime states of the product</div>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#auth">1. Auth &amp; session</a>
+      <a href="#nav">2. Screen navigation</a>
+      <a href="#analysis">3. Analysis lifecycle</a>
+      <a href="#inference">4. Inference backend</a>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="overview">
+      <h2>Overview</h2>
+      <p class="lead">
+        Three interacting state machines drive the running product: <strong>authentication</strong>
+        (who you are), <strong>navigation</strong> (which screen you're on), and the
+        <strong>analysis lifecycle</strong> (turning a photo into a stored result). A fourth small
+        machine shows how the server picks its inference backend. All states below are taken from the
+        actual code (<span class="mono">AuthContext</span>, <span class="mono">_layout.tsx</span> AuthGuard,
+        the screen routers, and <span class="mono">routes/analysis.py</span>).
+      </p>
+      <div class="legend">
+        <span class="pill"><span class="dot d-a"></span> entry / success</span>
+        <span class="pill"><span class="dot d-b"></span> screen / stable state</span>
+        <span class="pill"><span class="dot d-c"></span> working / async</span>
+        <span class="pill"><span class="dot d-d"></span> user action</span>
+        <span class="pill"><span class="dot d-e"></span> error</span>
+      </div>
+    </section>
+
+    <section id="auth">
+      <h2>1. Authentication &amp; session</h2>
+      <p class="lead">Supabase session drives everything; the <span class="mono">AuthGuard</span> redirects based on it.</p>
+      <div class="mermaid">
+stateDiagram-v2
+  [*] --> Loading: app launch
+  Loading --> Authenticated: getSession() has session
+  Loading --> Unauthenticated: no session
+
+  state Unauthenticated {
+    [*] --> Login
+    Login --> Register: create account
+    Register --> Confirming: signUp needs email confirm
+    Register --> Login: back
+    Confirming --> Login: after confirm
+    Login --> GoogleOAuth: continue with Google
+    GoogleOAuth --> Login: cancelled
+  }
+
+  Unauthenticated --> Authenticated: signIn / OAuth success
+  Login --> Authenticated: valid credentials
+  GoogleOAuth --> Authenticated: code exchanged
+
+  state Authenticated {
+    [*] --> Home
+    Home --> Home: use the app
+  }
+
+  Authenticated --> Unauthenticated: signOut then replace /
+  note right of Loading
+    AuthGuard: if !session and not on / or /register → replace("/")
+    if session and on auth route → replace("/home")
+  end note
+      </div>
+    </section>
+
+    <section id="nav">
+      <h2>2. Screen navigation map</h2>
+      <p class="lead">Every route in <span class="mono">_layout.tsx</span> and how screens link to each other. Bottom nav (Home · Analysis · History · Settings) is available on primary screens.</p>
+      <div class="mermaid">
+stateDiagram-v2
+  [*] --> Login
+  Login --> Register: sign up
+  Register --> Login: back / after confirm
+  Login --> Home: authenticated
+
+  Home --> Camera: "Analyze" / hero
+  Home --> MyPlants: my plants
+  Home --> History: history
+  Home --> HowItWorks: how it works
+  Home --> Profile: profile
+  Home --> Results: tap recent analysis
+
+  Camera --> Results: analyze success
+  Camera --> Home: back
+
+  Results --> TrichomeSamples: view trichome crops
+  Results --> StigmaSamples: view stigma crops
+  Results --> SaveFlower: save to plant
+  Results --> Camera: analyze more
+  TrichomeSamples --> Results: back
+  StigmaSamples --> Results: back
+  SaveFlower --> Home: saved
+
+  History --> Results: tap item
+  History --> Camera: new analysis
+  MyPlants --> PlantDetail: tap plant
+  MyPlants --> Camera: new
+  PlantDetail --> Results: tap analysis
+  PlantDetail --> Camera: analyze for plant
+  PlantDetail --> TrichomeSamples: sample
+
+  Profile --> Settings: settings
+  Profile --> MyPlants: my plants
+  Profile --> Login: sign out
+  Settings --> Login: sign out
+  HowItWorks --> Home: back
+
+  note right of Camera
+    Review screen exists for manual
+    correction (saveCorrections) before/after result.
+  end note
+      </div>
+      <p class="note">Routes with the bottom nav hidden: <span class="mono">/</span>, <span class="mono">/register</span>, <span class="mono">/review</span>, <span class="mono">/trichome-samples</span>, <span class="mono">/stigma-samples</span>, <span class="mono">/save-flower</span>, <span class="mono">/profile</span>.</p>
+    </section>
+
+    <section id="analysis">
+      <h2>3. Analysis lifecycle</h2>
+      <p class="lead">From capturing a photo to a stored, optionally-corrected result — the core value loop.</p>
+      <div class="mermaid">
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Capturing: open camera / pick image
+  Capturing --> Idle: cancel
+  Capturing --> Uploading: submit photo
+
+  state "Server: POST /api/v1/analyze" as Server {
+    [*] --> Validating: check type + size (≤20MB)
+    Validating --> Rejected: unsupported / too large
+    Validating --> StoringOriginal: ok
+    StoringOriginal --> Inferring: image_url
+    Inferring --> Assessing: trichome + stigma results
+    Assessing --> Rendering: maturity stage + recommendation
+    Rendering --> StoringResult: annotated + crops
+    StoringResult --> [*]: saved record
+  }
+
+  Uploading --> Server
+  Server --> Success: 201 AnalyzeResponse
+  Server --> Error: 422 / 413 / 502 / timeout
+  Rejected --> Error
+
+  Success --> Results
+  Error --> Capturing: retry
+
+  state Results {
+    [*] --> Viewing
+    Viewing --> Correcting: edit distribution / ratios
+    Correcting --> Reassessing: PATCH /corrections (re-assess)
+    Reassessing --> Viewing: updated
+    Viewing --> Saved: save to plant
+  }
+
+  Results --> [*]: done
+      </div>
+      <p class="note">Client timeout is 3 minutes (<span class="mono">TIMEOUT_MS</span> in <span class="mono">api/client.ts</span>); a timeout surfaces as an error with a retry path back to the camera.</p>
+    </section>
+
+    <section id="inference">
+      <h2>4. Inference backend selection</h2>
+      <p class="lead">Chosen once at API startup (<span class="mono">lifespan</span> in <span class="mono">main.py</span>) from <span class="mono">settings.inference_mode</span>.</p>
+      <div class="mermaid">
+stateDiagram-v2
+  [*] --> Startup
+  Startup --> Local: inference_mode == "local"
+  Startup --> Modal: inference_mode == "modal"
+  state Local {
+    [*] --> LoadModels: YOLO detect/classify/segment
+    LoadModels --> Ready
+    Ready --> RunInProcess: analyze() on threads
+  }
+  state Modal {
+    [*] --> ConnectApp: ModalClient(app_name)
+    ConnectApp --> CallRemote: analyze().remote() on T4 GPU
+  }
+  RunInProcess --> [*]: AnalysisResult
+  CallRemote --> [*]: AnalysisResult
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+  mermaid.initialize({
+    startOnLoad:true, theme:"dark",
+    themeVariables:{fontSize:"14px",primaryColor:"#1c232d",primaryBorderColor:"#2a323d",
+      primaryTextColor:"#e6edf3",lineColor:"#6e7681",tertiaryColor:"#161b22"}
+  });
+</script>
+</body>
+</html>

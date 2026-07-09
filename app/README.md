@@ -21,7 +21,7 @@ More detail on Modal and Supabase: [docs/working-with-modal-and-supabase.md](doc
 
 ## Quick commands
 
-- **API:** `cd api && uv run uvicorn src.main:app --reload`
+- **API:** `cd api && doppler run -- uv run uvicorn main:app --reload --app-dir src`
 - **Modal deploy:** `cd modal && uv run modal deploy inference.py`
 - **Upload weights:** `cd modal && uv run modal run upload_weights.py`
 - **Local Supabase:** `cd supabase && supabase start`

@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ColorScheme, ThemeColors, GradientsByTheme, MaturityColorsByTheme, MaturityStage } from "../constants/theme";
 
-const STORAGE_KEY = "@agrivision_theme";
+const STORAGE_KEY = "@loupelab_theme";
 
 type ThemeContextValue = {
   scheme: ColorScheme;

@@ -15,11 +15,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Colors, Gradients } from "../constants/theme";
+import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { Colors, Gradients } = useTheme();
+  const styles = createStyles(Colors);
   const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,8 +61,6 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.glowTopRight} />
-      <View style={styles.glowBottomLeft} />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -78,19 +78,18 @@ export default function LoginScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.logoIconWrapper}
             >
-              <Ionicons name="leaf" size={30} color={Colors.accentText} />
+              <Ionicons name="search" size={30} color={Colors.accentText} />
             </LinearGradient>
             <View style={styles.logoTextGroup}>
-              <Text style={styles.logoTextAgri}>AGRI</Text>
-              <Text style={styles.logoTextVision}>VISION</Text>
+              <Text style={styles.logoTextPrimary}>Loupe</Text>
+              <Text style={styles.logoTextSecondary}>Lab</Text>
             </View>
             <Text style={styles.tagline}>
-              AI-powered cannabis maturity analysis
+              See ripeness clearly
             </Text>
           </View>
 
           <View style={styles.formCard}>
-            <View style={styles.formCardGlow} />
             <Text style={styles.formHeading}>Welcome back</Text>
             <Text style={styles.formSubheading}>Sign in to your account</Text>
 
@@ -100,7 +99,7 @@ export default function LoginScreen() {
                 <Ionicons name="mail-outline" size={18} color={Colors.accent} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="farmer@agrivision.ai"
+                  placeholder="you@example.com"
                   placeholderTextColor={Colors.textMuted}
                   value={email}
                   onChangeText={setEmail}
@@ -133,7 +132,13 @@ export default function LoginScreen() {
                   onSubmitEditing={handleSignIn}
                   editable={!isLoading}
                 />
-                <Pressable onPress={() => setPasswordVisible(!passwordVisible)} style={styles.eyeButton}>
+                <Pressable
+                  onPress={() => setPasswordVisible(!passwordVisible)}
+                  style={styles.eyeButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={passwordVisible ? "Hide password" : "Show password"}
+                  hitSlop={8}
+                >
                   <Ionicons name={passwordVisible ? "eye-outline" : "eye-off-outline"} size={18} color={Colors.textMuted} />
                 </Pressable>
               </View>
@@ -197,48 +202,17 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      <View style={styles.bottomGlow} />
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: Colors.background,
   },
   flex: {
     flex: 1,
-  },
-  glowTopRight: {
-    position: "absolute",
-    top: -80,
-    right: -80,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: Colors.accent,
-    opacity: 0.04,
-  },
-  glowBottomLeft: {
-    position: "absolute",
-    bottom: -60,
-    left: -60,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: Colors.tertiary,
-    opacity: 0.04,
-  },
-  bottomGlow: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: Colors.accent,
-    opacity: 0.25,
   },
   scroll: {
     flexGrow: 1,
@@ -262,17 +236,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 8,
   },
-  logoTextAgri: {
+  logoTextPrimary: {
     fontSize: 32,
     fontWeight: "800",
     color: Colors.accent,
-    letterSpacing: 4,
+    letterSpacing: 1,
   },
-  logoTextVision: {
+  logoTextSecondary: {
     fontSize: 32,
     fontWeight: "800",
     color: Colors.accentDark,
-    letterSpacing: 4,
+    letterSpacing: 1,
   },
   tagline: {
     fontSize: 13,
@@ -281,23 +255,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   formCard: {
-    backgroundColor: "rgba(23,31,54,0.70)",
+    backgroundColor: Colors.surface,
     borderRadius: 28,
     borderWidth: 1,
     borderColor: Colors.border,
     padding: 28,
     marginBottom: 20,
-    overflow: "hidden",
-  },
-  formCardGlow: {
-    position: "absolute",
-    top: -40,
-    right: -40,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: Colors.accent,
-    opacity: 0.06,
   },
   formHeading: {
     fontSize: 24,
@@ -442,4 +405,4 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     fontWeight: "700",
   },
-});
+}); }

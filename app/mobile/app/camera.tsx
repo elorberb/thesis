@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,29 +6,90 @@ import {
   Image,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   ScrollView,
   Dimensions,
+  Animated,
+  Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { Colors } from "../constants/theme";
+import { useTheme } from "../contexts/ThemeContext";
 import { ApiClient } from "../api/client";
 import { AnalysisResultStore } from "../store/analysisResult";
+import { ScreenHeader } from "../components/ScreenHeader";
+import { AppButton } from "../components/AppButton";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const GRID_PADDING = 20;
 const GRID_GAP = 8;
 const CELL_SIZE = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * 2) / 3;
 
+const CARD_WIDTH = SCREEN_WIDTH * 0.78;
+const TRACK_WIDTH = CARD_WIDTH - 56;
+const SHIMMER_WIDTH = TRACK_WIDTH * 0.4;
+
+const ANALYSIS_STAGES = [
+  "Uploading image…",
+  "Detecting trichomes…",
+  "Classifying clear · cloudy · amber…",
+  "Reading stigma colors…",
+  "Assessing maturity…",
+];
+
 export default function CameraScreen() {
   const router = useRouter();
+  const { plantId, plantName } = useLocalSearchParams<{ plantId?: string; plantName?: string }>();
+  const { Colors } = useTheme();
+  const styles = createStyles(Colors);
   const [images, setImages] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [currentAnalyzingUri, setCurrentAnalyzingUri] = useState<string | null>(null);
+  const [stageIndex, setStageIndex] = useState(0);
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!analyzing) return;
+    setStageIndex(0);
+    const interval = setInterval(() => {
+      setStageIndex((prev) => Math.min(prev + 1, ANALYSIS_STAGES.length - 1));
+    }, 1800);
+
+    const shimmer = Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      })
+    );
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    );
+    shimmer.start();
+    pulse.start();
+
+    return () => {
+      clearInterval(interval);
+      shimmer.stop();
+      pulse.stop();
+      shimmerAnim.setValue(0);
+      pulseAnim.setValue(0);
+    };
+  }, [analyzing, shimmerAnim, pulseAnim]);
+
+  const shimmerTranslate = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-SHIMMER_WIDTH, TRACK_WIDTH],
+  });
+  const pulseScale = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] });
 
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -85,11 +146,15 @@ export default function CameraScreen() {
           [{ resize: { width: 1200 } }],
           { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG }
         );
-        const result = await ApiClient.analyzeImage(resized.uri, "local-dev");
+        const result = await ApiClient.analyzeImage(resized.uri, plantId);
         results.push(result);
       }
       AnalysisResultStore.setSession(results);
-      router.push("/results");
+      if (plantId) {
+        router.replace({ pathname: "/results", params: { fromPlant: "1" } });
+      } else {
+        router.push("/results");
+      }
     } catch (error) {
       Alert.alert(
         "Analysis failed",
@@ -109,16 +174,15 @@ export default function CameraScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>New Analysis</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader
+        title={plantId ? `Add to ${plantName || "plant"}` : "New Analysis"}
+        onBack={() => router.back()}
+      />
 
       <View style={styles.tipBanner}>
-        <View style={styles.tipAccent} />
+        <View style={styles.tipIconWrap}>
+          <Ionicons name="bulb-outline" size={16} color={Colors.accent} />
+        </View>
         <Text style={styles.tipText}>
           Hold your phone 2–3 cm from the trichomes for best results.
         </Text>
@@ -131,7 +195,7 @@ export default function CameraScreen() {
       >
         {images.length === 0 ? (
           <View style={styles.emptyImageArea}>
-            <View style={styles.emptyIconPlaceholder} />
+            <Ionicons name="images-outline" size={44} color={Colors.textMuted} style={styles.emptyIcon} />
             <Text style={styles.emptyTitle}>No photos added</Text>
             <Text style={styles.emptySubtitle}>
               Use the buttons below to capture or select macro images.
@@ -145,8 +209,11 @@ export default function CameraScreen() {
                 <Pressable
                   style={styles.removeButton}
                   onPress={() => removeImage(index)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove photo"
+                  hitSlop={12}
                 >
-                  <Text style={styles.removeButtonText}>×</Text>
+                  <Ionicons name="close" size={16} color="#fff" />
                 </Pressable>
               </View>
             ))}
@@ -157,51 +224,43 @@ export default function CameraScreen() {
       <View style={styles.bottomArea}>
         <View style={styles.captureRow}>
           <Pressable style={styles.captureButton} onPress={takePhoto}>
+            <Ionicons name="camera-outline" size={18} color={Colors.textPrimary} />
             <Text style={styles.captureLabel}>Take Photo</Text>
           </Pressable>
           <Pressable style={styles.captureButton} onPress={chooseFromGallery}>
+            <Ionicons name="images-outline" size={18} color={Colors.textPrimary} />
             <Text style={styles.captureLabel}>Choose from Gallery</Text>
           </Pressable>
         </View>
 
-        <Pressable
-          style={[
-            styles.analyzeButton,
-            (images.length === 0 || analyzing) && styles.analyzeButtonDisabled,
-          ]}
-          disabled={images.length === 0 || analyzing}
+        <AppButton
+          label={analyzing ? "Analyzing…" : analyzeLabel}
+          icon="scan-outline"
           onPress={analyze}
-        >
-          <Text
-            style={[
-              styles.analyzeButtonText,
-              (images.length === 0 || analyzing) && styles.analyzeButtonTextDisabled,
-            ]}
-          >
-            {analyzing ? "Analyzing…" : analyzeLabel}
-          </Text>
-        </Pressable>
+          disabled={images.length === 0 || analyzing}
+        />
       </View>
 
       {analyzing && (
         <View style={styles.analyzingOverlay}>
           <View style={styles.analyzingCard}>
             {currentAnalyzingUri && (
-              <Image
+              <Animated.Image
                 source={{ uri: currentAnalyzingUri }}
-                style={styles.analyzingThumb}
+                style={[styles.analyzingThumb, { transform: [{ scale: pulseScale }] }]}
                 resizeMode="cover"
               />
             )}
-            <Text style={styles.analyzingCounter}>
-              {progress ? `${progress.current} / ${progress.total}` : "…"}
-            </Text>
-            <Text style={styles.analyzingSubtitle}>
-              {progress
-                ? `Analyzing photo ${progress.current} of ${progress.total}`
-                : "Preparing…"}
-            </Text>
-            {progress && (
+
+            {images.length > 1 && progress && (
+              <Text style={styles.analyzingCounter}>
+                {progress.current} / {progress.total}
+              </Text>
+            )}
+
+            <Text style={styles.analyzingStage}>{ANALYSIS_STAGES[stageIndex]}</Text>
+
+            {images.length > 1 && progress ? (
               <View style={styles.analyzingTrack}>
                 <View
                   style={[
@@ -210,8 +269,17 @@ export default function CameraScreen() {
                   ]}
                 />
               </View>
+            ) : (
+              <View style={styles.analyzingTrack}>
+                <Animated.View
+                  style={[styles.analyzingShimmer, { transform: [{ translateX: shimmerTranslate }] }]}
+                />
+              </View>
             )}
-            <Text style={styles.analyzingHint}>This may take a moment per photo</Text>
+
+            <Text style={styles.analyzingHint}>
+              {images.length > 1 ? "Analyzing your photos" : "This usually takes a few seconds"}
+            </Text>
           </View>
         </View>
       )}
@@ -219,37 +287,14 @@ export default function CameraScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  backText: {
-    fontSize: 15,
-    color: Colors.accent,
-    fontWeight: "500",
-    width: 60,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 17,
-    fontWeight: "700",
-    color: Colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 60,
-  },
   tipBanner: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "center",
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -258,9 +303,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: "hidden",
   },
-  tipAccent: {
-    width: 3,
-    backgroundColor: Colors.warning,
+  tipIconWrap: {
+    paddingLeft: 14,
+    justifyContent: "center",
   },
   tipText: {
     flex: 1,
@@ -268,7 +313,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 19,
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
   },
   imageArea: {
     flex: 1,
@@ -289,13 +334,7 @@ const styles = StyleSheet.create({
     padding: 32,
     gap: 8,
   },
-  emptyIconPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: Colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  emptyIcon: {
     marginBottom: 8,
   },
   emptyTitle: {
@@ -336,12 +375,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  removeButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: "700",
-  },
   bottomArea: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -356,37 +389,20 @@ const styles = StyleSheet.create({
   },
   captureButton: {
     flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
   },
   captureLabel: {
     fontSize: 14,
     fontWeight: "600",
     color: Colors.textPrimary,
-  },
-  analyzeButton: {
-    width: "100%",
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: Colors.accent,
-    alignItems: "center",
-  },
-  analyzeButtonDisabled: {
-    backgroundColor: Colors.surfaceElevated,
-  },
-  analyzeButtonText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: Colors.accentText,
-    letterSpacing: 0.3,
-  },
-  analyzeButtonTextDisabled: {
-    color: Colors.textMuted,
   },
   analyzingOverlay: {
     position: "absolute",
@@ -420,11 +436,12 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     letterSpacing: -0.5,
   },
-  analyzingSubtitle: {
-    fontSize: 14,
+  analyzingStage: {
+    fontSize: 15,
     fontWeight: "600",
-    color: Colors.textSecondary,
+    color: Colors.textPrimary,
     textAlign: "center",
+    minHeight: 20,
   },
   analyzingTrack: {
     height: 6,
@@ -439,9 +456,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
     borderRadius: 3,
   },
+  analyzingShimmer: {
+    width: SHIMMER_WIDTH,
+    height: 6,
+    backgroundColor: Colors.accent,
+    borderRadius: 3,
+  },
   analyzingHint: {
     fontSize: 12,
     color: Colors.textMuted,
     textAlign: "center",
   },
-});
+}); }

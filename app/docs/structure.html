@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cannabis Maturity App — Code Structure & Data Flow</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --border:#2a323d;
+    --text:#e6edf3; --muted:#9aa7b4; --accent:#5db075; --accent2:#4a9edb;
+    --amber:#d9a441; --purple:#a371f7; --pink:#db61a2; --code:#c9d1d9;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,.mono{font-family:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em}
+
+  .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+    background:var(--panel);border-right:1px solid var(--border);padding:24px 18px}
+  aside h1{font-size:16px;margin:0 0 4px}
+  aside .sub{color:var(--muted);font-size:12px;margin-bottom:20px}
+  nav a{display:block;color:var(--muted);padding:7px 10px;border-radius:8px;font-size:14px}
+  nav a:hover{background:var(--panel2);color:var(--text);text-decoration:none}
+  main{padding:40px 48px;max-width:1100px}
+  section{margin-bottom:56px;scroll-margin-top:20px}
+  h2{font-size:24px;margin:0 0 6px;border-bottom:1px solid var(--border);padding-bottom:10px}
+  h3{font-size:17px;margin:28px 0 10px;color:var(--text)}
+  p.lead{color:var(--muted);margin-top:0}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px 22px;margin:16px 0}
+  .mermaid{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px;overflow:auto;text-align:center}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);
+    border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .d-mobile{background:var(--accent2)} .d-api{background:var(--accent)}
+  .d-ml{background:var(--amber)} .d-modal{background:var(--purple)} .d-supa{background:var(--pink)}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--text);font-weight:600}
+  td .mono{color:var(--code)}
+  .method{font-weight:700;font-size:12px;padding:2px 7px;border-radius:6px;color:#0e1116}
+  .m-get{background:#4a9edb}.m-post{background:#5db075}.m-patch{background:#d9a441}.m-delete{background:#db61a2}
+
+  /* file tree */
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+  .tree ul{list-style:none;margin:0;padding-left:20px;border-left:1px dashed var(--border)}
+  .tree>ul{border-left:none;padding-left:0}
+  .tree li{margin:3px 0}
+  .folder{cursor:pointer;user-select:none;color:var(--accent2);font-weight:600}
+  .folder::before{content:"▾ ";color:var(--muted)}
+  .folder.collapsed::before{content:"▸ "}
+  .folder.collapsed + ul{display:none}
+  .file{color:var(--text)}
+  .desc{color:var(--muted);font-weight:400}
+  .tag{font-size:11px;padding:1px 6px;border-radius:5px;margin-left:6px;color:#0e1116;font-weight:700}
+  .t-ml{background:var(--amber)}.t-api{background:var(--accent)}.t-ui{background:var(--accent2)}
+  .t-modal{background:var(--purple)}.t-db{background:var(--pink)}.t-dead{background:#6e7681;color:#fff}
+
+  .note{border-left:3px solid var(--accent);background:var(--panel2);padding:10px 16px;border-radius:0 8px 8px 0;color:var(--muted);font-size:13.5px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px}.grid2{grid-template-columns:1fr}}
+  .kbd{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <h1>🌿 Cannabis Maturity App</h1>
+    <div class="sub">Code structure &amp; data flow<br/>scope: <span class="mono">app/</span></div>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#architecture">1. System architecture</a>
+      <a href="#analyze-flow">2. Analyze data flow</a>
+      <a href="#ml-pipeline">3. ML inference pipeline</a>
+      <a href="#endpoints">4. API endpoints → services</a>
+      <a href="#data-model">5. Data model</a>
+      <a href="#tree">6. File &amp; folder map</a>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="overview">
+      <h2>Overview</h2>
+      <p class="lead">
+        A cannabis-flower maturity assessment product: a mobile app captures a macro photo,
+        a FastAPI backend runs computer-vision inference (trichome detection/classification +
+        stigma color analysis), and Supabase stores the image and results. This page maps the
+        <span class="mono">app/</span> folder — who talks to whom, and how a photo becomes a result.
+      </p>
+      <div class="legend">
+        <span class="pill"><span class="dot d-mobile"></span> mobile (Expo / React Native)</span>
+        <span class="pill"><span class="dot d-api"></span> api (FastAPI)</span>
+        <span class="pill"><span class="dot d-ml"></span> backend (ML package)</span>
+        <span class="pill"><span class="dot d-modal"></span> modal (GPU cloud)</span>
+        <span class="pill"><span class="dot d-supa"></span> supabase (auth / storage / db)</span>
+      </div>
+      <div class="card">
+        <strong>The five parts of <span class="mono">app/</span></strong>
+        <table>
+          <tr><th>Folder</th><th>Role</th><th>Key entry point</th></tr>
+          <tr><td><span class="mono">mobile/</span></td><td>User-facing Expo app (screens, camera, results)</td><td class="mono">app/_layout.tsx, api/client.ts</td></tr>
+          <tr><td><span class="mono">api/</span></td><td>FastAPI HTTP layer: auth, routing, storage + DB orchestration</td><td class="mono">src/main.py, src/routes/analysis.py</td></tr>
+          <tr><td><span class="mono">backend/</span></td><td>Pure-Python ML package <span class="mono">cannabis_maturity</span> (detectors, models, assessment)</td><td class="mono">src/cannabis_maturity/</td></tr>
+          <tr><td><span class="mono">modal/</span></td><td>Optional GPU inference in the cloud (same ML package)</td><td class="mono">inference.py</td></tr>
+          <tr><td><span class="mono">supabase/</span></td><td>Postgres schema + migrations, storage bucket, auth</td><td class="mono">migrations/</td></tr>
+        </table>
+        <p class="note">The ML package (<span class="mono">cannabis_maturity</span>) is the single source of truth — imported
+        by both the API (local mode) and Modal (cloud mode). Inference mode is chosen at API startup
+        via <span class="mono">settings.inference_mode</span> (<span class="mono">"local"</span> or <span class="mono">"modal"</span>).</p>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>1. System architecture</h2>
+      <p class="lead">How the components connect. Solid = request/response, dashed = reads/writes.</p>
+      <div class="mermaid">
+flowchart TB
+  subgraph MOBILE["📱 mobile/ (Expo)"]
+    UI["Screens<br/>camera · review · results · history · plants"]
+    CLIENT["api/client.ts<br/>ApiClient"]
+    SUPACLIENT["lib/supabase.ts<br/>auth session"]
+    UI --> CLIENT
+    UI --> SUPACLIENT
+  end
+
+  subgraph API["⚙️ api/ (FastAPI)"]
+    MAIN["main.py<br/>app + lifespan"]
+    AUTH["auth.py<br/>get_current_user"]
+    ROUTES["routes/analysis.py<br/>endpoints"]
+    subgraph SVC["services/"]
+      STORAGE["storage_service.py"]
+      DB["database_service.py"]
+      LOCAL["local_inference_service.py"]
+      MODALC["modal_client.py"]
+      CROP["crop_service.py"]
+    end
+    MAIN --> ROUTES
+    ROUTES --> AUTH
+    ROUTES --> STORAGE
+    ROUTES --> DB
+    ROUTES --> CROP
+    MAIN -->|"local mode"| LOCAL
+    MAIN -->|"modal mode"| MODALC
+  end
+
+  subgraph ML["🧠 backend/ cannabis_maturity"]
+    TRI["trichome_detector"]
+    STI["stigma_detector +<br/>stigma_color_classifier"]
+    ASSESS["maturity_assessor"]
+    RENDER["annotation_renderer"]
+    CROPX["crop_extractor"]
+    MODELS["models (pydantic)"]
+  end
+
+  subgraph MODAL["☁️ modal/ (GPU T4)"]
+    INF["inference.py<br/>MaturityAnalyzer"]
+  end
+
+  subgraph SUPA["🗄️ Supabase"]
+    SAUTH["Auth"]
+    SSTORE["Storage bucket<br/>(images)"]
+    SDB["Postgres<br/>analyses · plants · profiles"]
+  end
+
+  CLIENT -->|"HTTPS + Bearer JWT"| ROUTES
+  SUPACLIENT -.->|"sign in / token"| SAUTH
+  AUTH -.->|"verify token"| SAUTH
+  STORAGE -.->|"upload / url"| SSTORE
+  DB -.->|"insert / select / update"| SDB
+  LOCAL --> TRI & STI & ASSESS & RENDER & CROPX
+  MODALC -->|".remote()"| INF
+  INF --> TRI & STI & ASSESS & RENDER & CROPX
+  TRI & STI & ASSESS & RENDER & CROPX -.-> MODELS
+  CROP --> CROPX
+      </div>
+    </section>
+
+    <section id="analyze-flow">
+      <h2>2. Analyze data flow (a photo → a result)</h2>
+      <p class="lead">The main journey: <span class="mono">POST /api/v1/analyze</span> with an image file.</p>
+      <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 📱 Mobile (camera)
+  participant SA as 🗄️ Supabase Auth
+  participant R as ⚙️ analysis.py
+  participant ST as Storage service
+  participant IS as Inference service
+  participant ML as 🧠 cannabis_maturity
+  participant DB as 🗄️ Postgres (analyses)
+
+  U->>SA: getSession() → access token
+  U->>R: POST /api/v1/analyze (multipart image, Bearer JWT)
+  R->>SA: verify token (get_current_user)
+  SA-->>R: user_id
+  R->>R: validate content-type + size (≤20MB)
+  R->>ST: upload_image(original) 
+  ST-->>R: image_url
+  R->>IS: analyze(image_bytes)
+  IS->>ML: TrichomeDetector.detect + StigmaDetector.detect (parallel)
+  ML-->>IS: trichome_result, stigma_result
+  IS->>ML: MaturityAssessor.assess(...)
+  ML-->>IS: maturity_stage, recommendation
+  IS->>ML: AnnotationRenderer.render + CropExtractor
+  ML-->>IS: annotated_b64, crops_b64
+  IS-->>R: AnalysisResult (dict)
+  R->>ST: upload_image(annotated)
+  ST-->>R: annotated_image_url
+  R->>DB: save_analysis(user_id, urls, result, plant_id)
+  DB-->>R: record
+  R-->>U: 201 AnalyzeResponse (stage, recommendation, distribution, crops)
+      </div>
+      <p class="note">Inference service is either <span class="mono">LocalInferenceService</span> (runs the ML package in-process,
+      on threads) or <span class="mono">ModalClient</span> (calls the GPU function <span class="mono">.remote()</span>). The route code is
+      identical for both — it just calls <span class="mono">request.app.state.inference_service.analyze(...)</span>.</p>
+    </section>
+
+    <section id="ml-pipeline">
+      <h2>3. ML inference pipeline</h2>
+      <p class="lead">Inside <span class="mono">cannabis_maturity</span>: how raw pixels become a maturity stage.</p>
+      <div class="mermaid">
+flowchart LR
+  IMG["image bytes"] --> DEC["cv2.imdecode → BGR array"]
+  DEC --> T["TrichomeDetector<br/>YOLO detect (patches/SAHI)<br/>+ YOLO classify → clear/cloudy/amber"]
+  DEC --> S["StigmaDetector<br/>YOLO segment → polygons<br/>+ StigmaColorClassifier → green/orange ratio"]
+  T --> TR["TrichomeResult<br/>detections + distribution + total"]
+  S --> SR["StigmaResult<br/>detections + avg green/orange ratio"]
+  TR --> A["MaturityAssessor.assess()"]
+  SR --> A
+  A --> STG["MaturityStage<br/>early · developing · peak · mature · late<br/>+ recommendation text"]
+  DEC --> R["AnnotationRenderer.render()"]
+  TR --> R
+  SR --> R
+  R --> ANN["annotated image (jpg → b64)"]
+  DEC --> C["CropExtractor"]
+  TR --> C
+  SR --> C
+  C --> CR["trichome + stigma crops (b64)"]
+  STG --> OUT["AnalysisResult (pydantic)"]
+  ANN --> OUT
+  CR --> OUT
+      </div>
+    </section>
+
+    <section id="endpoints">
+      <h2>4. API endpoints → services</h2>
+      <p class="lead">Every route is under <span class="mono">/api/v1</span> and requires a Bearer token (<span class="mono">get_current_user</span>).</p>
+      <table>
+        <tr><th>Method</th><th>Path</th><th>Purpose</th><th>Touches</th></tr>
+        <tr><td><span class="method m-post">POST</span></td><td class="mono">/analyze</td><td>Upload image, run inference, store result</td><td>Storage · Inference · DB</td></tr>
+        <tr><td><span class="method m-get">GET</span></td><td class="mono">/analyses</td><td>List current user's analyses</td><td>DB</td></tr>
+        <tr><td><span class="method m-get">GET</span></td><td class="mono">/analyses/{id}</td><td>Get one analysis (regenerates crops)</td><td>DB · CropService</td></tr>
+        <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/analyses/{id}</td><td>Update analysis fields</td><td>DB</td></tr>
+        <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/analyses/{id}/corrections</td><td>Save user corrections, re-assess maturity</td><td>DB · MaturityAssessor</td></tr>
+        <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/analyses/{id}/plant</td><td>Link analysis to a plant</td><td>DB</td></tr>
+        <tr><td><span class="method m-delete">DELETE</span></td><td class="mono">/analyses/{id}</td><td>Delete an analysis</td><td>DB</td></tr>
+        <tr><td><span class="method m-post">POST</span></td><td class="mono">/plants</td><td>Create a plant</td><td>DB</td></tr>
+        <tr><td><span class="method m-get">GET</span></td><td class="mono">/plants</td><td>List / search plants</td><td>DB</td></tr>
+        <tr><td><span class="method m-delete">DELETE</span></td><td class="mono">/plants/{id}</td><td>Delete plant + its analyses</td><td>DB</td></tr>
+        <tr><td><span class="method m-get">GET</span></td><td class="mono">/plants/{id}/analyses</td><td>Plant analysis history</td><td>DB</td></tr>
+        <tr><td><span class="method m-get">GET</span></td><td class="mono">/health</td><td>Health check (no auth)</td><td>—</td></tr>
+      </table>
+    </section>
+
+    <section id="data-model">
+      <h2>5. Data model</h2>
+      <p class="lead">Postgres tables in Supabase (see <span class="mono">supabase/migrations/</span>).</p>
+      <div class="grid2">
+        <div class="card">
+          <h3 style="margin-top:0">analyses</h3>
+          <table>
+            <tr><td class="mono">id</td><td>uuid pk</td></tr>
+            <tr><td class="mono">performed_by</td><td>user id</td></tr>
+            <tr><td class="mono">plant_id</td><td>fk → plants (nullable)</td></tr>
+            <tr><td class="mono">image_url</td><td>original in storage</td></tr>
+            <tr><td class="mono">annotated_image_url</td><td>rendered overlay</td></tr>
+            <tr><td class="mono">trichome_distribution</td><td>{clear,cloudy,amber}</td></tr>
+            <tr><td class="mono">stigma_ratios</td><td>{green,orange}</td></tr>
+            <tr><td class="mono">maturity_stage</td><td>enum</td></tr>
+            <tr><td class="mono">recommendation</td><td>text</td></tr>
+            <tr><td class="mono">detections</td><td>{trichomes,stigmas}</td></tr>
+            <tr><td class="mono">corrections</td><td>user edits (jsonb)</td></tr>
+            <tr><td class="mono">created_at</td><td>timestamp</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">plants</h3>
+          <table>
+            <tr><td class="mono">id</td><td>uuid pk</td></tr>
+            <tr><td class="mono">created_by</td><td>user id (nullable)</td></tr>
+            <tr><td class="mono">name</td><td>text</td></tr>
+            <tr><td class="mono">status</td><td>"active" …</td></tr>
+            <tr><td class="mono">metadata</td><td>jsonb</td></tr>
+            <tr><td class="mono">created_at</td><td>timestamp</td></tr>
+          </table>
+          <h3>profiles</h3>
+          <p class="desc">Per-user profile row, backfilled from auth users (see migrations).</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tree">
+      <h2>6. File &amp; folder map</h2>
+      <p class="lead">Click a folder to collapse. Tags show which area each file belongs to.</p>
+      <div class="card tree" id="filetree">
+        <ul>
+          <li><span class="folder">app/</span>
+            <ul>
+              <li><span class="folder">api/</span> <span class="desc">FastAPI HTTP backend</span>
+                <ul>
+                  <li><span class="folder">src/</span>
+                    <ul>
+                      <li><span class="file">main.py</span> <span class="tag t-api">api</span> <span class="desc">FastAPI app, CORS, lifespan picks inference mode</span></li>
+                      <li><span class="file">config.py</span> <span class="tag t-api">api</span> <span class="desc">Settings (env): supabase, model paths, inference mode</span></li>
+                      <li><span class="file">auth.py</span> <span class="tag t-api">api</span> <span class="desc">Bearer-token verification via Supabase Auth</span></li>
+                      <li><span class="folder">routes/</span>
+                        <ul><li><span class="file">analysis.py</span> <span class="tag t-api">api</span> <span class="desc">All endpoints (analyze, analyses, plants)</span></li></ul>
+                      </li>
+                      <li><span class="folder">models/</span>
+                        <ul><li><span class="file">schemas.py</span> <span class="tag t-api">api</span> <span class="desc">Request/response Pydantic models</span></li></ul>
+                      </li>
+                      <li><span class="folder">services/</span>
+                        <ul>
+                          <li><span class="file">storage_service.py</span> <span class="tag t-api">api</span> <span class="desc">Upload images / public URLs (Supabase Storage)</span></li>
+                          <li><span class="file">database_service.py</span> <span class="tag t-api">api</span> <span class="desc">CRUD for analyses &amp; plants (Supabase DB)</span></li>
+                          <li><span class="file">local_inference_service.py</span> <span class="tag t-api">api</span> <span class="desc">Runs the ML package in-process</span></li>
+                          <li><span class="file">modal_client.py</span> <span class="tag t-api">api</span> <span class="desc">Calls the Modal GPU function</span></li>
+                          <li><span class="file">crop_service.py</span> <span class="tag t-api">api</span> <span class="desc">Regenerates detection crops from a stored image</span></li>
+                          <li><span class="file">inference_error.py</span> <span class="tag t-api">api</span> <span class="desc">Shared inference exception</span></li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><span class="folder">tests/</span> <span class="desc">pytest (conftest, test_analysis)</span></li>
+                  <li><span class="file">pyproject.toml</span> · <span class="file">run.py</span> · <span class="file">doppler.yaml</span></li>
+                </ul>
+              </li>
+
+              <li><span class="folder">backend/</span> <span class="desc">Pure-Python ML package (the brain)</span>
+                <ul>
+                  <li><span class="folder">src/cannabis_maturity/</span>
+                    <ul>
+                      <li><span class="file">models.py</span> <span class="tag t-ml">ml</span> <span class="desc">Pydantic types: Detection, Trichome/StigmaResult, AnalysisResult, enums</span></li>
+                      <li><span class="file">trichome_detector.py</span> <span class="tag t-ml">ml</span> <span class="desc">YOLO detect + classify → clear/cloudy/amber</span></li>
+                      <li><span class="file">stigma_detector.py</span> <span class="tag t-ml">ml</span> <span class="desc">YOLO segment stigmas → polygons</span></li>
+                      <li><span class="file">stigma_color_classifier.py</span> <span class="tag t-ml">ml</span> <span class="desc">Green/orange ratio from stigma pixels</span></li>
+                      <li><span class="file">stigma_color_data.json</span> <span class="tag t-ml">ml</span> <span class="desc">Reference color data</span></li>
+                      <li><span class="file">maturity_assessor.py</span> <span class="tag t-ml">ml</span> <span class="desc">Rules → MaturityStage + recommendation</span></li>
+                      <li><span class="file">annotation_renderer.py</span> <span class="tag t-ml">ml</span> <span class="desc">Draws overlays on the image</span></li>
+                      <li><span class="file">crop_extractor.py</span> <span class="tag t-ml">ml</span> <span class="desc">Cuts per-detection thumbnail crops</span></li>
+                    </ul>
+                  </li>
+                  <li><span class="folder">tests/</span> <span class="desc">unit tests per detector/assessor</span></li>
+                  <li><span class="file">pyproject.toml</span> <span class="desc">packages = cannabis_maturity</span></li>
+                </ul>
+              </li>
+
+              <li><span class="folder">modal/</span> <span class="desc">GPU inference in the cloud (same ML package)</span>
+                <ul>
+                  <li><span class="file">inference.py</span> <span class="tag t-modal">modal</span> <span class="desc">MaturityAnalyzer (T4 GPU), loads weights, analyze()</span></li>
+                  <li><span class="file">constants.py</span> <span class="tag t-modal">modal</span> <span class="desc">Model paths / volume name</span></li>
+                  <li><span class="file">upload_weights.py</span> <span class="tag t-modal">modal</span> <span class="desc">Push model weights to Modal volume</span></li>
+                </ul>
+              </li>
+
+              <li><span class="folder">mobile/</span> <span class="desc">Expo / React Native app</span>
+                <ul>
+                  <li><span class="folder">app/</span> <span class="desc">file-based routes (screens)</span>
+                    <ul>
+                      <li><span class="file">_layout.tsx</span> <span class="tag t-ui">ui</span> <span class="desc">Root nav + providers</span></li>
+                      <li><span class="file">index.tsx · register.tsx</span> <span class="tag t-ui">ui</span> <span class="desc">Entry / auth</span></li>
+                      <li><span class="file">home.tsx · camera.tsx · review.tsx · results.tsx</span> <span class="tag t-ui">ui</span> <span class="desc">Capture → review → analyze → result</span></li>
+                      <li><span class="file">history.tsx · plant-detail.tsx · my-plants.tsx · save-flower.tsx</span> <span class="tag t-ui">ui</span> <span class="desc">History &amp; plants</span></li>
+                      <li><span class="file">trichome-samples.tsx · stigma-samples.tsx · how-it-works.tsx</span> <span class="tag t-ui">ui</span> <span class="desc">Detail / education</span></li>
+                      <li><span class="file">profile.tsx · settings.tsx</span> <span class="tag t-ui">ui</span></li>
+                    </ul>
+                  </li>
+                  <li><span class="folder">api/</span>
+                    <ul>
+                      <li><span class="file">client.ts</span> <span class="tag t-ui">ui</span> <span class="desc">ApiClient — all HTTP calls to FastAPI</span></li>
+                      <li><span class="file">types.ts</span> <span class="tag t-ui">ui</span> <span class="desc">Response types (mirror api schemas)</span></li>
+                    </ul>
+                  </li>
+                  <li><span class="folder">components/</span> <span class="desc">AnalysisCard, DonutChart, MaturityBadge, ZoomableImage, BottomNav, GradientButton</span></li>
+                  <li><span class="folder">contexts/</span> <span class="desc">AuthContext, ThemeContext</span></li>
+                  <li><span class="folder">lib/</span> <span class="desc">supabase.ts (client + session)</span></li>
+                  <li><span class="folder">store/</span> <span class="desc">analysisResult.ts (in-memory hand-off)</span></li>
+                  <li><span class="folder">constants/</span> <span class="desc">theme.ts (design tokens)</span></li>
+                </ul>
+              </li>
+
+              <li><span class="folder">supabase/</span> <span class="desc">DB schema, migrations, storage bucket config</span>
+                <ul>
+                  <li><span class="folder">migrations/</span> <span class="tag t-db">db</span> <span class="desc">analyses, profiles+plants, RLS, backfills</span></li>
+                  <li><span class="file">config.toml</span> <span class="tag t-db">db</span></li>
+                </ul>
+              </li>
+
+              <li><span class="folder">docs/</span> <span class="desc">SETUP, plans, this page</span></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <p class="note">Generated for the <span class="mono">app/</span> scope. The research/thesis code at the repo root
+      (<span class="mono">src/</span>, <span class="mono">notebooks/</span>) is intentionally not shown here.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:"dark",
+    themeVariables:{
+      fontSize:"14px",
+      primaryColor:"#1c232d", primaryBorderColor:"#2a323d", primaryTextColor:"#e6edf3",
+      lineColor:"#6e7681", tertiaryColor:"#161b22"
+    },
+    flowchart:{curve:"basis"}
+  });
+  document.querySelectorAll(".folder").forEach(f=>{
+    f.addEventListener("click",()=>f.classList.toggle("collapsed"));
+  });
+</script>
+</body>
+</html>

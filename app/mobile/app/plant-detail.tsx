@@ -8,16 +8,19 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { ApiClient } from "../api/client";
 import { useTheme } from "../contexts/ThemeContext";
 import { PlantAnalysisItem, MaturityStage, TrichomeType, AnalysisPatch } from "../api/types";
 import { AnalysisResultStore } from "../store/analysisResult";
 import { ZoomableImage } from "../components/ZoomableImage";
+import { ScreenHeader } from "../components/ScreenHeader";
 
 type ImageView = "original" | "detected";
 
@@ -27,6 +30,7 @@ type EditState = {
   trichome_distribution: Record<TrichomeType, number> | null;
   stigma_green: string;
   stigma_orange: string;
+  created_at: string;
 };
 
 const MATURITY_STAGES: MaturityStage[] = ["early", "developing", "peak", "mature", "late"];
@@ -124,6 +128,7 @@ export default function PlantDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingTrichomeEdit, setLoadingTrichomeEdit] = useState(false);
   const [loadingSessionKey, setLoadingSessionKey] = useState<string | null>(null);
@@ -171,6 +176,7 @@ export default function PlantDetailScreen() {
       trichome_distribution: item.trichome_distribution ?? null,
       stigma_green: item.stigma_ratios ? String(Math.round(item.stigma_ratios.green * 100)) : "50",
       stigma_orange: item.stigma_ratios ? String(Math.round(item.stigma_ratios.orange * 100)) : "50",
+      created_at: item.created_at,
     });
   };
 
@@ -178,6 +184,7 @@ export default function PlantDetailScreen() {
     setEditingId(null);
     editingIdRef.current = null;
     setEditState(null);
+    setShowDatePicker(false);
   };
 
   const saveEdit = async () => {
@@ -187,6 +194,7 @@ export default function PlantDetailScreen() {
       const patch: AnalysisPatch = {
         maturity_stage: editState.maturity_stage,
         recommendation: editState.recommendation,
+        created_at: editState.created_at,
       };
       if (editState.trichome_distribution) {
         patch.trichome_distribution = editState.trichome_distribution;
@@ -206,12 +214,14 @@ export default function PlantDetailScreen() {
             recommendation: editState.recommendation,
             trichome_distribution: editState.trichome_distribution,
             stigma_ratios: patch.stigma_ratios ?? a.stigma_ratios,
+            created_at: editState.created_at,
           };
         })
       );
       setEditingId(null);
       editingIdRef.current = null;
       setEditState(null);
+      setShowDatePicker(false);
     } catch {
       Alert.alert("Error", "Failed to save changes.");
     } finally {
@@ -415,7 +425,7 @@ export default function PlantDetailScreen() {
     const currentEdit = isEditing ? editState : null;
     const displayStage = currentEdit?.maturity_stage ?? item.maturity_stage;
     const maturity = getMaturityColors(displayStage);
-    const date = new Date(item.created_at);
+    const date = new Date(currentEdit?.created_at ?? item.created_at);
     const dateLabel = date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -446,10 +456,20 @@ export default function PlantDetailScreen() {
         <View style={styles.analysisCard}>
           {/* Card header */}
           <View style={styles.cardTopRow}>
-            <View style={styles.dateBlock}>
-              <Text style={styles.dateText}>{dateLabel}</Text>
-              <Text style={styles.timeText}>{timeLabel}</Text>
-            </View>
+            {isEditing ? (
+              <Pressable style={styles.dateEditBlock} onPress={() => setShowDatePicker(true)}>
+                <Ionicons name="calendar-outline" size={14} color={Colors.accent} />
+                <View style={styles.dateBlock}>
+                  <Text style={styles.dateText}>{dateLabel}</Text>
+                  <Text style={styles.dateEditHint}>Tap to change date</Text>
+                </View>
+              </Pressable>
+            ) : (
+              <View style={styles.dateBlock}>
+                <Text style={styles.dateText}>{dateLabel}</Text>
+                <Text style={styles.timeText}>{timeLabel}</Text>
+              </View>
+            )}
             <View style={styles.cardTopRight}>
               {isEditing ? (
                 <Pressable
@@ -484,6 +504,36 @@ export default function PlantDetailScreen() {
               )}
             </View>
           </View>
+
+          {isEditing && showDatePicker && (
+            <DateTimePicker
+              value={new Date(currentEdit?.created_at ?? item.created_at)}
+              mode="date"
+              display={Platform.OS === "ios" ? "inline" : "default"}
+              maximumDate={new Date()}
+              onChange={(event, selectedDate) => {
+                if (Platform.OS !== "ios") setShowDatePicker(false);
+                if (event.type === "set" && selectedDate) {
+                  const previous = new Date(currentEdit?.created_at ?? item.created_at);
+                  selectedDate.setHours(
+                    previous.getHours(),
+                    previous.getMinutes(),
+                    previous.getSeconds(),
+                    previous.getMilliseconds()
+                  );
+                  setEditState((prev) =>
+                    prev ? { ...prev, created_at: selectedDate.toISOString() } : prev
+                  );
+                }
+              }}
+            />
+          )}
+
+          {isEditing && showDatePicker && Platform.OS === "ios" && (
+            <Pressable style={styles.datePickerDone} onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.datePickerDoneText}>Done</Text>
+            </Pressable>
+          )}
 
           {item.image_url ? (
             <AnalysisImageBlock imageUrl={item.image_url} annotatedUrl={item.annotated_image_url} blockStyles={styles} />
@@ -652,16 +702,23 @@ export default function PlantDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={20} color={Colors.textPrimary} />
-        </Pressable>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle} numberOfLines={1}>{plantName ?? "Plant"}</Text>
-          <Text style={styles.headerSub}>{analyses.length} scan{analyses.length !== 1 ? "s" : ""}</Text>
-        </View>
-        <View style={{ width: 36 }} />
-      </View>
+      <ScreenHeader
+        title={plantName ?? "Plant"}
+        subtitle={`${analyses.length} scan${analyses.length !== 1 ? "s" : ""}`}
+        onBack={() => router.back()}
+        right={
+          <Pressable
+            style={styles.addScanButton}
+            onPress={() =>
+              router.push({ pathname: "/camera", params: { plantId, plantName: plantName ?? "" } })
+            }
+            accessibilityRole="button"
+            accessibilityLabel="Add scan"
+          >
+            <Ionicons name="add" size={22} color={Colors.accentText} />
+          </Pressable>
+        }
+      />
 
       {loading && (
         <View style={styles.centeredState}>
@@ -689,7 +746,12 @@ export default function PlantDetailScreen() {
           <Text style={styles.emptySub}>
             Analyze this plant to start building its maturity history.
           </Text>
-          <Pressable style={styles.ctaButton} onPress={() => router.push("/camera")}>
+          <Pressable
+            style={styles.ctaButton}
+            onPress={() =>
+              router.push({ pathname: "/camera", params: { plantId, plantName: plantName ?? "" } })
+            }
+          >
             <Ionicons name="camera-outline" size={15} color={Colors.accentText} />
             <Text style={styles.ctaButtonText}>Scan Now</Text>
           </Pressable>
@@ -716,36 +778,13 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
-    gap: 12,
-  },
-  backButton: {
+  addScanButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: Colors.surfaceElevated,
+    backgroundColor: Colors.accent,
     alignItems: "center",
     justifyContent: "center",
-  },
-  headerCenter: {
-    flex: 1,
-    gap: 2,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.textPrimary,
-  },
-  headerSub: {
-    fontSize: 12,
-    color: Colors.textMuted,
   },
   centeredState: {
     flex: 1,
@@ -862,6 +901,32 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   },
   dateBlock: {
     gap: 2,
+  },
+  dateEditBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  dateEditHint: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: Colors.accent,
+  },
+  datePickerDone: {
+    alignSelf: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: Colors.accent,
+  },
+  datePickerDoneText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: Colors.accentText,
   },
   dateText: {
     fontSize: 14,

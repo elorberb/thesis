@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AnalysisResultStore } from "../store/analysisResult";
 import { useTheme } from "../contexts/ThemeContext";
-import { MOCK_RESULT } from "./results";
+import { EMPTY_RESULT } from "./results";
 import { ZoomableImage } from "../components/ZoomableImage";
 
 type StigmaColor = "green" | "orange";
@@ -21,7 +21,7 @@ export default function StigmaSamplesScreen() {
   const { Colors } = useTheme();
   const styles = createStyles(Colors);
   const { type } = useLocalSearchParams<{ type: StigmaFilter }>();
-  const result = AnalysisResultStore.get() ?? MOCK_RESULT;
+  const result = AnalysisResultStore.get() ?? EMPTY_RESULT;
   const filter: StigmaFilter = (type as StigmaFilter) ?? "all";
 
   const allDetections = result.stigma_result.detections;

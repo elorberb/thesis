@@ -2,6 +2,8 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Alert, Switch } from "re
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
+import { ScreenHeader } from "../components/ScreenHeader";
 
 function SectionLabel({ label, colors }: { label: string; colors: ReturnType<typeof useTheme>["Colors"] }) {
   return <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted, letterSpacing: 1, marginBottom: 8, marginTop: 4 }}>{label}</Text>;
@@ -10,6 +12,7 @@ function SectionLabel({ label, colors }: { label: string; colors: ReturnType<typ
 export default function SettingsScreen() {
   const router = useRouter();
   const { Colors, scheme, toggleTheme } = useTheme();
+  const { signOut } = useAuth();
   const styles = createStyles(Colors);
 
   const handleClearData = () => {
@@ -33,20 +36,17 @@ export default function SettingsScreen() {
       {
         text: "Sign Out",
         style: "destructive",
-        onPress: () => router.replace("/"),
+        onPress: async () => {
+          await signOut();
+          router.replace("/");
+        },
       },
     ]);
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>Settings</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader title="Settings" onBack={() => router.back()} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <SectionLabel label="APPEARANCE" colors={Colors} />
@@ -78,7 +78,7 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        <Text style={styles.version}>AgriVision · v0.1.0</Text>
+        <Text style={styles.version}>LoupeLab · v0.1.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -87,18 +87,6 @@ export default function SettingsScreen() {
 function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: Colors.background },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 20,
-      paddingTop: 8,
-      paddingBottom: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: Colors.surfaceElevated,
-    },
-    backText: { fontSize: 15, color: Colors.accent, fontWeight: "500", width: 60 },
-    headerTitle: { flex: 1, textAlign: "center", fontSize: 17, fontWeight: "700", color: Colors.textPrimary },
-    headerSpacer: { width: 60 },
     scroll: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 48 },
     card: {
       backgroundColor: Colors.surface,

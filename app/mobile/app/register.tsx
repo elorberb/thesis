@@ -13,11 +13,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Colors } from "../constants/theme";
+import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { Colors } = useTheme();
+  const styles = createStyles(Colors);
   const { signUp } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,7 +37,14 @@ export default function RegisterScreen() {
     }
     setLoading(true);
     try {
-      await signUp(name.trim(), email.trim(), password);
+      const { confirmationRequired } = await signUp(name.trim(), email.trim(), password);
+      if (confirmationRequired) {
+        Alert.alert(
+          "Check your email",
+          `We sent a confirmation link to ${email.trim()}. Click it to activate your account, then sign in.`,
+          [{ text: "OK", onPress: () => router.replace("/") }]
+        );
+      }
     } catch (err) {
       Alert.alert("Registration failed", err instanceof Error ? err.message : "Please try again.");
     } finally {
@@ -126,7 +135,7 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -215,4 +224,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 18,
   },
-});
+}); }

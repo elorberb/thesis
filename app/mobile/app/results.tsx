@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView, Image } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, Image, Share } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
@@ -11,79 +11,81 @@ import { ZoomableImage } from "../components/ZoomableImage";
 import { AnalyzeResponse, TrichomeType, MaturityStage } from "../api/types";
 import { AnalysisResultStore } from "../store/analysisResult";
 import { ApiClient } from "../api/client";
+import { ScreenHeader } from "../components/ScreenHeader";
+import { LoadingState } from "../components/LoadingState";
+import { EmptyState } from "../components/EmptyState";
+import { CollapsibleSection } from "../components/CollapsibleSection";
 
 const MATURITY_PREDICTION: Record<string, { heading: string; subtitle: string }> = {
   early: {
-    heading: "3–4 weeks to peak",
-    subtitle: "Plant is in early flowering. Significant development ahead.",
+    heading: "Early stage",
+    subtitle: "Trichomes are mostly clear. The flower likely has significant development ahead.",
   },
   developing: {
-    heading: "1–2 weeks to peak",
-    subtitle: "Trichomes are developing. Continue monitoring daily.",
+    heading: "Developing",
+    subtitle: "Trichomes are maturing. Keep monitoring regularly.",
   },
   peak: {
-    heading: "Harvest now",
-    subtitle: "Optimal THC concentration reached. Act within 24–48 hours.",
+    heading: "Estimated peak window",
+    subtitle: "Most trichomes appear cloudy, which is often considered the peak maturity window.",
   },
   mature: {
-    heading: "1–3 days from peak",
-    subtitle: "Review each section below to validate the current harvest window.",
+    heading: "Approaching maturity",
+    subtitle: "Review each section below to gauge the current maturity window.",
   },
   late: {
     heading: "Past peak",
-    subtitle: "Trichome degradation in progress. Harvest immediately.",
+    subtitle: "Amber trichomes are increasing, indicating later maturity.",
   },
 };
 
 const DOMINANT_PHASE: Record<TrichomeType, { title: string; desc: string }> = {
   clear: {
     title: "Clear trichomes",
-    desc: "Most heads currently cluster in the clear stage.",
+    desc: "Most heads are still in the clear stage.",
   },
   cloudy: {
     title: "Milky trichomes",
-    desc: "Peak THC production in progress. Harvest window approaching.",
+    desc: "Cloudy (milky) trichomes typically indicate peak maturity.",
   },
   amber: {
     title: "Amber trichomes",
-    desc: "Degradation in progress. Harvest soon for sedative effect.",
+    desc: "Amber trichomes indicate later maturity.",
   },
 };
 
-const TRICHOME_COLORS: Record<TrichomeType, string> = {
-  clear: "#6f758b",
-  cloudy: "#dfe4fe",
-  amber: "#d97706",
-};
-
-const STIGMA_COLORS = {
-  green: "#52c97a",
-  orange: "#d97706",
-};
-
-export const MOCK_RESULT: AnalyzeResponse = {
-  id: "mock-id",
-  created_at: "2026-03-24T12:00:00Z",
-  device_id: "mock-device",
+export const EMPTY_RESULT: AnalyzeResponse = {
+  id: "",
+  created_at: new Date(0).toISOString(),
+  user_id: "",
+  plant_id: null,
   image_url: "",
   annotated_image_url: null,
-  maturity_stage: "mature",
-  recommendation:
-    "Trichome analysis indicates optimal THC concentration. 73% of glandular heads have reached a milky/cloudy state with 15% turning amber. Harvest within the next 48 hours for maximum potency.",
+  maturity_stage: "early",
+  recommendation: "",
   trichome_result: {
     detections: [],
-    distribution: { clear: 15, cloudy: 36, amber: 8 },
-    total_count: 36,
+    distribution: { clear: 0, cloudy: 0, amber: 0 },
+    total_count: 0,
   },
   stigma_result: {
     detections: [],
-    avg_green_ratio: 0.53,
-    avg_orange_ratio: 0.47,
-    total_count: 6,
+    avg_green_ratio: 0,
+    avg_orange_ratio: 0,
+    total_count: 0,
   },
   trichome_crops_b64: null,
   stigma_crops_b64: null,
 };
+
+function getConfidence(
+  detections: { confidence: number }[]
+): { label: string; count: number } | null {
+  if (detections.length === 0) return null;
+  const avg = detections.reduce((sum, d) => sum + d.confidence, 0) / detections.length;
+  const label = avg >= 0.7 ? "High" : avg >= 0.45 ? "Medium" : "Low";
+  return { label, count: detections.length };
+}
 
 function getDominantType(distribution: Record<TrichomeType, number>): TrichomeType {
   const entries = Object.entries(distribution) as [TrichomeType, number][];
@@ -162,6 +164,12 @@ function SingleCaptureDetail({
   getMaturityColors: ReturnType<typeof useTheme>["getMaturityColors"];
   styles: ReturnType<typeof createStyles>;
 }) {
+  const TRICHOME_COLORS: Record<TrichomeType, string> = {
+    clear: Colors.trichomeClear,
+    cloudy: Colors.trichomeCloudy,
+    amber: Colors.trichomeAmber,
+  };
+  const STIGMA_COLORS = { green: Colors.stigmaGreen, orange: Colors.stigmaOrange };
   const stage = result.maturity_stage;
   const stageColors = getMaturityColors(stage);
   const prediction = MATURITY_PREDICTION[stage] ?? MATURITY_PREDICTION.peak;
@@ -176,6 +184,14 @@ function SingleCaptureDetail({
   const greenPct = Math.round(result.stigma_result.avg_green_ratio * 100);
   const orangePct = Math.round(result.stigma_result.avg_orange_ratio * 100);
   const dominantStigma = greenPct >= orangePct ? "green" : "orange";
+  const confidence = getConfidence(result.trichome_result.detections);
+
+  const handleShare = async () => {
+    const stageLabel = getMaturityColors(stage).label;
+    await Share.share({
+      message: `Maturity estimate: ${stageLabel}\n${cloudyPct}% cloudy · ${amberPct}% amber trichomes\n\n${result.recommendation}`,
+    });
+  };
 
   const trichomeTypes: { type: TrichomeType; label: string; value: number }[] = [
     { type: "clear", label: "Clear", value: clearPct },
@@ -186,17 +202,29 @@ function SingleCaptureDetail({
   return (
     <>
       <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={onBack}>
+        <Pressable
+          style={styles.backButton}
+          onPress={onBack}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={8}
+        >
           <Ionicons name="arrow-back" size={20} color={Colors.textPrimary} />
           <Text style={styles.backLabel}>Back</Text>
         </Pressable>
         <Text style={styles.headerTitle}>{title}</Text>
-        <Pressable style={styles.headerAction}>
+        <Pressable
+          style={styles.headerAction}
+          onPress={handleShare}
+          accessibilityRole="button"
+          accessibilityLabel="Share result"
+          hitSlop={8}
+        >
           <Ionicons name="share-outline" size={20} color={Colors.textSecondary} />
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollFlex} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.heroCard}>
           <View style={styles.heroBadge}>
             <Ionicons name="sparkles" size={12} color={Colors.accent} />
@@ -210,7 +238,7 @@ function SingleCaptureDetail({
 
         <View style={[styles.predictionCard, { backgroundColor: stageColors.background }]}>
           <View style={styles.predictionTop}>
-            <Text style={styles.predictionLabel}>MATURITY PREDICTION</Text>
+            <Text style={styles.predictionLabel}>MATURITY ESTIMATE</Text>
             <View style={styles.stigmaBadge}>
               <Text style={styles.stigmaBadgeText}>{result.stigma_result.total_count} stigmas</Text>
             </View>
@@ -219,6 +247,15 @@ function SingleCaptureDetail({
             {prediction.heading}
           </Text>
           <Text style={styles.predictionSubtitle}>{prediction.subtitle}</Text>
+          {confidence && (
+            <View style={styles.confidenceRow}>
+              <Ionicons name="shield-checkmark-outline" size={13} color={stageColors.text} />
+              <Text style={[styles.confidenceText, { color: stageColors.text }]}>
+                Confidence: {confidence.label}
+              </Text>
+              <Text style={styles.confidenceSub}>· based on {confidence.count} detections</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.statsRow}>
@@ -234,7 +271,7 @@ function SingleCaptureDetail({
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Trichome profile</Text>
-          <Text style={styles.sectionSubtitle}>Tap any card to inspect detections</Text>
+          <Text style={styles.sectionSubtitle}>Aggregate distribution</Text>
         </View>
 
         <View style={styles.donutRow}>
@@ -260,6 +297,7 @@ function SingleCaptureDetail({
           </View>
         </View>
 
+        <CollapsibleSection title="Trichome breakdown" subtitle="Dominant phase & per-type samples">
         <View style={styles.dominantCard}>
           <Text style={styles.dominantLabel}>DOMINANT PHASE</Text>
           <Text style={styles.dominantTitle}>{dominantPhase.title}</Text>
@@ -270,7 +308,7 @@ function SingleCaptureDetail({
           <Pressable
             key={t.type}
             style={styles.typeCard}
-            onPress={() => router.push(`/trichome-samples?type=${t.type}` as never)}
+            onPress={() => router.push(`/trichome-samples?type=${t.type}&persist=1` as never)}
           >
             <View style={styles.typeCardTop}>
               <View style={styles.typeCardLeft}>
@@ -297,14 +335,12 @@ function SingleCaptureDetail({
           </Pressable>
         ))}
 
-        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={styles.sectionTitle}>Stigma color read</Text>
-          <Text style={styles.sectionSubtitle}>Open the gallery for individual stigma crops</Text>
-        </View>
+        </CollapsibleSection>
 
+        <CollapsibleSection title="Stigma color read" subtitle="Distribution & individual crops">
         <View style={styles.stigmaDistHeader}>
           <Text style={styles.stigmaDistTitle}>Stigma distribution</Text>
-          <View style={[styles.stigmaLeadBadge, { backgroundColor: dominantStigma === "green" ? Colors.accentSurface : "rgba(217,119,6,0.15)" }]}>
+          <View style={[styles.stigmaLeadBadge, { backgroundColor: dominantStigma === "green" ? Colors.stigmaGreenSurface : Colors.stigmaOrangeSurface }]}>
             <Text style={[styles.stigmaLeadText, { color: STIGMA_COLORS[dominantStigma] }]}>
               {dominantStigma === "green" ? greenPct : orangePct}% lead
             </Text>
@@ -324,7 +360,7 @@ function SingleCaptureDetail({
 
         <View style={styles.stigmaCardsRow}>
           <Pressable
-            style={[styles.stigmaTypeCard, { borderColor: "rgba(107,255,143,0.2)" }]}
+            style={[styles.stigmaTypeCard, { borderColor: Colors.stigmaGreenBorder }]}
             onPress={() => router.push("/stigma-samples?type=green" as never)}
           >
             <View style={styles.stigmaCardTop}>
@@ -340,27 +376,25 @@ function SingleCaptureDetail({
           </Pressable>
 
           <Pressable
-            style={[styles.stigmaTypeCard, { borderColor: "rgba(217,119,6,0.2)" }]}
+            style={[styles.stigmaTypeCard, { borderColor: Colors.stigmaOrangeBorder }]}
             onPress={() => router.push("/stigma-samples?type=orange" as never)}
           >
             <View style={styles.stigmaCardTop}>
-              <View style={[styles.stigmaColorDot, { backgroundColor: "#d97706" }]} />
+              <View style={[styles.stigmaColorDot, { backgroundColor: Colors.stigmaOrange }]} />
               <Text style={styles.stigmaTypeName}>Orange</Text>
             </View>
-            <Text style={[styles.stigmaPct, { color: "#d97706" }]}>{orangePct}%</Text>
+            <Text style={[styles.stigmaPct, { color: Colors.stigmaOrange }]}>{orangePct}%</Text>
             <Text style={styles.stigmaTypeDesc}>Ripening stigmas</Text>
             <View style={styles.openSamplesLink}>
-              <Text style={[styles.openSamplesText, { color: "#d97706" }]}>OPEN SAMPLES</Text>
-              <Ionicons name="chevron-forward" size={13} color="#d97706" />
+              <Text style={[styles.openSamplesText, { color: Colors.stigmaOrange }]}>OPEN SAMPLES</Text>
+              <Ionicons name="chevron-forward" size={13} color={Colors.stigmaOrange} />
             </View>
           </Pressable>
         </View>
 
-        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={styles.sectionTitle}>Source captures</Text>
-          <Text style={styles.sectionSubtitle}>1 review frame</Text>
-        </View>
+        </CollapsibleSection>
 
+        <CollapsibleSection title="Source captures" subtitle="1 review frame">
         {result.annotated_image_url ? (
           <View style={styles.captureCard}>
             <ZoomableImage
@@ -382,16 +416,26 @@ function SingleCaptureDetail({
           </View>
         )}
 
+        </CollapsibleSection>
+
         <View style={styles.recommendationCard}>
           <View style={styles.recRow}>
             <Ionicons name="bulb-outline" size={16} color={Colors.accent} />
-            <Text style={styles.recLabel}>HARVEST RECOMMENDATION</Text>
+            <Text style={styles.recLabel}>ANALYSIS SUMMARY</Text>
           </View>
           <Text style={styles.recText}>{result.recommendation}</Text>
         </View>
 
+      </ScrollView>
+
+      <View style={styles.footer}>
         {showSaveButton && (
-          <Pressable onPress={() => router.push("/save-flower" as never)}>
+          <Pressable
+            onPress={() => {
+              AnalysisResultStore.setSession([result]);
+              router.push("/save-flower" as never);
+            }}
+          >
             {({ pressed }) => (
               <LinearGradient
                 colors={Gradients.vitality}
@@ -405,18 +449,18 @@ function SingleCaptureDetail({
             )}
           </Pressable>
         )}
-
         <Pressable style={styles.addMoreButton} onPress={() => router.push("/camera" as never)}>
           <Ionicons name="add" size={18} color={Colors.textPrimary} />
           <Text style={styles.addMoreText}>Add more images</Text>
         </Pressable>
-      </ScrollView>
+      </View>
     </>
   );
 }
 
 function MultiSessionResultsView({
   session,
+  showSave,
   router,
   Colors,
   Gradients,
@@ -424,12 +468,18 @@ function MultiSessionResultsView({
   styles,
 }: {
   session: AnalyzeResponse[];
+  showSave: boolean;
   router: ReturnType<typeof useRouter>;
   Colors: ReturnType<typeof useTheme>["Colors"];
   Gradients: ReturnType<typeof useTheme>["Gradients"];
   getMaturityColors: ReturnType<typeof useTheme>["getMaturityColors"];
   styles: ReturnType<typeof createStyles>;
 }) {
+  const TRICHOME_COLORS: Record<TrichomeType, string> = {
+    clear: Colors.trichomeClear,
+    cloudy: Colors.trichomeCloudy,
+    amber: Colors.trichomeAmber,
+  };
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const summary = computeSessionSummary(session);
   const stageColors = getMaturityColors(summary.maturity_stage);
@@ -480,7 +530,7 @@ function MultiSessionResultsView({
           <View style={{ width: 28 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollFlex} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Hero */}
           <View style={styles.heroCard}>
             <View style={styles.heroBadge}>
@@ -553,17 +603,13 @@ function MultiSessionResultsView({
           <View style={styles.recommendationCard}>
             <View style={styles.recRow}>
               <Ionicons name="bulb-outline" size={16} color={Colors.accent} />
-              <Text style={styles.recLabel}>COMBINED RECOMMENDATION</Text>
+              <Text style={styles.recLabel}>COMBINED SUMMARY</Text>
             </View>
             <Text style={styles.recText}>{summary.recommendation}</Text>
           </View>
 
           {/* Individual captures */}
-          <View style={[styles.sectionHeader, { marginTop: 8 }]}>
-            <Text style={styles.sectionTitle}>Individual captures</Text>
-            <Text style={styles.sectionSubtitle}>Tap any card to see full analysis</Text>
-          </View>
-
+          <CollapsibleSection title="Individual captures" subtitle="Tap any card to see full analysis">
           {session.map((capture, idx) => {
             const captureDist = capture.trichome_result.distribution;
             const captureTotal = capture.trichome_result.total_count;
@@ -613,33 +659,41 @@ function MultiSessionResultsView({
                 {captureOrangePct > 0 && (
                   <View style={styles.sessionCaptureStigmaBar}>
                     <View style={[styles.sessionCaptureStigmaSegment, { flex: captureGreenPct, backgroundColor: Colors.accentDark }]} />
-                    <View style={[styles.sessionCaptureStigmaSegment, { flex: captureOrangePct, backgroundColor: "#b45309" }]} />
+                    <View style={[styles.sessionCaptureStigmaSegment, { flex: captureOrangePct, backgroundColor: Colors.stigmaOrangeStrong }]} />
                   </View>
                 )}
               </Pressable>
             );
           })}
+          </CollapsibleSection>
+        </ScrollView>
 
-          {/* Save all */}
-          <Pressable onPress={() => router.push("/save-flower" as never)}>
-            {({ pressed }) => (
-              <LinearGradient
-                colors={Gradients.vitality}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[styles.saveButton, pressed && { opacity: 0.88 }]}
-              >
-                <Ionicons name="bookmark-outline" size={18} color={Colors.accentText} />
-                <Text style={styles.saveButtonText}>Save all to a flower</Text>
-              </LinearGradient>
-            )}
-          </Pressable>
-
+        <View style={styles.footer}>
+          {showSave && (
+            <Pressable
+              onPress={() => {
+                AnalysisResultStore.setSession(session);
+                router.push("/save-flower" as never);
+              }}
+            >
+              {({ pressed }) => (
+                <LinearGradient
+                  colors={Gradients.vitality}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.saveButton, pressed && { opacity: 0.88 }]}
+                >
+                  <Ionicons name="bookmark-outline" size={18} color={Colors.accentText} />
+                  <Text style={styles.saveButtonText}>Save all to a flower</Text>
+                </LinearGradient>
+              )}
+            </Pressable>
+          )}
           <Pressable style={styles.addMoreButton} onPress={() => router.push("/camera" as never)}>
             <Ionicons name="add" size={18} color={Colors.textPrimary} />
             <Text style={styles.addMoreText}>Add more images</Text>
           </Pressable>
-        </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -647,11 +701,15 @@ function MultiSessionResultsView({
 
 export default function ResultsScreen() {
   const router = useRouter();
-  const { id, index } = useLocalSearchParams<{ id?: string; index?: string }>();
+  const { id, index, fromPlant } = useLocalSearchParams<{ id?: string; index?: string; fromPlant?: string }>();
   const { Colors, Gradients, getMaturityColors } = useTheme();
   const styles = createStyles(Colors);
-  const [result, setResult] = useState<AnalyzeResponse>(AnalysisResultStore.get() ?? MOCK_RESULT);
+  const stored = AnalysisResultStore.get();
+  const [result, setResult] = useState<AnalyzeResponse | null>(
+    id && stored?.id !== id ? null : stored
+  );
   const [session, setSession] = useState<AnalyzeResponse[]>(AnalysisResultStore.getSession());
+  const [loading, setLoading] = useState<boolean>(!!id && stored?.id !== id);
 
   const captureIndex = index !== undefined ? parseInt(index, 10) : null;
   const isMultiSession = session.length > 1 && captureIndex === null && !id;
@@ -662,14 +720,29 @@ export default function ResultsScreen() {
       setSession(currentSession);
 
       if (id) {
-        ApiClient.getAnalysis(id).then(setResult).catch(() => {
-          setResult(AnalysisResultStore.get() ?? MOCK_RESULT);
-        });
+        const current = AnalysisResultStore.get();
+        if (!current || current.id !== id) {
+          setResult(null);
+          setLoading(true);
+        }
+        ApiClient.getAnalysis(id)
+          .then((analysis) => {
+            setResult(analysis);
+            AnalysisResultStore.set(analysis);
+          })
+          .catch(() => {
+            setResult(AnalysisResultStore.get());
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       } else if (captureIndex !== null && currentSession[captureIndex]) {
+        setLoading(false);
         setResult(currentSession[captureIndex]);
         AnalysisResultStore.set(currentSession[captureIndex]);
       } else {
-        setResult(AnalysisResultStore.get() ?? MOCK_RESULT);
+        setLoading(false);
+        setResult(AnalysisResultStore.get());
       }
     }, [id, captureIndex])
   );
@@ -678,12 +751,42 @@ export default function ResultsScreen() {
     return (
       <MultiSessionResultsView
         session={session}
+        showSave={!fromPlant && session.every((capture) => capture.plant_id == null)}
         router={router}
         Colors={Colors}
         Gradients={Gradients}
         getMaturityColors={getMaturityColors}
         styles={styles}
       />
+    );
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top"]}>
+        <View style={styles.content}>
+          <ScreenHeader title="Flower Analysis" onBack={() => router.back()} />
+          <LoadingState message="Loading analysis…" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!result) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top"]}>
+        <View style={styles.content}>
+          <ScreenHeader title="Flower Analysis" onBack={() => router.back()} />
+          <EmptyState
+            icon="cloud-offline-outline"
+            title="Analysis unavailable"
+            message="We couldn't load this analysis. Please go back and try again."
+            actionLabel="Start a new scan"
+            actionIcon="camera-outline"
+            onAction={() => router.push("/camera" as never)}
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -694,7 +797,7 @@ export default function ResultsScreen() {
           result={result}
           title={captureIndex !== null ? `Capture ${captureIndex + 1}` : "Flower Analysis"}
           onBack={() => router.back()}
-          showSaveButton={true}
+          showSaveButton={!fromPlant && result.plant_id == null}
           router={router}
           Colors={Colors}
           Gradients={Gradients}
@@ -743,11 +846,23 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   headerAction: {
     padding: 4,
   },
+  scrollFlex: {
+    flex: 1,
+  },
   scroll: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingBottom: 24,
     paddingTop: 16,
     gap: 12,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderSubtle,
+    backgroundColor: Colors.background,
+    gap: 10,
   },
   heroCard: {
     backgroundColor: Colors.surfaceElevated,
@@ -799,7 +914,7 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     letterSpacing: 1.5,
   },
   stigmaBadge: {
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: Colors.chipOverlay,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
@@ -818,6 +933,20 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     fontSize: 13,
     color: Colors.textSecondary,
     lineHeight: 19,
+  },
+  confidenceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 4,
+  },
+  confidenceText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  confidenceSub: {
+    fontSize: 12,
+    color: Colors.textSecondary,
   },
   statsRow: {
     flexDirection: "row",
@@ -1003,7 +1132,7 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
     gap: 1,
   },
   splitBarOrange: {
-    backgroundColor: "#b45309",
+    backgroundColor: Colors.stigmaOrangeStrong,
     alignItems: "center",
     justifyContent: "center",
     gap: 1,
@@ -1011,12 +1140,12 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   splitBarLabel: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#fff",
+    color: Colors.onSolid,
   },
   splitBarSublabel: {
     fontSize: 10,
     fontWeight: "600",
-    color: "rgba(255,255,255,0.7)",
+    color: Colors.onSolidMuted,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },

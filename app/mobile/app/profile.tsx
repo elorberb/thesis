@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { ScreenHeader } from "../components/ScreenHeader";
 
 function getInitials(name: string | undefined, email: string | undefined): string {
   if (name) {
@@ -45,13 +46,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={20} color={Colors.textPrimary} />
-        </Pressable>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <View style={{ width: 36 }} />
-      </View>
+      <ScreenHeader title="Profile" onBack={() => router.back()} />
 
       <View style={styles.avatarSection}>
         <View style={styles.avatarCircle}>
@@ -69,7 +64,7 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Pressable style={styles.row} onPress={() => router.push("/settings")}>
           <View style={styles.rowLeft}>
-            <View style={[styles.rowIcon, { backgroundColor: "rgba(107,255,143,0.1)" }]}>
+            <View style={[styles.rowIcon, { backgroundColor: Colors.accentSurface }]}>
               <Ionicons name="settings-outline" size={18} color={Colors.accent} />
             </View>
             <Text style={styles.rowLabel}>Settings</Text>
@@ -79,9 +74,9 @@ export default function ProfileScreen() {
 
         <View style={styles.rowDivider} />
 
-        <Pressable style={styles.row} onPress={() => router.push("/history")}>
+        <Pressable style={styles.row} onPress={() => router.push("/my-plants")}>
           <View style={styles.rowLeft}>
-            <View style={[styles.rowIcon, { backgroundColor: "rgba(107,255,143,0.1)" }]}>
+            <View style={[styles.rowIcon, { backgroundColor: Colors.accentSurface }]}>
               <Ionicons name="leaf-outline" size={18} color={Colors.accent} />
             </View>
             <Text style={styles.rowLabel}>My Plants</Text>
@@ -93,7 +88,7 @@ export default function ProfileScreen() {
       <View style={[styles.section, { marginTop: 12 }]}>
         <Pressable style={styles.row} onPress={handleSignOut}>
           <View style={styles.rowLeft}>
-            <View style={[styles.rowIcon, { backgroundColor: "rgba(239,68,68,0.1)" }]}>
+            <View style={[styles.rowIcon, { backgroundColor: Colors.dangerSurface }]}>
               <Ionicons name="log-out-outline" size={18} color={Colors.danger} />
             </View>
             <Text style={[styles.rowLabel, { color: Colors.danger }]}>Sign Out</Text>
@@ -109,31 +104,6 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) {
     safe: {
       flex: 1,
       backgroundColor: Colors.background,
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingTop: 8,
-      paddingBottom: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: Colors.borderSubtle,
-      gap: 12,
-    },
-    backButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 10,
-      backgroundColor: Colors.surfaceElevated,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    headerTitle: {
-      flex: 1,
-      fontSize: 18,
-      fontWeight: "700",
-      color: Colors.textPrimary,
-      textAlign: "center",
     },
     avatarSection: {
       alignItems: "center",

@@ -1,7 +1,8 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Colors } from "../constants/theme";
+import { useTheme } from "../contexts/ThemeContext";
+import { ScreenHeader } from "../components/ScreenHeader";
 
 const STEPS = [
   {
@@ -26,7 +27,7 @@ const STEPS = [
     number: "04",
     title: "Result",
     description:
-      "You receive a maturity stage — Early, Developing, Peak, Mature, or Late — with a concrete harvest recommendation.",
+      "You receive a maturity stage — Early, Developing, Peak, Mature, or Late — with a clear maturity estimate.",
   },
 ];
 
@@ -38,33 +39,29 @@ const TIPS = [
 ];
 
 const STAGES = [
-  { label: "Early", color: "#60a5fa", desc: "Trichomes mostly clear. Not ready for harvest." },
+  { label: "Early", color: "#60a5fa", desc: "Trichomes mostly clear. Early maturity." },
   { label: "Developing", color: "#a78bfa", desc: "Cloudy trichomes forming. Continue waiting." },
-  { label: "Peak", color: "#4ade80", desc: "Mostly cloudy. Maximum THC potency." },
+  { label: "Peak", color: "#4ade80", desc: "Mostly cloudy. Peak maturity." },
   { label: "Mature", color: "#fbbf24", desc: "Amber developing. More relaxing, sedative effect." },
   { label: "Late", color: "#f87171", desc: "Mostly amber. High CBN content, strong sedative." },
 ];
 
 export default function HowItWorksScreen() {
   const router = useRouter();
+  const { Colors } = useTheme();
+  const styles = createStyles(Colors);
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>How It Works</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader title="How It Works" onBack={() => router.back()} />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.intro}>
-          AgriVision uses computer vision trained on trichome and pistil imagery
-          to assess cannabis flower maturity in seconds.
+          LoupeLab uses computer vision trained on trichome and pistil imagery
+          to assess flower maturity in seconds.
         </Text>
 
         <Text style={styles.sectionTitle}>The Process</Text>
@@ -118,35 +115,10 @@ export default function HowItWorksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.surfaceElevated,
-  },
-  backText: {
-    fontSize: 15,
-    color: Colors.accent,
-    fontWeight: "500",
-    width: 60,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 17,
-    fontWeight: "700",
-    color: Colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 60,
   },
   scroll: {
     paddingHorizontal: 20,
@@ -273,4 +245,4 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
     marginLeft: 40,
   },
-});
+}); }

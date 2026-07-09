@@ -1,12 +1,13 @@
 import { useState, useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, Alert, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AnalysisResultStore } from "../store/analysisResult";
 import { useTheme } from "../contexts/ThemeContext";
 import { TrichomeType } from "../api/types";
-import { MOCK_RESULT } from "./results";
+import { ApiClient } from "../api/client";
+import { EMPTY_RESULT } from "./results";
 import { ZoomableImage } from "../components/ZoomableImage";
 
 type ExtendedTrichomeType = TrichomeType | "not_a_trichome";
@@ -30,9 +31,10 @@ const CYCLE_ORDER: ExtendedTrichomeType[] = ["clear", "cloudy", "amber", "not_a_
 export default function TrichomeSamplesScreen() {
   const router = useRouter();
   const { Colors } = useTheme();
-  const { type } = useLocalSearchParams<{ type: TrichomeType }>();
-  const result = AnalysisResultStore.get() ?? MOCK_RESULT;
+  const { type, persist } = useLocalSearchParams<{ type: TrichomeType; persist?: string }>();
+  const result = AnalysisResultStore.get() ?? EMPTY_RESULT;
   const focusedType: TrichomeType = (type as TrichomeType) ?? "cloudy";
+  const [saving, setSaving] = useState(false);
 
   const allDetections = result.trichome_result.detections;
   const crops = result.trichome_crops_b64;
@@ -44,11 +46,18 @@ export default function TrichomeSamplesScreen() {
   }));
 
   const [overrides, setOverrides] = useState<Record<number, ExtendedTrichomeType>>({});
+  const [pickerIndex, setPickerIndex] = useState<number | null>(null);
 
-  const cycleType = (originalIndex: number, currentType: ExtendedTrichomeType) => {
-    const nextType = CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentType) + 1) % CYCLE_ORDER.length];
+  const applyType = (originalIndex: number, nextType: ExtendedTrichomeType) => {
     setOverrides((prev) => ({ ...prev, [originalIndex]: nextType }));
+    setPickerIndex(null);
   };
+
+  const pickerSample = pickerIndex !== null ? samples.find((s) => s.index === pickerIndex) : null;
+  const pickerCurrentType: ExtendedTrichomeType | null =
+    pickerIndex !== null && pickerSample
+      ? (overrides[pickerIndex] ?? pickerSample.trichome_type) as ExtendedTrichomeType
+      : null;
 
   const effectiveSamples = samples
     .filter((s) => s.trichome_type === focusedType)
@@ -69,7 +78,7 @@ export default function TrichomeSamplesScreen() {
   const hasOverrides = Object.keys(overrides).length > 0;
   const styles = createStyles(Colors);
 
-  const handleBack = useCallback(() => {
+  const handleBack = useCallback(async () => {
     if (hasOverrides) {
       const stored = AnalysisResultStore.get();
       if (stored) {
@@ -85,7 +94,7 @@ export default function TrichomeSamplesScreen() {
           }));
         const newDist = { clear: 0, cloudy: 0, amber: 0 };
         updatedDetections.forEach((d) => newDist[d.trichome_type]++);
-        AnalysisResultStore.set({
+        const optimistic = {
           ...stored,
           trichome_result: {
             ...stored.trichome_result,
@@ -93,22 +102,46 @@ export default function TrichomeSamplesScreen() {
             distribution: newDist,
             total_count: updatedDetections.length,
           },
-        });
+        };
+        AnalysisResultStore.set(optimistic);
+
+        if (persist && stored.id) {
+          setSaving(true);
+          try {
+            const updated = await ApiClient.saveCorrections(stored.id, {
+              trichome_distribution: newDist,
+              detections: {
+                trichomes: updatedDetections,
+                stigmas: stored.stigma_result.detections,
+              },
+            });
+            AnalysisResultStore.set({
+              ...optimistic,
+              maturity_stage: updated.maturity_stage,
+              recommendation: updated.recommendation,
+            });
+          } catch {
+            setSaving(false);
+            Alert.alert("Save failed", "Could not save your changes. Please try again.");
+            return;
+          }
+          setSaving(false);
+        }
       }
     }
     router.back();
-  }, [hasOverrides, overrides, router]);
+  }, [hasOverrides, overrides, router, persist]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={handleBack}>
+        <Pressable style={styles.backButton} onPress={handleBack} disabled={saving}>
           <Ionicons name="arrow-back" size={20} color={Colors.textPrimary} />
-          <Text style={styles.backLabel}>Back</Text>
+          <Text style={styles.backLabel}>{saving ? "Saving…" : "Back"}</Text>
         </Pressable>
         <Text style={styles.headerTitle}>{TYPE_LABELS[focusedType]} Trichomes</Text>
         {hasOverrides ? (
-          <Pressable onPress={() => setOverrides({})}>
+          <Pressable onPress={() => setOverrides({})} disabled={saving}>
             <Text style={styles.resetText}>Reset</Text>
           </Pressable>
         ) : (
@@ -174,7 +207,7 @@ export default function TrichomeSamplesScreen() {
         <View style={styles.hintRow}>
           <Ionicons name="finger-print-outline" size={14} color={Colors.textMuted} />
           <Text style={styles.hintText}>
-            Tap any sample to cycle: clear → cloudy → amber → not a trichome → clear
+            Tap any sample to change its type
           </Text>
         </View>
 
@@ -214,12 +247,12 @@ export default function TrichomeSamplesScreen() {
                       style={[styles.cropImage, isExcluded && styles.cropImageExcluded]}
                       imageStyle={[styles.cropImage, isExcluded && styles.cropImageExcluded]}
                       resizeMode="cover"
-                      onSingleTap={() => cycleType(sample.index, sample.effectiveType)}
+                      onSingleTap={() => setPickerIndex(sample.index)}
                     />
                   ) : (
                     <Pressable
                       style={[styles.cropImagePlaceholder, { borderBottomColor: borderColor }]}
-                      onPress={() => cycleType(sample.index, sample.effectiveType)}
+                      onPress={() => setPickerIndex(sample.index)}
                     >
                       <Ionicons name={isExcluded ? "close-circle-outline" : "leaf-outline"} size={28} color={borderColor} />
                     </Pressable>
@@ -233,7 +266,7 @@ export default function TrichomeSamplesScreen() {
 
                   <Pressable
                     style={styles.cropInfo}
-                    onPress={() => cycleType(sample.index, sample.effectiveType)}
+                    onPress={() => setPickerIndex(sample.index)}
                   >
                     <View style={styles.cropInfoRow}>
                       <Text style={styles.cropSampleLabel}>#{i + 1}</Text>
@@ -254,6 +287,34 @@ export default function TrichomeSamplesScreen() {
           </View>
         )}
       </ScrollView>
+
+      <Modal
+        visible={pickerIndex !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPickerIndex(null)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setPickerIndex(null)}>
+          <Pressable style={styles.sheet} onPress={() => {}}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Set trichome type</Text>
+            {CYCLE_ORDER.map((t) => {
+              const active = pickerCurrentType === t;
+              return (
+                <Pressable
+                  key={t}
+                  style={[styles.optionRow, active && styles.optionRowActive]}
+                  onPress={() => pickerIndex !== null && applyType(pickerIndex, t)}
+                >
+                  <View style={[styles.optionDot, { backgroundColor: TYPE_COLORS[t] }]} />
+                  <Text style={styles.optionLabel}>{TYPE_LABELS[t]}</Text>
+                  {active && <Ionicons name="checkmark" size={20} color={Colors.accent} />}
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -494,5 +555,56 @@ function createStyles(Colors: ReturnType<typeof useTheme>["Colors"]) { return St
   cropConf: {
     fontSize: 10,
     color: Colors.textMuted,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+    paddingBottom: 32,
+    gap: 4,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+    alignSelf: "center",
+    marginBottom: 10,
+  },
+  sheetTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: Colors.textPrimary,
+    marginBottom: 6,
+  },
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  optionRowActive: {
+    backgroundColor: Colors.surfaceElevated,
+  },
+  optionDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  optionLabel: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: Colors.textPrimary,
   },
 }); }

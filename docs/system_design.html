@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cannabis Maturity — High-Level System Design</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --border:#2a323d;
+    --text:#e6edf3; --muted:#9aa7b4; --accent:#5db075; --accent2:#4a9edb;
+    --amber:#d9a441; --purple:#a371f7; --pink:#db61a2; --danger:#f07068;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent2);text-decoration:none}a:hover{text-decoration:underline}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
+  .layout{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+    background:var(--panel);border-right:1px solid var(--border);padding:24px 18px}
+  aside h1{font-size:16px;margin:0 0 4px}
+  aside .sub{color:var(--muted);font-size:12px;margin-bottom:20px}
+  nav a{display:block;color:var(--muted);padding:7px 10px;border-radius:8px;font-size:14px}
+  nav a:hover{background:var(--panel2);color:var(--text);text-decoration:none}
+  main{padding:40px 48px;max-width:1150px}
+  section{margin-bottom:56px;scroll-margin-top:20px}
+  h2{font-size:24px;margin:0 0 6px;border-bottom:1px solid var(--border);padding-bottom:10px}
+  h3{font-size:17px;margin:26px 0 10px}
+  p.lead{color:var(--muted);margin-top:0}
+  .mermaid{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px;overflow:auto;text-align:center;margin:16px 0}
+  .note{border-left:3px solid var(--accent);background:var(--panel2);padding:10px 16px;
+    border-radius:0 8px 8px 0;color:var(--muted);font-size:13.5px;margin:14px 0}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);font-weight:600}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);
+    border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .d-r{background:var(--amber)}.d-p{background:var(--accent)}.d-s{background:var(--pink)}
+  .d-c{background:var(--accent2)}.d-m{background:var(--purple)}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <h1>🌿 System Design</h1>
+    <div class="sub">Whole project — research + product</div>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#planes">1. The two planes</a>
+      <a href="#layers">2. Layered architecture</a>
+      <a href="#research">3. Research ML pipeline</a>
+      <a href="#bridge">4. Model artifacts bridge</a>
+      <a href="#runtime">5. Product runtime data flow</a>
+      <a href="#stack">6. Technology stack</a>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="overview">
+      <h2>Overview</h2>
+      <p class="lead">
+        The repository has two halves that meet at one artifact — the trained model weights.
+        The <strong>research plane</strong> (repo root: <span class="mono">src/</span>, <span class="mono">notebooks/</span>,
+        <span class="mono">scripts/</span>) is the thesis work that prepares data, trains and evaluates computer-vision
+        models. The <strong>product plane</strong> (<span class="mono">app/</span>) is the mobile app + API that serve those
+        models to end users. This page shows the high-level design and how data flows across the whole system.
+      </p>
+      <div class="legend">
+        <span class="pill"><span class="dot d-r"></span> research / offline (ML)</span>
+        <span class="pill"><span class="dot d-c"></span> client (mobile)</span>
+        <span class="pill"><span class="dot d-p"></span> product API / ML package</span>
+        <span class="pill"><span class="dot d-m"></span> GPU cloud (Modal)</span>
+        <span class="pill"><span class="dot d-s"></span> data / storage</span>
+      </div>
+    </section>
+
+    <section id="planes">
+      <h2>1. The two planes, one bridge</h2>
+      <p class="lead">Research produces weights; the product consumes them. Nothing else couples the two sides.</p>
+      <div class="mermaid">
+flowchart LR
+  subgraph RESEARCH["🔬 Research plane (offline) — repo root"]
+    direction TB
+    DATA["Datasets &amp; annotations<br/>(Segments.ai, images)"]
+    PREP["Data preparation<br/>patching · sharpness · IO"]
+    TRAIN["Training<br/>YOLO/Ultralytics · Detectron2 · fastai · YOLO-NAS"]
+    EVAL["Evaluation &amp; analysis<br/>metrics · HPLC correlation"]
+    DATA --> PREP --> TRAIN --> EVAL
+  end
+
+  WEIGHTS(["🎯 Model weights<br/>detection · classification · segmentation (.pt)"])
+  EVAL --> WEIGHTS
+
+  subgraph PRODUCT["🚀 Product plane (online) — app/"]
+    direction TB
+    MOBILE["📱 Mobile app (Expo)"]
+    API["⚙️ FastAPI"]
+    MLPKG["🧠 cannabis_maturity package"]
+    MODAL["☁️ Modal GPU"]
+    SUPA["🗄️ Supabase"]
+    MOBILE --> API --> MLPKG
+    API -. modal mode .-> MODAL --> MLPKG
+    API --> SUPA
+  end
+
+  WEIGHTS -->|"local checkpoints/"| MLPKG
+  WEIGHTS -->|"upload_weights.py"| MODAL
+      </div>
+      <div class="note">The <span class="mono">cannabis_maturity</span> package is deliberately framework-light so the <em>same</em>
+      detector/classifier code runs in three places: research pipelines, the API's local mode, and the Modal GPU worker.</div>
+    </section>
+
+    <section id="layers">
+      <h2>2. Layered architecture</h2>
+      <p class="lead">The product plane, top to bottom: presentation → API → domain (ML) → infrastructure.</p>
+      <div class="mermaid">
+flowchart TB
+  subgraph L1["Presentation — mobile/"]
+    S["Screens (camera, results, history, plants)"]
+    CL["ApiClient (api/client.ts)"]
+    TH["Theme + Auth contexts"]
+    S --> CL
+    S --> TH
+  end
+  subgraph L2["Application — api/"]
+    RT["routes/analysis.py"]
+    AU["auth.py (JWT verify)"]
+    SC["schemas.py (validation)"]
+    RT --> AU
+    RT --> SC
+  end
+  subgraph L3["Domain — backend/cannabis_maturity"]
+    TD["TrichomeDetector"]
+    SD["StigmaDetector + ColorClassifier"]
+    MA["MaturityAssessor"]
+    AR["AnnotationRenderer / CropExtractor"]
+    MD["Pydantic models"]
+  end
+  subgraph L4["Infrastructure"]
+    ST["Supabase Storage"]
+    DB["Supabase Postgres"]
+    AUTHP["Supabase Auth"]
+    GPU["Modal GPU (T4)"]
+    WT["Model weights (volume / checkpoints)"]
+  end
+  CL -->|HTTPS + JWT| RT
+  TH -.-> AUTHP
+  RT --> ST
+  RT --> DB
+  AU -.-> AUTHP
+  RT --> TD & SD & MA & AR
+  TD & SD & MA & AR --> MD
+  TD & SD -.-> WT
+  RT -. modal mode .-> GPU --> TD
+      </div>
+    </section>
+
+    <section id="research">
+      <h2>3. Research ML pipeline (data flow)</h2>
+      <p class="lead">How raw field/lab images become the three trained models the product depends on. Modules live under <span class="mono">src/</span>.</p>
+      <div class="mermaid">
+flowchart LR
+  RAW["Raw macro images<br/>(field + lab)"] --> ANN["Annotation<br/>src/annotations<br/>Segments.ai handler"]
+  ANN --> PREP["Preparation<br/>src/data_preparation<br/>patching · sharpness · image_io"]
+  PREP --> DS["Train/test datasets"]
+
+  DS --> DET["Trichome detection<br/>src/segmentation<br/>Ultralytics / Detectron2 + SAHI"]
+  DS --> CLS["Trichome classification<br/>src/classification<br/>fastai · YOLO · DINOv2"]
+  DS --> SEG["Stigma segmentation<br/>src/stigmas_segmentation<br/>YOLO seg + color"]
+
+  DET --> EVAL["Evaluation<br/>src/segmentation/evaluation<br/>base/ultralytics/detectron2 evaluators"]
+  CLS --> EVAL
+  SEG --> EVAL
+
+  EVAL --> CORR["Maturity analysis<br/>src/data_analysis<br/>vs HPLC cannabinoids"]
+  DET --> W1(["detection .pt"])
+  CLS --> W2(["classification .pt"])
+  SEG --> W3(["segmentation .pt"])
+  CORR -.->|informs thresholds| ASSESS["MaturityAssessor rules"]
+
+  subgraph PIPE["Reusable pipelines — src/pipelines"]
+    E2E["end_to_end · preprocessing · trichomes_extractor"]
+  end
+  DET -.-> E2E
+  SEG -.-> E2E
+      </div>
+      <div class="note">There is also a Streamlit study app (<span class="mono">src/app/</span>) used during the thesis to collect
+      human maturity judgments, and Google-Drive utilities (<span class="mono">src/utils/</span>) for dataset syncing.</div>
+    </section>
+
+    <section id="bridge">
+      <h2>4. Model artifacts bridge</h2>
+      <p class="lead">The single coupling point between the two planes.</p>
+      <div class="card">
+        <table>
+          <tr><th>Weight</th><th>Trained by (research)</th><th>Consumed by (product)</th><th>Config key</th></tr>
+          <tr><td>Trichome detection (YOLOv9)</td><td>Ultralytics/Detectron2 training</td><td>TrichomeDetector</td><td class="mono">detection_model_path</td></tr>
+          <tr><td>Trichome classification (YOLOv8)</td><td>fastai / YOLO classification</td><td>TrichomeDetector</td><td class="mono">classification_model_path</td></tr>
+          <tr><td>Stigma segmentation (YOLOv8s)</td><td>YOLO segmentation training</td><td>StigmaDetector</td><td class="mono">segmentation_model_path</td></tr>
+        </table>
+        <p class="note">Deployment: for local mode the API reads weights from <span class="mono">checkpoints/</span>; for cloud mode
+        <span class="mono">app/modal/upload_weights.py</span> pushes them to a Modal volume that the GPU worker mounts at <span class="mono">/models</span>.</p>
+      </div>
+    </section>
+
+    <section id="runtime">
+      <h2>5. Product runtime data flow (end-to-end)</h2>
+      <p class="lead">One photo, from tap to stored result.</p>
+      <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 📱 User
+  participant M as Mobile (ApiClient)
+  participant SA as Supabase Auth
+  participant A as FastAPI /analyze
+  participant ST as Storage
+  participant I as Inference (local | Modal GPU)
+  participant ML as cannabis_maturity
+  participant DB as Postgres
+
+  U->>M: capture / pick photo
+  M->>SA: get session token
+  M->>A: POST /api/v1/analyze (image + JWT)
+  A->>SA: verify token
+  A->>ST: upload original → image_url
+  A->>I: analyze(image_bytes)
+  I->>ML: detect trichomes + stigmas → assess → annotate → crop
+  ML-->>I: AnalysisResult
+  I-->>A: result (dict)
+  A->>ST: upload annotated → annotated_url
+  A->>DB: save_analysis(...)
+  A-->>M: 201 stage + recommendation + crops
+  M-->>U: show Results
+  opt user edits
+    U->>M: correct distribution/ratios
+    M->>A: PATCH /corrections
+    A->>ML: MaturityAssessor re-assess
+    A->>DB: save corrections
+  end
+      </div>
+    </section>
+
+    <section id="stack">
+      <h2>6. Technology stack</h2>
+      <table>
+        <tr><th>Area</th><th>Technology</th></tr>
+        <tr><td>Mobile</td><td>Expo / React Native, expo-router, TypeScript, Supabase JS</td></tr>
+        <tr><td>API</td><td>FastAPI, Pydantic v2, pydantic-settings, uv, Doppler (secrets)</td></tr>
+        <tr><td>ML package</td><td>Ultralytics YOLO, OpenCV, NumPy, SAHI, Pydantic</td></tr>
+        <tr><td>GPU inference</td><td>Modal (T4), model volume</td></tr>
+        <tr><td>Data</td><td>Supabase — Postgres, Storage, Auth (RLS migrations)</td></tr>
+        <tr><td>Research/training</td><td>Ultralytics, Detectron2, fastai, DINOv2, YOLO-NAS, SAM, Segments.ai, Streamlit</td></tr>
+      </table>
+      <p class="note">Scope: this design spans the whole repository. For a code-level file map of the product
+      see <a href="../app/docs/structure.html">app/docs/structure.html</a>; for runtime states see
+      <a href="state_machine.html">state_machine.html</a>.</p>
+    </section>
+  </main>
+</div>
+<script>
+  mermaid.initialize({
+    startOnLoad:true, theme:"dark",
+    themeVariables:{fontSize:"14px",primaryColor:"#1c232d",primaryBorderColor:"#2a323d",
+      primaryTextColor:"#e6edf3",lineColor:"#6e7681",tertiaryColor:"#161b22"},
+    flowchart:{curve:"basis"}
+  });
+</script>
+</body>
+</html>
